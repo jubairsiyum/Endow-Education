@@ -1,0 +1,57 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
+
+class UpdateStudentRequest extends FormRequest
+{
+    /**
+     * Determine if the user is authorized to make this request.
+     */
+    public function authorize(): bool
+    {
+        return $this->user()->can('edit students');
+    }
+
+    /**
+     * Get the validation rules that apply to the request.
+     *
+     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     */
+    public function rules(): array
+    {
+        $studentId = $this->route('student');
+
+        return [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', Rule::unique('students', 'email')->ignore($studentId)],
+            'phone' => ['required', 'string', 'max:20'],
+            'country' => ['required', 'string', 'max:255'],
+            'course' => ['nullable', 'string', 'max:255'],
+            'status' => ['nullable', 'in:new,contacted,processing,applied,approved,rejected'],
+            'account_status' => ['nullable', 'in:pending,approved,rejected'],
+            'assigned_to' => ['nullable', 'exists:users,id'],
+            'notes' => ['nullable', 'string'],
+        ];
+    }
+
+    /**
+     * Get custom messages for validator errors.
+     *
+     * @return array
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Student name is required.',
+            'email.required' => 'Email address is required.',
+            'email.email' => 'Please provide a valid email address.',
+            'email.unique' => 'A student with this email already exists.',
+            'phone.required' => 'Phone number is required.',
+            'country.required' => 'Country is required.',
+            'assigned_to.exists' => 'The selected user does not exist.',
+        ];
+    }
+}

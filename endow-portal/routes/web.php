@@ -1,0 +1,64 @@
+<?php
+
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\StudentController;
+use App\Http\Controllers\FollowUpController;
+use App\Http\Controllers\ChecklistItemController;
+use App\Http\Controllers\DocumentController;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/', function () {
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return redirect()->route('login');
+});
+
+// Authentication Routes
+Auth::routes();
+
+// Dashboard Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
+// Student Management Routes
+Route::middleware(['auth'])->group(function () {
+    Route::resource('students', StudentController::class);
+    Route::post('/students/{student}/approve', [StudentController::class, 'approve'])->name('students.approve');
+    Route::post('/students/{student}/reject', [StudentController::class, 'reject'])->name('students.reject');
+});
+
+// Follow-up Routes
+Route::middleware(['auth'])->group(function () {
+    Route::resource('follow-ups', FollowUpController::class)->except(['index', 'show']);
+    Route::get('/students/{student}/follow-ups', [FollowUpController::class, 'index'])->name('students.follow-ups');
+});
+
+// Checklist Item Routes (Admin/Employee only)
+Route::middleware(['auth', 'can:create checklists'])->group(function () {
+    Route::resource('checklist-items', ChecklistItemController::class);
+});
+
+// Document Management Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/students/{student}/documents', [DocumentController::class, 'index'])->name('students.documents');
+    Route::post('/documents/upload', [DocumentController::class, 'upload'])->name('documents.upload');
+    Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
+    Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
+    Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
+    Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
+    Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+});
+
+// Home route redirect to dashboard
+Route::get('/home', function () {
+    return redirect()->route('dashboard');
+})->middleware('auth')->name('home');
