@@ -19,11 +19,18 @@ class StudentDocument extends Model
         'student_id',
         'checklist_item_id',
         'student_checklist_id',
+        'document_type',
         'filename',
+        'file_name',
+        'file_path',
         'mime_type',
         'file_size',
         'file_data',
         'uploaded_by',
+        'status',
+        'reviewed_by',
+        'reviewed_at',
+        'notes',
     ];
 
     /**
@@ -32,6 +39,7 @@ class StudentDocument extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'reviewed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -69,17 +77,25 @@ class StudentDocument extends Model
     }
 
     /**
+     * Get the user who reviewed this document.
+     */
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    /**
      * Get the file size in human readable format.
      */
     public function getFileSizeHumanAttribute(): string
     {
         $bytes = $this->file_size;
         $units = ['B', 'KB', 'MB', 'GB'];
-        
+
         for ($i = 0; $bytes > 1024; $i++) {
             $bytes /= 1024;
         }
-        
+
         return round($bytes, 2) . ' ' . $units[$i];
     }
 
