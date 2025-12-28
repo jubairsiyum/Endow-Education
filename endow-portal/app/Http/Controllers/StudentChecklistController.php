@@ -141,10 +141,10 @@ class StudentChecklistController extends Controller
         );
 
         // Log activity
-        $this->activityLogService->logActivity(
+        $this->activityLogService->log(
+            'student',
+            "Uploaded document for: {$checklistItem->title}",
             $student,
-            'document_uploaded',
-            "Uploaded document for: {$checklistItem->name}",
             ['checklist_item_id' => $checklistItem->id, 'document_path' => $path]
         );
 
@@ -169,10 +169,10 @@ class StudentChecklistController extends Controller
         }
 
         // Log activity before deletion
-        $this->activityLogService->logActivity(
+        $this->activityLogService->log(
+            'student',
+            "Deleted document for: {$studentChecklist->checklistItem->title}",
             $student,
-            'document_deleted',
-            "Deleted document for: {$studentChecklist->checklistItem->name}",
             ['checklist_item_id' => $studentChecklist->checklist_item_id]
         );
 
@@ -252,10 +252,10 @@ class StudentChecklistController extends Controller
         ]);
 
         // Log activity
-        $this->activityLogService->logActivity(
-            $student,
-            'profile_updated',
-            'Student updated their profile information'
+        $this->activityLogService->log(
+            'student',
+            'Student updated their profile information',
+            $student
         );
 
         return redirect()->route('student.dashboard')->with('success', 'Profile updated successfully!');
@@ -304,10 +304,10 @@ class StudentChecklistController extends Controller
         }
 
         // Log the contact submission
-        $this->activityLogService->logActivity(
-            $student,
-            'contact_submitted',
+        $this->activityLogService->log(
+            'student',
             "Student submitted contact form - Subject: {$request->subject}",
+            $student,
             [
                 'subject' => $request->subject,
                 'priority' => $request->priority,
