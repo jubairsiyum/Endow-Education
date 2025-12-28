@@ -4,10 +4,10 @@
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-md-10">
-            <div class="card shadow">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0"><i class="fas fa-user-graduate"></i> Student Registration</h4>
-                    <small>Please fill in your details as per your passport</small>
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-danger text-white py-4">
+                    <h4 class="mb-0 fw-bold"><i class="fas fa-user-graduate"></i> Student Registration</h4>
+                    <small class="opacity-90">Please fill in your details as per your passport</small>
                 </div>
 
                 <div class="card-body">
@@ -182,22 +182,9 @@
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label for="applying_program" class="form-label">Applying Program <span class="text-danger">*</span></label>
-                                    <select id="applying_program" class="form-select @error('applying_program') is-invalid @enderror"
-                                            name="applying_program" required>
-                                        <option value="">Select Program</option>
-                                        <option value="Undergraduate" {{ old('applying_program') == 'Undergraduate' ? 'selected' : '' }}>Undergraduate</option>
-                                        <option value="Master's Degree" {{ old('applying_program') == "Master's Degree" ? 'selected' : '' }}>Master's Degree</option>
-                                        <option value="PhD" {{ old('applying_program') == 'PhD' ? 'selected' : '' }}>PhD</option>
-                                        <option value="Certificate Program" {{ old('applying_program') == 'Certificate Program' ? 'selected' : '' }}>Certificate Program</option>
-                                        <option value="Diploma" {{ old('applying_program') == 'Diploma' ? 'selected' : '' }}>Diploma</option>
-                                    </select>
-                                    @error('applying_program')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="course" class="form-label">Desired Course/Field</label>
+                                    <input id="applying_program" type="text" class="form-control @error('applying_program') is-invalid @enderror"
+                                           name="applying_program" value="{{ old('applying_program') }}"
+                                           placeholder="e.g., Bachelor of Science, Master's Program" required>
                                     <input id="course" type="text" class="form-control @error('course') is-invalid @enderror"
                                            name="course" value="{{ old('course') }}" placeholder="e.g., Computer Science, Business Administration">
                                     @error('course')
@@ -223,11 +210,35 @@
                             </div>
                         </div>
 
+                        <!-- Account Security Section -->
+                        <div class="mb-4">
+                            <h5 class="border-bottom pb-2"><i class="fas fa-lock"></i> Account Security</h5>
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+                                    <input id="password" type="password" class="form-control @error('password') is-invalid @enderror"
+                                           name="password" required autocomplete="new-password" minlength="8">
+                                    <small class="form-text text-muted">Minimum 8 characters</small>
+                                    @error('password')
+                                        <span class="invalid-feedback">{{ $message }}</span>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6 mb-3">
+                                    <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+                                    <input id="password_confirmation" type="password" class="form-control"
+                                           name="password_confirmation" required autocomplete="new-password" minlength="8">
+                                    <small class="form-text text-muted">Re-enter your password</small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                            <a href="{{ route('login') }}" class="btn btn-secondary">
+                            <a href="{{ route('login') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to Login
                             </a>
-                            <button type="submit" class="btn btn-primary">
+                            <button type="submit" class="btn btn-danger btn-lg px-5">
                                 <i class="fas fa-paper-plane"></i> Submit Registration
                             </button>
                         </div>

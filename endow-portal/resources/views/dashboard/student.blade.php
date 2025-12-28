@@ -6,73 +6,73 @@
 @section('content')
     <!-- Account Status Alert -->
     @if($student->account_status === 'pending')
-    <div class="alert alert-warning alert-custom mb-4">
+    <div class="alert alert-warning border-0 shadow-sm mb-3">
         <div class="d-flex align-items-start gap-3">
-            <i class="fas fa-clock fa-2x"></i>
+            <i class="fas fa-clock fa-2x text-warning"></i>
             <div>
-                <h5 class="mb-1">Account Pending Approval</h5>
-                <p class="mb-0">Your account is currently under review. You'll be notified once it's been approved.</p>
+                <h5 class="mb-1 fw-bold">Account Pending Approval</h5>
+                <p class="mb-0 small">Your account is currently under review. You'll be notified once it's been approved.</p>
             </div>
         </div>
     </div>
     @elseif($student->account_status === 'rejected')
-    <div class="alert alert-danger alert-custom mb-4">
+    <div class="alert alert-danger border-0 shadow-sm mb-3">
         <div class="d-flex align-items-start gap-3">
-            <i class="fas fa-times-circle fa-2x"></i>
+            <i class="fas fa-times-circle fa-2x text-danger"></i>
             <div>
-                <h5 class="mb-1">Account Not Approved</h5>
-                <p class="mb-0">Unfortunately, your account was not approved. Please contact support for more information.</p>
+                <h5 class="mb-1 fw-bold">Account Not Approved</h5>
+                <p class="mb-0 small">Unfortunately, your account was not approved. Please contact support for more information.</p>
             </div>
         </div>
     </div>
     @else
-    <div class="alert alert-success alert-custom mb-4">
+    <div class="alert alert-success border-0 shadow-sm mb-3">
         <div class="d-flex align-items-start gap-3">
-            <i class="fas fa-check-circle fa-2x"></i>
+            <i class="fas fa-check-circle fa-2x text-success"></i>
             <div>
-                <h5 class="mb-1">Account Approved</h5>
-                <p class="mb-0">Your account has been approved. You can now track your application progress.</p>
+                <h5 class="mb-1 fw-bold">Account Approved</h5>
+                <p class="mb-0 small">Your account has been approved. You can now track your application progress.</p>
             </div>
         </div>
     </div>
     @endif
 
     <!-- Profile Overview -->
-    <div class="row g-4 mb-4">
+    <div class="row g-3 mb-3">
         <div class="col-lg-8">
-            <div class="card-custom">
-                <div class="card-header-custom">
-                    <h5>My Profile</h5>
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-white border-bottom py-3">
+                    <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-user text-danger me-2"></i>My Profile</h5>
                 </div>
-                <div class="card-body-custom">
-                    <div class="row g-4">
+                <div class="card-body p-3">
+                    <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Full Name</label>
-                            <div class="fw-semibold">{{ $student->name }}</div>
+                            <label class="text-muted mb-1 small">Full Name</label>
+                            <div class="fw-semibold text-dark">{{ $student->name }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Email</label>
-                            <div class="fw-semibold">{{ $student->email }}</div>
+                            <label class="text-muted mb-1 small">Email</label>
+                            <div class="fw-semibold text-dark">{{ $student->email }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Phone</label>
-                            <div class="fw-semibold">{{ $student->phone }}</div>
+                            <label class="text-muted mb-1 small">Phone</label>
+                            <div class="fw-semibold text-dark">{{ $student->phone }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Country</label>
-                            <div class="fw-semibold">{{ $student->country }}</div>
+                            <label class="text-muted mb-1 small">Country</label>
+                            <div class="fw-semibold text-dark">{{ $student->country }}</div>
                         </div>
                         <div class="col-12">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Course/Program</label>
-                            <div class="fw-semibold">{{ $student->course }}</div>
+                            <label class="text-muted mb-1 small">Course/Program</label>
+                            <div class="fw-semibold text-dark">{{ $student->course }}</div>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Application Status</label>
+                            <label class="text-muted mb-1 small">Application Status</label>
                             <div>
                                 @php
                                     $statusColors = [
-                                        'new' => 'info',
-                                        'contacted' => 'secondary',
+                                        'new' => 'primary',
+                                        'contacted' => 'info',
                                         'processing' => 'warning',
                                         'applied' => 'info',
                                         'approved' => 'success',
@@ -80,14 +80,14 @@
                                     ];
                                     $color = $statusColors[$student->status] ?? 'secondary';
                                 @endphp
-                                <span class="badge-custom badge-{{ $color }}-custom">
+                                <span class="badge bg-{{ $color }}">
                                     {{ ucfirst($student->status) }}
                                 </span>
                             </div>
                         </div>
                         <div class="col-md-6">
-                            <label class="text-muted mb-1" style="font-size: 0.875rem;">Assigned Counselor</label>
-                            <div class="fw-semibold">{{ $student->assignedUser->name ?? 'Not assigned yet' }}</div>
+                            <label class="text-muted mb-1 small">Assigned Counselor</label>
+                            <div class="fw-semibold text-dark">{{ $student->assignedUser->name ?? 'Not assigned yet' }}</div>
                         </div>
                     </div>
                 </div>
@@ -95,41 +95,43 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="stat-card">
-                <div class="stat-card-header">
-                    <div>
-                        <div class="stat-label mb-2">Checklist Progress</div>
-                        <div class="stat-value">{{ $student->checklist_progress['percentage'] ?? 0 }}%</div>
+            <div class="card border-0 shadow-sm bg-danger bg-opacity-10">
+                <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <div class="text-muted small mb-1">Checklist Progress</div>
+                            <div class="h2 fw-bold text-danger mb-0">{{ $student->checklist_progress['percentage'] ?? 0 }}%</div>
+                        </div>
+                        <div class="bg-danger bg-opacity-10 p-3 rounded">
+                            <i class="fas fa-tasks fa-2x text-danger"></i>
+                        </div>
                     </div>
-                    <div class="stat-icon primary">
-                        <i class="fas fa-tasks"></i>
+                    <div class="progress mb-3" style="height: 8px;">
+                        <div class="progress-bar bg-danger" role="progressbar"
+                             style="width: {{ $student->checklist_progress['percentage'] ?? 0 }}%;"
+                             aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}"
+                             aria-valuemin="0" aria-valuemax="100">
+                        </div>
                     </div>
-                </div>
-                <div class="progress mt-3" style="height: 12px;">
-                    <div class="progress-bar" role="progressbar"
-                         style="width: {{ $student->checklist_progress['percentage'] ?? 0 }}%;"
-                         aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}"
-                         aria-valuemin="0" aria-valuemax="100">
+                    <div class="d-flex justify-content-between text-muted small">
+                        <span><i class="fas fa-check-circle text-success me-1"></i>{{ $student->checklist_progress['approved'] ?? 0 }} approved</span>
+                        <span><i class="fas fa-clock text-warning me-1"></i>{{ $student->checklist_progress['pending'] ?? 0 }} pending</span>
                     </div>
-                </div>
-                <div class="mt-3 text-muted" style="font-size: 0.875rem;">
-                    {{ $student->checklist_progress['approved'] ?? 0 }} approved ·
-                    {{ $student->checklist_progress['pending'] ?? 0 }} pending
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Checklist Items -->
-    <div class="card-custom">
-        <div class="card-header-custom">
-            <h5>My Document Checklist</h5>
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom py-3">
+            <h5 class="mb-0 fw-bold text-dark"><i class="fas fa-clipboard-check text-danger me-2"></i>My Document Checklist</h5>
             <small class="text-muted">Upload required documents for your application</small>
         </div>
         <div class="table-responsive">
-            <table class="table table-custom">
-                <thead>
-                    <tr>
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
                         <th>Document</th>
                         <th>Required</th>
                         <th>Status</th>

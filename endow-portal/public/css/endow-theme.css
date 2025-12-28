@@ -1,0 +1,264 @@
+/* Endow Corporation Theme - Red, Black, White */
+:root {
+    --endow-red: #DC143C;
+    --endow-red-dark: #B8102C;
+    --endow-red-light: #FF1744;
+    --endow-black: #1a1a1a;
+    --endow-gray: #333333;
+    --endow-light-gray: #f8f9fa;
+    --endow-white: #ffffff;
+}
+
+/* Primary Brand Colors */
+.bg-endow-red {
+    background-color: var(--endow-red) !important;
+}
+
+.bg-endow-black {
+    background-color: var(--endow-black) !important;
+}
+
+.text-endow-red {
+    color: var(--endow-red) !important;
+}
+
+.text-endow-black {
+    color: var(--endow-black) !important;
+}
+
+.btn-endow-red {
+    background-color: var(--endow-red);
+    border-color: var(--endow-red);
+    color: white;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+.btn-endow-red:hover {
+    background-color: var(--endow-red-dark);
+    border-color: var(--endow-red-dark);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+}
+
+.btn-endow-black {
+    background-color: var(--endow-black);
+    border-color: var(--endow-black);
+    color: white;
+    font-weight: 600;
+}
+
+.btn-endow-black:hover {
+    background-color: var(--endow-gray);
+    border-color: var(--endow-gray);
+    color: white;
+}
+
+/* Override Bootstrap primary with Endow Red */
+.btn-primary, .bg-primary {
+    background-color: var(--endow-red) !important;
+    border-color: var(--endow-red) !important;
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--endow-red-dark) !important;
+    border-color: var(--endow-red-dark) !important;
+}
+
+.btn-danger {
+    background-color: var(--endow-red) !important;
+    border-color: var(--endow-red) !important;
+}
+
+.btn-danger:hover {
+    background-color: var(--endow-red-dark) !important;
+    border-color: var(--endow-red-dark) !important;
+}
+
+/* Card Enhancements */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card-header {
+    border-top-left-radius: 12px !important;
+    border-top-right-radius: 12px !important;
+    border-bottom: none;
+}
+
+/* Form Enhancements */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--endow-red);
+    box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--endow-gray);
+    margin-bottom: 0.5rem;
+}
+
+/* Badge Styles */
+.badge {
+    padding: 0.5em 0.9em;
+    font-weight: 600;
+    border-radius: 6px;
+}
+
+.badge.bg-danger {
+    background-color: var(--endow-red) !important;
+}
+
+/* Alert Styles */
+.alert {
+    border-radius: 10px;
+    border: none;
+}
+
+.alert-danger {
+    background-color: #ffe5ea;
+    color: var(--endow-red-dark);
+}
+
+.alert-success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+/* Navigation */
+.navbar {
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+}
+
+.navbar-dark {
+    background-color: var(--endow-black) !important;
+}
+
+.nav-link:hover {
+    color: var(--endow-red) !important;
+}
+
+/* Tables */
+.table thead th {
+    background-color: var(--endow-black);
+    color: white;
+    font-weight: 600;
+    border: none;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(220, 20, 60, 0.05);
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: var(--endow-black) !important;
+}
+
+.sidebar .nav-link {
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.3s ease;
+}
+
+.sidebar .nav-link:hover,
+.sidebar .nav-link.active {
+    color: white;
+    background-color: var(--endow-red);
+    border-radius: 8px;
+}
+
+/* Page Headers */
+.page-header {
+    background: linear-gradient(135deg, var(--endow-black) 0%, var(--endow-gray) 100%);
+    color: white;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+    border-radius: 12px;
+}
+
+/* Input Groups */
+.input-group-text {
+    background-color: var(--endow-red);
+    color: white;
+    border-color: var(--endow-red);
+}
+
+/* Progress Bars */
+.progress-bar {
+    background-color: var(--endow-red);
+}
+
+/* Links */
+a {
+    color: var(--endow-red);
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+a:hover {
+    color: var(--endow-red-dark);
+}
+
+/* Modal */
+.modal-header {
+    background-color: var(--endow-black);
+    color: white;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.modal-content {
+    border-radius: 12px;
+    border: none;
+}
+
+/* Dropdown */
+.dropdown-menu {
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.dropdown-item:hover {
+    background-color: rgba(220, 20, 60, 0.1);
+    color: var(--endow-red);
+}
+
+/* Pagination */
+.pagination .page-link {
+    color: var(--endow-red);
+    border-color: #dee2e6;
+}
+
+.pagination .page-link:hover {
+    background-color: var(--endow-red);
+    border-color: var(--endow-red);
+    color: white;
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--endow-red);
+    border-color: var(--endow-red);
+}
+
+/* Utility Classes */
+.shadow-endow {
+    box-shadow: 0 4px 12px rgba(220, 20, 60, 0.2) !important;
+}
+
+.border-endow-red {
+    border-color: var(--endow-red) !important;
+}
+
+.border-top-endow {
+    border-top: 3px solid var(--endow-red) !important;
+}

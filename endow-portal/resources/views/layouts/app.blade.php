@@ -13,19 +13,22 @@
 
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Endow Theme -->
+    <link href="{{ asset('css/endow-theme.css') }}" rel="stylesheet">
 
     @stack('styles')
 </head>
 <body>
     <div id="app">
         <!-- Navigation -->
-        <nav class="navbar navbar-expand-md navbar-dark bg-primary shadow-sm">
+        <nav class="navbar navbar-expand-md navbar-dark shadow-sm" style="background-color: #1a1a1a;">
             <div class="container">
-                <a class="navbar-brand" href="{{ url('/') }}">
-                    <i class="fas fa-graduation-cap"></i> Endow Global Education
+                <a class="navbar-brand fw-bold" href="{{ url('/') }}">
+                    <i class="fas fa-graduation-cap text-danger"></i> <span class="text-danger">Endow</span> Education
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
                     <span class="navbar-toggler-icon"></span>
@@ -40,7 +43,7 @@
                                     <i class="fas fa-tachometer-alt"></i> Dashboard
                                 </a>
                             </li>
-                            
+
                             @can('view students')
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ route('students.index') }}">
@@ -159,7 +162,7 @@
 
     <!-- Bootstrap JS Bundle -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     @stack('scripts')
 </body>
 </html>

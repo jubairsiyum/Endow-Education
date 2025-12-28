@@ -4,31 +4,29 @@
 @section('breadcrumb', 'Home / Students / All Students')
 
 @section('content')
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h1 class="page-title">Students</h1>
-            <p class="page-subtitle">Manage and track all student applications</p>
+            <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-users text-danger"></i> Students Management</h4>
+            <small class="text-muted">Manage and track all student applications</small>
         </div>
         @can('create students')
-        <a href="{{ route('students.create') }}" class="btn btn-primary-custom">
-            <i class="fas fa-plus me-2"></i> Add New Student
+        <a href="{{ route('students.create') }}" class="btn btn-danger">
+            <i class="fas fa-plus me-1"></i> Add Student
         </a>
         @endcan
     </div>
 
-    <!-- Filters -->
-    <div class="card-custom mb-4">
-        <div class="card-body-custom">
-            <form method="GET" action="{{ route('students.index') }}" class="row g-3">
+    <!-- Compact Filters -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ route('students.index') }}" class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label">Search</label>
-                    <input type="text" name="search" class="form-control" placeholder="Name, email, phone..." 
+                    <input type="text" name="search" class="form-control form-control-sm" placeholder="Search by name, email, phone..."
                            value="{{ request('search') }}">
                 </div>
-                
+
                 <div class="col-md-2">
-                    <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <select name="status" class="form-select form-select-sm">
                         <option value="">All Status</option>
                         <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>New</option>
                         <option value="contacted" {{ request('status') == 'contacted' ? 'selected' : '' }}>Contacted</option>
@@ -40,9 +38,8 @@
                 </div>
 
                 <div class="col-md-2">
-                    <label class="form-label">Account Status</label>
-                    <select name="account_status" class="form-select">
-                        <option value="">All</option>
+                    <select name="account_status" class="form-select form-select-sm">
+                        <option value="">Account Status</option>
                         <option value="pending" {{ request('account_status') == 'pending' ? 'selected' : '' }}>Pending</option>
                         <option value="approved" {{ request('account_status') == 'approved' ? 'selected' : '' }}>Approved</option>
                         <option value="rejected" {{ request('account_status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
@@ -51,8 +48,7 @@
 
                 @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
                 <div class="col-md-3">
-                    <label class="form-label">Assigned To</label>
-                    <select name="assigned_to" class="form-select">
+                    <select name="assigned_to" class="form-select form-select-sm">
                         <option value="">All Counselors</option>
                         @foreach($employees ?? [] as $employee)
                         <option value="{{ $employee->id }}" {{ request('assigned_to') == $employee->id ? 'selected' : '' }}>
@@ -63,11 +59,11 @@
                 </div>
                 @endif
 
-                <div class="col-md-2 d-flex align-items-end gap-2">
-                    <button type="submit" class="btn btn-primary-custom">
-                        <i class="fas fa-filter me-1"></i> Filter
+                <div class="col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-danger btn-sm flex-grow-1">
+                        <i class="fas fa-filter"></i> Filter
                     </button>
-                    <a href="{{ route('students.index') }}" class="btn btn-outline-secondary">
+                    <a href="{{ route('students.index') }}" class="btn btn-outline-secondary btn-sm">
                         <i class="fas fa-redo"></i>
                     </a>
                 </div>
@@ -75,46 +71,52 @@
         </div>
     </div>
 
-    <!-- Students Table -->
-    <div class="card-custom">
+    <!-- Compact Students Table -->
+    <div class="card shadow-sm border-0">
         <div class="table-responsive">
-            <table class="table table-custom">
-                <thead>
-                    <tr>
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
                         <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
+                        <th>Contact</th>
                         <th>Country</th>
-                        <th>Course</th>
+                        <th>Program</th>
                         <th>Status</th>
                         <th>Account</th>
                         @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
-                        <th>Assigned To</th>
+                        <th>Assigned</th>
                         @endif
                         <th>Progress</th>
-                        <th>Actions</th>
+                        <th class="text-end">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($students as $student)
                     <tr>
                         <td>
-                            <strong>{{ $student->name }}</strong>
-                            <br>
-                            <small class="text-muted">
-                                <i class="fas fa-calendar-alt me-1"></i>
-                                {{ $student->created_at->format('M d, Y') }}
-                            </small>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 36px; height: 36px;">
+                                    <i class="fas fa-user-graduate"></i>
+                                </div>
+                                <div>
+                                    <strong class="d-block text-dark" style="font-size: 0.875rem;">{{ $student->name }}</strong>
+                                    <small class="text-muted" style="font-size: 0.75rem;">
+                                        <i class="fas fa-calendar-alt me-1"></i>{{ $student->created_at->format('M d, Y') }}
+                                    </small>
+                                </div>
+                            </div>
                         </td>
-                        <td>{{ $student->email }}</td>
-                        <td>{{ $student->phone }}</td>
-                        <td>{{ $student->country }}</td>
-                        <td>{{ $student->course }}</td>
+                        <td style="font-size: 0.8rem;">
+                            <div><i class="fas fa-envelope text-muted me-1"></i>{{ Str::limit($student->email, 25) }}</div>
+                            <div><i class="fas fa-phone text-muted me-1"></i>{{ $student->phone }}</div>
+                        </td>
+                        <td style="font-size: 0.8rem;">{{ $student->country }}</td>
+                        <td style="font-size: 0.8rem;">{{ Str::limit($student->course, 20) }}</td>
                         <td>
                             @php
                                 $statusColors = [
-                                    'new' => 'info',
-                                    'contacted' => 'secondary',
+                                    'new' => 'primary',
+                                    'contacted' => 'info',
                                     'processing' => 'warning',
                                     'applied' => 'info',
                                     'approved' => 'success',
@@ -122,7 +124,7 @@
                                 ];
                                 $color = $statusColors[$student->status] ?? 'secondary';
                             @endphp
-                            <span class="badge-custom badge-{{ $color }}-custom">
+                            <span class="badge bg-{{ $color }}" style="font-size: 0.7rem;">
                                 {{ ucfirst($student->status) }}
                             </span>
                         </td>
@@ -135,14 +137,14 @@
                                 ];
                                 $accountColor = $accountColors[$student->account_status] ?? 'secondary';
                             @endphp
-                            <span class="badge-custom badge-{{ $accountColor }}-custom">
+                            <span class="badge bg-{{ $accountColor }}" style="font-size: 0.7rem;">
                                 {{ ucfirst($student->account_status) }}
                             </span>
                         </td>
                         @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
-                        <td>
+                        <td style="font-size: 0.8rem;">
                             @if($student->assignedUser)
-                                {{ $student->assignedUser->name }}
+                                <span class="text-dark">{{ Str::limit($student->assignedUser->name, 15) }}</span>
                             @else
                                 <span class="text-muted">Unassigned</span>
                             @endif
@@ -151,33 +153,34 @@
                         <td>
                             @php
                                 $progress = $student->checklist_progress['percentage'] ?? 0;
+                                $progressColor = $progress >= 75 ? 'success' : ($progress >= 50 ? 'warning' : 'danger');
                             @endphp
                             <div class="d-flex align-items-center gap-2">
-                                <div class="progress" style="width: 80px; height: 8px;">
-                                    <div class="progress-bar" role="progressbar" 
-                                         style="width: {{ $progress }}%; background: var(--primary-color);"
+                                <div class="progress" style="width: 70px; height: 6px;">
+                                    <div class="progress-bar bg-{{ $progressColor }}" role="progressbar"
+                                         style="width: {{ $progress }}%;"
                                          aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
                                     </div>
                                 </div>
-                                <small class="text-muted">{{ $progress }}%</small>
+                                <small class="text-muted" style="font-size: 0.75rem;">{{ $progress }}%</small>
                             </div>
                         </td>
-                        <td>
-                            <div class="d-flex gap-1">
-                                <a href="{{ route('students.show', $student) }}" class="action-btn view" title="View">
+                        <td class="text-end">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ route('students.show', $student) }}" class="btn btn-outline-secondary btn-sm" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @can('update', $student)
-                                <a href="{{ route('students.edit', $student) }}" class="action-btn edit" title="Edit">
+                                <a href="{{ route('students.edit', $student) }}" class="btn btn-outline-primary btn-sm" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @endcan
                                 @can('delete', $student)
-                                <form action="{{ route('students.destroy', $student) }}" method="POST" 
+                                <form action="{{ route('students.destroy', $student) }}" method="POST"
                                       onsubmit="return confirm('Are you sure you want to delete this student?');" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="action-btn delete" title="Delete">
+                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -188,13 +191,15 @@
                     @empty
                     <tr>
                         <td colspan="10" class="text-center py-5">
-                            <i class="fas fa-users fa-3x text-muted mb-3"></i>
-                            <p class="text-muted mb-0">No students found</p>
-                            @can('create students')
-                            <a href="{{ route('students.create') }}" class="btn btn-primary-custom mt-3">
-                                <i class="fas fa-plus me-2"></i> Add Your First Student
-                            </a>
-                            @endcan
+                            <div class="my-4">
+                                <i class="fas fa-users fa-3x text-muted mb-3 d-block"></i>
+                                <p class="text-muted mb-0">No students found</p>
+                                @can('create students')
+                                <a href="{{ route('students.create') }}" class="btn btn-danger mt-3">
+                                    <i class="fas fa-plus me-1"></i> Add Your First Student
+                                </a>
+                                @endcan
+                            </div>
                         </td>
                     </tr>
                     @endforelse
@@ -203,7 +208,7 @@
         </div>
 
         @if($students->hasPages())
-        <div class="card-body-custom border-top">
+        <div class="card-body p-3 border-top bg-light">
             {{ $students->links() }}
         </div>
         @endif

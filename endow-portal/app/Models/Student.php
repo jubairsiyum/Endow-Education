@@ -23,6 +23,7 @@ class Student extends Model
         'father_name',
         'mother_name',
         'email',
+        'password',
         'phone',
         'date_of_birth',
         'passport_number',
@@ -39,6 +40,15 @@ class Student extends Model
         'assigned_to',
         'created_by',
         'notes',
+    ];
+
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
     ];
 
     /**

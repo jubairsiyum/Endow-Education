@@ -216,13 +216,11 @@ class StudentController extends Controller
         try {
             // Create user account if not exists
             if (!$student->user_id) {
-                $password = Str::random(10); // Generate random password
-
                 $user = User::create([
                     'name' => $student->name,
                     'email' => $student->email,
                     'phone' => $student->phone,
-                    'password' => Hash::make($password),
+                    'password' => $student->password, // Use password from student registration
                     'status' => 'active',
                     'email_verified_at' => now(),
                 ]);
@@ -233,7 +231,7 @@ class StudentController extends Controller
                 // Link user to student record
                 $student->user_id = $user->id;
 
-                // TODO: Send welcome email with password
+                // TODO: Send welcome email notification
             }
 
             $student->account_status = 'approved';

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Hash;
 
 class StudentRegisterController extends Controller
 {
@@ -40,6 +41,7 @@ class StudentRegisterController extends Controller
             'applying_program' => 'required|string|max:255',
             'highest_education' => 'required|string|max:255',
             'course' => 'nullable|string|max:255',
+            'password' => 'required|string|min:8|confirmed',
         ]);
 
         if ($validator->fails()) {
@@ -56,6 +58,7 @@ class StudentRegisterController extends Controller
                 'father_name' => $request->father_name,
                 'mother_name' => $request->mother_name,
                 'email' => $request->email,
+                'password' => Hash::make($request->password),
                 'phone' => $request->phone,
                 'date_of_birth' => $request->date_of_birth,
                 'passport_number' => $request->passport_number,

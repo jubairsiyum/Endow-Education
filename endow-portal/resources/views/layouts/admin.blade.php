@@ -9,18 +9,19 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="{{ asset('css/endow-theme.css') }}" rel="stylesheet">
 
     <style>
         :root {
-            --primary: #6366F1;
-            --primary-dark: #4F46E5;
-            --primary-light: #818CF8;
-            --secondary: #8B5CF6;
+            --primary: #DC143C;
+            --primary-dark: #B8102C;
+            --primary-light: #FF1744;
+            --secondary: #1a1a1a;
             --success: #10B981;
             --warning: #F59E0B;
-            --danger: #EF4444;
+            --danger: #DC143C;
             --info: #3B82F6;
-            --dark: #0F172A;
+            --dark: #1a1a1a;
             --gray-50: #F8FAFC;
             --gray-100: #F1F5F9;
             --gray-200: #E2E8F0;
@@ -30,7 +31,7 @@
             --gray-600: #475569;
             --gray-700: #334155;
             --gray-800: #1E293B;
-            --sidebar-width: 280px;
+            --sidebar-width: 260px;
         }
 
         * {
@@ -606,7 +607,7 @@
         .mb-3 { margin-bottom: 24px; }
         .mb-4 { margin-bottom: 32px; }
         .mb-5 { margin-bottom: 48px; }
-        
+
         .mt-1 { margin-top: 8px; }
         .mt-2 { margin-top: 16px; }
         .mt-3 { margin-top: 24px; }
@@ -679,7 +680,7 @@
 
                 @canany(['view students', 'create students', 'edit students', 'delete students'])
                 <div class="menu-section-title">Student Management</div>
-                
+
                 <a href="{{ route('students.index') }}" class="menu-item {{ request()->routeIs('students.*') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate"></i>
                     <span>Students</span>
@@ -698,7 +699,7 @@
 
                 @canany(['view documents'])
                 <div class="menu-section-title">Document Management</div>
-                
+
                 <a href="{{ route('documents.index') }}" class="menu-item {{ request()->routeIs('documents.*') ? 'active' : '' }}">
                     <i class="fas fa-file-alt"></i>
                     <span>Documents</span>
@@ -707,7 +708,7 @@
 
                 @canany(['view reports'])
                 <div class="menu-section-title">Analytics</div>
-                
+
                 <a href="#" class="menu-item">
                     <i class="fas fa-chart-line"></i>
                     <span>Reports</span>
@@ -716,12 +717,12 @@
 
                 @can('manage roles')
                 <div class="menu-section-title">System</div>
-                
+
                 <a href="#" class="menu-item">
                     <i class="fas fa-users-cog"></i>
                     <span>User Management</span>
                 </a>
-                
+
                 <a href="#" class="menu-item">
                     <i class="fas fa-cog"></i>
                     <span>Settings</span>
