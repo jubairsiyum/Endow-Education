@@ -30,7 +30,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Quick Info Pills -->
                     <div class="mt-3 d-flex flex-wrap gap-2">
                         <span class="badge bg-white text-dark px-3 py-2">
@@ -96,7 +96,7 @@
                                     @if($item->description)
                                         <p class="doc-description">{{ $item->description }}</p>
                                     @endif
-                                    
+
                                     <div class="doc-badges">
                                         <span class="status-badge status-{{ $config['bg'] }}">
                                             <i class="fas fa-{{ $config['icon'] }}"></i>
@@ -130,14 +130,14 @@
                                             </div>
                                         </div>
                                         <div class="file-actions">
-                                            <a href="{{ asset('storage/' . $studentChecklist->document_path) }}" 
-                                               class="btn btn-sm btn-outline-primary" 
+                                            <a href="{{ asset('storage/' . $studentChecklist->document_path) }}"
+                                               class="btn btn-sm btn-outline-primary"
                                                target="_blank">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @if($canEdit)
-                                                <button type="button" 
-                                                        class="btn btn-sm btn-outline-danger" 
+                                                <button type="button"
+                                                        class="btn btn-sm btn-outline-danger"
                                                         onclick="deleteDocument({{ $studentChecklist->id }})">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
@@ -155,17 +155,17 @@
 
                                 @if($canEdit)
                                     <!-- Modern Upload Form -->
-                                    <form action="{{ route('student.checklist.upload', $item->id) }}" 
-                                          method="POST" 
-                                          enctype="multipart/form-data" 
+                                    <form action="{{ route('student.checklist.upload', $item->id) }}"
+                                          method="POST"
+                                          enctype="multipart/form-data"
                                           class="modern-upload-form"
                                           id="upload-form-{{ $item->id }}">
                                         @csrf
                                         <div class="upload-area" id="upload-area-{{ $item->id }}">
-                                            <input type="file" 
-                                                   name="document" 
+                                            <input type="file"
+                                                   name="document"
                                                    id="file-input-{{ $item->id }}"
-                                                   class="file-input" 
+                                                   class="file-input"
                                                    accept=".pdf,.jpg,.jpeg,.png"
                                                    required
                                                    onchange="handleFileSelect({{ $item->id }}, this)">
@@ -710,7 +710,7 @@
             const uploadArea = document.getElementById(`upload-area-${itemId}`);
             const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
             const label = uploadArea.querySelector('.upload-label');
-            
+
             // Show selected file
             selectedFileDiv.style.display = 'flex';
             selectedFileDiv.querySelector('.filename').textContent = file.name;
@@ -739,7 +739,7 @@
         const input = document.getElementById(`file-input-${itemId}`);
         const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
         const label = uploadArea.querySelector('.upload-label');
-        
+
         input.value = '';
         selectedFileDiv.style.display = 'none';
         label.style.display = 'flex';
@@ -750,13 +750,13 @@
         form.addEventListener('submit', function(e) {
             const submitBtn = this.querySelector('.btn-upload');
             const fileInput = this.querySelector('.file-input');
-            
+
             if (!fileInput.files.length) {
                 e.preventDefault();
                 alert('Please select a file to upload.');
                 return;
             }
-            
+
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
         });
@@ -788,7 +788,7 @@
         uploadArea.addEventListener('drop', function(e) {
             const fileInput = this.querySelector('.file-input');
             const files = e.dataTransfer.files;
-            
+
             if (files.length) {
                 fileInput.files = files;
                 const itemId = fileInput.id.replace('file-input-', '');
