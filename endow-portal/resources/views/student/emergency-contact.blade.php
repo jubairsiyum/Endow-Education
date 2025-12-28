@@ -22,7 +22,7 @@
                 <div class="col-md-6">
                     <div class="card-custom border-danger border-2 h-100">
                         <div class="card-body-custom text-center py-5">
-                            <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 80px; height: 80px;">
                                 <i class="fas fa-phone-volume fa-2x"></i>
                             </div>
@@ -39,7 +39,7 @@
                 <div class="col-md-6">
                     <div class="card-custom border-primary border-2 h-100">
                         <div class="card-body-custom text-center py-5">
-                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 80px; height: 80px;">
                                 <i class="fas fa-envelope fa-2x"></i>
                             </div>
@@ -63,7 +63,7 @@
                 <div class="card-body-custom">
                     <div class="row align-items-center">
                         <div class="col-md-2 text-center mb-3 mb-md-0">
-                            <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" 
+                            <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center"
                                  style="width: 80px; height: 80px; font-size: 32px; font-weight: 600;">
                                 {{ strtoupper(substr($student->assignedUser->name, 0, 1)) }}
                             </div>
@@ -104,7 +104,7 @@
                 <div class="col-md-4">
                     <div class="card-custom h-100">
                         <div class="card-body-custom text-center py-4">
-                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 60px; height: 60px;">
                                 <i class="fas fa-clock fa-2x text-success"></i>
                             </div>
@@ -120,7 +120,7 @@
                 <div class="col-md-4">
                     <div class="card-custom h-100">
                         <div class="card-body-custom text-center py-4">
-                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-info bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 60px; height: 60px;">
                                 <i class="fas fa-map-marker-alt fa-2x text-info"></i>
                             </div>
@@ -138,7 +138,7 @@
                 <div class="col-md-4">
                     <div class="card-custom h-100">
                         <div class="card-body-custom text-center py-4">
-                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-warning bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 60px; height: 60px;">
                                 <i class="fas fa-phone-alt fa-2x text-warning"></i>
                             </div>
@@ -280,9 +280,9 @@
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="subject" class="form-label">Subject <span class="text-danger">*</span></label>
-                                <select class="form-select @error('subject') is-invalid @enderror" 
-                                        id="subject" 
-                                        name="subject" 
+                                <select class="form-select @error('subject') is-invalid @enderror"
+                                        id="subject"
+                                        name="subject"
                                         required>
                                     <option value="">Select a subject</option>
                                     <option value="document_issue">Document Issue</option>
@@ -299,9 +299,9 @@
 
                             <div class="col-md-6">
                                 <label for="priority" class="form-label">Priority <span class="text-danger">*</span></label>
-                                <select class="form-select @error('priority') is-invalid @enderror" 
-                                        id="priority" 
-                                        name="priority" 
+                                <select class="form-select @error('priority') is-invalid @enderror"
+                                        id="priority"
+                                        name="priority"
                                         required>
                                     <option value="normal">Normal</option>
                                     <option value="high">High</option>
@@ -314,10 +314,10 @@
 
                             <div class="col-12">
                                 <label for="message" class="form-label">Message <span class="text-danger">*</span></label>
-                                <textarea class="form-control @error('message') is-invalid @enderror" 
-                                          id="message" 
-                                          name="message" 
-                                          rows="5" 
+                                <textarea class="form-control @error('message') is-invalid @enderror"
+                                          id="message"
+                                          name="message"
+                                          rows="5"
                                           placeholder="Please describe your issue or question in detail..."
                                           required></textarea>
                                 @error('message')
