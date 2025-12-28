@@ -90,9 +90,9 @@
                                                         @else
                                                             <span class="badge bg-secondary">Optional</span>
                                                         @endif
-                                                        @if($item->targetProgram)
+                                                        @if($item->programs->isNotEmpty())
                                                             <small class="text-muted">
-                                                                <i class="fas fa-graduation-cap me-1"></i>{{ $item->targetProgram->name }}
+                                                                <i class="fas fa-graduation-cap me-1"></i>{{ $item->programs->pluck('name')->join(', ') }}
                                                             </small>
                                                         @endif
                                                     </div>

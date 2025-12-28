@@ -88,7 +88,7 @@ class StudentChecklistController extends Controller
                 ->whereHas('programs', function($query) use ($student) {
                     $query->where('programs.id', $student->target_program_id);
                 })
-                ->with(['targetProgram', 'studentChecklists' => function($query) use ($student) {
+                ->with(['programs', 'studentChecklists' => function($query) use ($student) {
                     $query->where('student_id', $student->id);
                 }])
                 ->ordered()
@@ -96,7 +96,7 @@ class StudentChecklistController extends Controller
         } else {
             // Show all active checklist items if no program selected
             $checklistItems = ChecklistItem::active()
-                ->with(['targetProgram', 'studentChecklists' => function($query) use ($student) {
+                ->with(['programs', 'studentChecklists' => function($query) use ($student) {
                     $query->where('student_id', $student->id);
                 }])
                 ->ordered()
