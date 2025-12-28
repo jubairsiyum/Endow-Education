@@ -4,15 +4,44 @@
 @section('breadcrumb', 'Home / Submit Documents')
 
 @section('content')
-    <div class="row">
+    <!-- Modern Header Card -->
+    <div class="row mb-4">
         <div class="col-12">
-            <div class="alert alert-info border-0 shadow-sm mb-4">
-                <div class="d-flex align-items-start gap-3">
-                    <i class="fas fa-info-circle fa-2x text-info"></i>
-                    <div>
-                        <h5 class="mb-1 fw-bold">Document Submission Guidelines</h5>
-                        <p class="mb-1">Please submit the required documents in the order listed below. Each document must be reviewed and approved before proceeding to the next.</p>
-                        <small class="text-muted">Accepted formats: PDF, JPG, PNG (Max size: 5MB)</small>
+            <div class="card border-0 shadow-sm bg-gradient-danger-light">
+                <div class="card-body p-4">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-box-large bg-white text-danger">
+                                    <i class="fas fa-file-upload fa-2x"></i>
+                                </div>
+                                <div>
+                                    <h4 class="mb-1 fw-bold">Document Submission Center</h4>
+                                    <p class="mb-0 text-muted">Upload your required documents for review and approval</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <div class="d-inline-flex align-items-center gap-2 px-4 py-2 bg-white rounded-pill shadow-sm">
+                                <span class="badge bg-danger rounded-circle" style="width: 30px; height: 30px; display: flex; align-items: center; justify-content: center;">
+                                    {{ $completedCount }}
+                                </span>
+                                <span class="fw-semibold">of {{ $totalCount }} Completed</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Info Pills -->
+                    <div class="mt-3 d-flex flex-wrap gap-2">
+                        <span class="badge bg-white text-dark px-3 py-2">
+                            <i class="fas fa-file-pdf text-danger me-1"></i> PDF, JPG, PNG Accepted
+                        </span>
+                        <span class="badge bg-white text-dark px-3 py-2">
+                            <i class="fas fa-weight text-warning me-1"></i> Max 5MB per file
+                        </span>
+                        <span class="badge bg-white text-dark px-3 py-2">
+                            <i class="fas fa-shield-alt text-success me-1"></i> Secure Upload
+                        </span>
                     </div>
                 </div>
             </div>
@@ -21,150 +50,153 @@
 
     <div class="row">
         <div class="col-lg-8">
-            <div class="card-custom">
-                <div class="card-header-custom">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <h5 class="mb-0"><i class="fas fa-tasks text-danger me-2"></i>Required Documents Checklist</h5>
-                        <span class="badge bg-danger">{{ $completedCount }} of {{ $totalCount }} Completed</span>
-                    </div>
-                </div>
-                <div class="card-body-custom p-0">
-                    @if($checklistItems->isEmpty())
-                        <div class="text-center py-5">
-                            <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
-                            <h5 class="text-muted">No Documents Required Yet</h5>
+            @if($checklistItems->isEmpty())
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <div class="empty-state">
+                            <i class="fas fa-folder-open fa-4x text-muted mb-3"></i>
+                            <h5 class="text-muted mb-2">No Documents Required Yet</h5>
                             <p class="text-muted">Your counselor will assign required documents based on your target program.</p>
                         </div>
-                    @else
-                        <div class="list-group list-group-flush">
-                            @foreach($checklistItems as $index => $item)
-                                @php
-                                    $studentChecklist = $item->studentChecklists->firstWhere('student_id', $student->id);
-                                    $status = $studentChecklist->status ?? 'pending';
-                                    $isCompleted = $status === 'completed';
-                                    $isRejected = $status === 'rejected';
-                                    $isPending = $status === 'pending';
-                                    $isSubmitted = $status === 'submitted';
+                    </div>
+                </div>
+            @else
+                @foreach($checklistItems as $index => $item)
+                    @php
+                        $studentChecklist = $item->studentChecklists->firstWhere('student_id', $student->id);
+                        $status = $studentChecklist->status ?? 'pending';
+                        $isCompleted = $status === 'completed';
+                        $isRejected = $status === 'rejected';
+                        $isPending = $status === 'pending';
+                        $isSubmitted = $status === 'submitted';
+                        $canEdit = $isPending || $isRejected;
 
-                                    // Determine if this item can be edited
-                                    $canEdit = $isPending || $isRejected;
+                        $statusConfig = [
+                            'completed' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved', 'bg' => 'success'],
+                            'submitted' => ['class' => 'info', 'icon' => 'clock', 'text' => 'Under Review', 'bg' => 'info'],
+                            'rejected' => ['class' => 'danger', 'icon' => 'times-circle', 'text' => 'Needs Revision', 'bg' => 'danger'],
+                            'pending' => ['class' => 'warning', 'icon' => 'exclamation-circle', 'text' => 'Not Submitted', 'bg' => 'warning'],
+                        ];
+                        $config = $statusConfig[$status] ?? $statusConfig['pending'];
+                    @endphp
 
-                                    // Status badge config
-                                    $statusConfig = [
-                                        'completed' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved'],
-                                        'submitted' => ['class' => 'info', 'icon' => 'clock', 'text' => 'Under Review'],
-                                        'rejected' => ['class' => 'danger', 'icon' => 'times-circle', 'text' => 'Needs Revision'],
-                                        'pending' => ['class' => 'warning', 'icon' => 'exclamation-circle', 'text' => 'Not Submitted'],
-                                    ];
-                                    $config = $statusConfig[$status] ?? $statusConfig['pending'];
-                                @endphp
+                    <div class="modern-doc-card mb-3 {{ $isCompleted ? 'completed' : '' }}" data-status="{{ $status }}">
+                        <div class="doc-card-inner">
+                            <!-- Left Side - Step Number & Info -->
+                            <div class="doc-left">
+                                <div class="step-number {{ $isCompleted ? 'completed' : '' }}">
+                                    @if($isCompleted)
+                                        <i class="fas fa-check"></i>
+                                    @else
+                                        {{ $index + 1 }}
+                                    @endif
+                                </div>
+                                <div class="doc-info">
+                                    <h6 class="doc-title">{{ $item->title }}</h6>
+                                    @if($item->description)
+                                        <p class="doc-description">{{ $item->description }}</p>
+                                    @endif
+                                    
+                                    <div class="doc-badges">
+                                        <span class="status-badge status-{{ $config['bg'] }}">
+                                            <i class="fas fa-{{ $config['icon'] }}"></i>
+                                            {{ $config['text'] }}
+                                        </span>
+                                        @if($item->is_required)
+                                            <span class="status-badge status-required">Required</span>
+                                        @else
+                                            <span class="status-badge status-optional">Optional</span>
+                                        @endif
+                                        @if($item->programs->isNotEmpty())
+                                            <span class="status-badge status-program">
+                                                <i class="fas fa-graduation-cap"></i>
+                                                {{ $item->programs->first()->name }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
 
-                                <div class="list-group-item border-start-0 border-end-0 p-4 {{ $isCompleted ? 'bg-light bg-opacity-50' : '' }}">
-                                    <div class="d-flex align-items-start gap-3">
-                                        <!-- Step Number -->
-                                        <div class="flex-shrink-0">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold {{ $isCompleted ? 'bg-success text-white' : 'bg-danger bg-opacity-10 text-danger' }}"
-                                                 style="width: 45px; height: 45px; font-size: 18px;">
-                                                @if($isCompleted)
-                                                    <i class="fas fa-check"></i>
-                                                @else
-                                                    {{ $index + 1 }}
-                                                @endif
+                            <!-- Right Side - Upload Area -->
+                            <div class="doc-right">
+                                @if($studentChecklist && $studentChecklist->document_path)
+                                    <!-- Uploaded Document Display -->
+                                    <div class="uploaded-doc">
+                                        <div class="file-preview">
+                                            <i class="fas fa-file-pdf fa-2x text-danger"></i>
+                                            <div class="file-details">
+                                                <div class="file-name">{{ basename($studentChecklist->document_path) }}</div>
+                                                <div class="file-meta">{{ $studentChecklist->updated_at->format('M d, Y \a\t h:i A') }}</div>
                                             </div>
                                         </div>
-
-                                        <!-- Document Info -->
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h6 class="mb-1 fw-bold">{{ $item->name }}</h6>
-                                                    @if($item->description)
-                                                        <p class="text-muted mb-2 small">{{ $item->description }}</p>
-                                                    @endif
-                                                    <div class="d-flex align-items-center gap-3 flex-wrap">
-                                                        <span class="badge bg-{{ $config['class'] }}">
-                                                            <i class="fas fa-{{ $config['icon'] }} me-1"></i>{{ $config['text'] }}
-                                                        </span>
-                                                        @if($item->is_required)
-                                                            <span class="badge bg-danger">Required</span>
-                                                        @else
-                                                            <span class="badge bg-secondary">Optional</span>
-                                                        @endif
-                                                        @if($item->programs->isNotEmpty())
-                                                            <small class="text-muted">
-                                                                <i class="fas fa-graduation-cap me-1"></i>{{ $item->programs->pluck('name')->join(', ') }}
-                                                            </small>
-                                                        @endif
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            <!-- Document Details & Actions -->
-                                            @if($studentChecklist && $studentChecklist->document_path)
-                                                <div class="mt-3 p-3 bg-light rounded">
-                                                    <div class="d-flex justify-content-between align-items-center">
-                                                        <div class="d-flex align-items-center gap-2">
-                                                            <i class="fas fa-file-pdf text-danger fa-lg"></i>
-                                                            <div>
-                                                                <div class="fw-semibold small">{{ basename($studentChecklist->document_path) }}</div>
-                                                                <small class="text-muted">Uploaded: {{ $studentChecklist->updated_at->format('M d, Y h:i A') }}</small>
-                                                            </div>
-                                                        </div>
-                                                        <div class="d-flex gap-2">
-                                                            <a href="{{ Storage::url($studentChecklist->document_path) }}"
-                                                               class="btn btn-sm btn-outline-primary"
-                                                               target="_blank">
-                                                                <i class="fas fa-eye me-1"></i>View
-                                                            </a>
-                                                            @if($canEdit)
-                                                                <button type="button"
-                                                                        class="btn btn-sm btn-outline-danger"
-                                                                        onclick="deleteDocument({{ $studentChecklist->id }})">
-                                                                    <i class="fas fa-trash me-1"></i>Remove
-                                                                </button>
-                                                            @endif
-                                                        </div>
-                                                    </div>
-
-                                                    @if($isRejected && $studentChecklist->feedback)
-                                                        <div class="alert alert-danger mt-3 mb-0 small">
-                                                            <strong><i class="fas fa-exclamation-triangle me-1"></i>Revision Required:</strong><br>
-                                                            {{ $studentChecklist->feedback }}
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            @endif
-
-                                            <!-- Upload Form -->
+                                        <div class="file-actions">
+                                            <a href="{{ asset('storage/' . $studentChecklist->document_path) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               target="_blank">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                             @if($canEdit)
-                                                <div class="mt-3">
-                                                    <form action="{{ route('student.checklist.upload', $item->id) }}"
-                                                          method="POST"
-                                                          enctype="multipart/form-data"
-                                                          class="upload-form">
-                                                        @csrf
-                                                        <div class="d-flex gap-2">
-                                                            <input type="file"
-                                                                   name="document"
-                                                                   class="form-control form-control-sm"
-                                                                   accept=".pdf,.jpg,.jpeg,.png"
-                                                                   required>
-                                                            <button type="submit" class="btn btn-sm btn-primary-custom">
-                                                                <i class="fas fa-upload me-1"></i>
-                                                                {{ $studentChecklist && $studentChecklist->document_path ? 'Re-upload' : 'Upload' }}
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                </div>
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-danger" 
+                                                        onclick="deleteDocument({{ $studentChecklist->id }})">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
                                             @endif
                                         </div>
                                     </div>
-                                </div>
-                            @endforeach
+
+                                    @if($isRejected && $studentChecklist->feedback)
+                                        <div class="rejection-feedback">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <span>{{ $studentChecklist->feedback }}</span>
+                                        </div>
+                                    @endif
+                                @endif
+
+                                @if($canEdit)
+                                    <!-- Modern Upload Form -->
+                                    <form action="{{ route('student.checklist.upload', $item->id) }}" 
+                                          method="POST" 
+                                          enctype="multipart/form-data" 
+                                          class="modern-upload-form"
+                                          id="upload-form-{{ $item->id }}">
+                                        @csrf
+                                        <div class="upload-area" id="upload-area-{{ $item->id }}">
+                                            <input type="file" 
+                                                   name="document" 
+                                                   id="file-input-{{ $item->id }}"
+                                                   class="file-input" 
+                                                   accept=".pdf,.jpg,.jpeg,.png"
+                                                   required
+                                                   onchange="handleFileSelect({{ $item->id }}, this)">
+                                            <label for="file-input-{{ $item->id }}" class="upload-label">
+                                                <div class="upload-icon">
+                                                    <i class="fas fa-cloud-upload-alt fa-2x"></i>
+                                                </div>
+                                                <div class="upload-text">
+                                                    <span class="upload-main">{{ $studentChecklist && $studentChecklist->document_path ? 'Replace Document' : 'Choose File or Drag & Drop' }}</span>
+                                                    <span class="upload-sub">PDF, JPG, PNG up to 5MB</span>
+                                                </div>
+                                            </label>
+                                            <div class="selected-file" id="selected-file-{{ $item->id }}" style="display: none;">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span class="filename"></span>
+                                                <button type="button" class="clear-file" onclick="clearFileSelection({{ $item->id }})">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-danger btn-upload w-100 mt-2">
+                                            <i class="fas fa-upload me-2"></i>
+                                            Upload Document
+                                        </button>
+                                    </form>
+                                @endif
+                            </div>
                         </div>
-                    @endif
-                </div>
-            </div>
+                    </div>
+                @endforeach
+            @endif
         </div>
 
         <!-- Progress Sidebar -->
@@ -236,27 +268,432 @@
 
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header border-0">
-                    <h5 class="modal-title">Confirm Delete</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-0 bg-danger text-white">
+                    <h5 class="modal-title"><i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
                 </div>
-                <div class="modal-body">
-                    <p class="mb-0">Are you sure you want to remove this document? This action cannot be undone.</p>
+                <div class="modal-body p-4">
+                    <p class="mb-0">Are you sure you want to remove this document? This action cannot be undone and you'll need to upload a new document.</p>
                 </div>
-                <div class="modal-footer border-0">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <div class="modal-footer border-0 bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Cancel
+                    </button>
                     <form id="deleteForm" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger">Delete Document</button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash me-1"></i> Delete Document
+                        </button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
+@push('styles')
+<style>
+    /* Modern Gradient Background */
+    .bg-gradient-danger-light {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+    }
+
+    .icon-box-large {
+        width: 70px;
+        height: 70px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 15px;
+        box-shadow: 0 4px 10px rgba(220, 20, 60, 0.1);
+    }
+
+    /* Modern Document Card */
+    .modern-doc-card {
+        background: #fff;
+        border-radius: 15px;
+        border: 2px solid #e9ecef;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .modern-doc-card:hover {
+        border-color: #DC143C;
+        box-shadow: 0 8px 25px rgba(220, 20, 60, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .modern-doc-card.completed {
+        border-color: #28a745;
+        background: #f8fff8;
+    }
+
+    .doc-card-inner {
+        display: flex;
+        flex-wrap: wrap;
+        padding: 20px;
+        gap: 20px;
+    }
+
+    .doc-left {
+        flex: 1;
+        min-width: 300px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .doc-right {
+        flex: 1;
+        min-width: 300px;
+    }
+
+    /* Step Number */
+    .step-number {
+        width: 50px;
+        height: 50px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: 700;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+    }
+
+    .step-number.completed {
+        background: linear-gradient(135deg, #28a745, #34ce57);
+        box-shadow: 0 4px 15px rgba(40, 167, 69, 0.3);
+    }
+
+    /* Document Info */
+    .doc-info {
+        flex: 1;
+    }
+
+    .doc-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a1a1a;
+        margin-bottom: 5px;
+    }
+
+    .doc-description {
+        font-size: 13px;
+        color: #6c757d;
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+
+    .doc-badges {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-success {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-info {
+        background: #d1ecf1;
+        color: #0c5460;
+    }
+
+    .status-danger {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    .status-warning {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .status-required {
+        background: #DC143C;
+        color: white;
+    }
+
+    .status-optional {
+        background: #6c757d;
+        color: white;
+    }
+
+    .status-program {
+        background: #e9ecef;
+        color: #495057;
+    }
+
+    /* Upload Area */
+    .modern-upload-form {
+        position: relative;
+    }
+
+    .upload-area {
+        position: relative;
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .upload-area:hover {
+        border-color: #DC143C;
+        background: #fff5f5;
+    }
+
+    .upload-area.dragging {
+        border-color: #DC143C;
+        background: #ffe5e5;
+        border-style: solid;
+    }
+
+    .file-input {
+        display: none;
+    }
+
+    .upload-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 30px 20px;
+        cursor: pointer;
+        margin: 0;
+    }
+
+    .upload-icon {
+        color: #DC143C;
+        margin-bottom: 10px;
+        transition: transform 0.3s ease;
+    }
+
+    .upload-area:hover .upload-icon {
+        transform: translateY(-5px);
+    }
+
+    .upload-text {
+        text-align: center;
+    }
+
+    .upload-main {
+        display: block;
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 5px;
+    }
+
+    .upload-sub {
+        display: block;
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .selected-file {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 20px;
+        background: white;
+        border-radius: 8px;
+        margin: 10px;
+    }
+
+    .selected-file i {
+        color: #DC143C;
+        font-size: 20px;
+    }
+
+    .selected-file .filename {
+        flex: 1;
+        font-weight: 600;
+        color: #1a1a1a;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .clear-file {
+        background: #f8d7da;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .clear-file:hover {
+        background: #DC143C;
+        color: white;
+    }
+
+    .btn-upload {
+        font-weight: 600;
+        padding: 12px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .btn-upload:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+    }
+
+    /* Uploaded Document Display */
+    .uploaded-doc {
+        background: white;
+        border: 2px solid #e9ecef;
+        border-radius: 12px;
+        padding: 15px;
+        margin-bottom: 15px;
+    }
+
+    .file-preview {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 10px;
+    }
+
+    .file-details {
+        flex: 1;
+    }
+
+    .file-name {
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 3px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .file-meta {
+        font-size: 12px;
+        color: #6c757d;
+    }
+
+    .file-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .file-actions .btn {
+        border-radius: 8px;
+    }
+
+    /* Rejection Feedback */
+    .rejection-feedback {
+        background: #f8d7da;
+        border-left: 4px solid #DC143C;
+        padding: 12px 15px;
+        border-radius: 8px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: start;
+        gap: 10px;
+    }
+
+    .rejection-feedback i {
+        color: #DC143C;
+        margin-top: 2px;
+    }
+
+    .rejection-feedback span {
+        flex: 1;
+        font-size: 13px;
+        color: #721c24;
+        line-height: 1.5;
+    }
+
+    /* Progress Sidebar */
+    .card-custom {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
+    }
+
+    .card-header-custom {
+        padding: 20px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .card-body-custom {
+        padding: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .doc-card-inner {
+            flex-direction: column;
+        }
+
+        .doc-left, .doc-right {
+            min-width: 100%;
+        }
+
+        .upload-label {
+            padding: 20px 15px;
+        }
+
+        .step-number {
+            width: 45px;
+            height: 45px;
+            font-size: 18px;
+        }
+    }
+
+    /* Loading State */
+    .btn-upload.loading {
+        position: relative;
+        color: transparent;
+        pointer-events: none;
+    }
+
+    .btn-upload.loading::after {
+        content: "";
+        position: absolute;
+        width: 20px;
+        height: 20px;
+        top: 50%;
+        left: 50%;
+        margin-left: -10px;
+        margin-top: -10px;
+        border: 3px solid #ffffff;
+        border-radius: 50%;
+        border-top-color: transparent;
+        animation: spinner 0.6s linear infinite;
+    }
+
+    @keyframes spinner {
+        to {transform: rotate(360deg);}
+    }
+</style>
+@endpush
 
 @push('scripts')
 <script>
@@ -267,20 +704,95 @@
         modal.show();
     }
 
-    // Form submission handling with loading state
-    document.querySelectorAll('.upload-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('button[type="submit"]');
-            const originalText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Uploading...';
+    function handleFileSelect(itemId, input) {
+        const file = input.files[0];
+        if (file) {
+            const uploadArea = document.getElementById(`upload-area-${itemId}`);
+            const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
+            const label = uploadArea.querySelector('.upload-label');
+            
+            // Show selected file
+            selectedFileDiv.style.display = 'flex';
+            selectedFileDiv.querySelector('.filename').textContent = file.name;
+            label.style.display = 'none';
 
-            // Re-enable after 5 seconds (in case of error)
-            setTimeout(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalText;
-            }, 5000);
+            // Validate file size
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File size exceeds 5MB limit. Please choose a smaller file.');
+                clearFileSelection(itemId);
+                return;
+            }
+
+            // Validate file type
+            const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+            if (!allowedTypes.includes(fileExt)) {
+                alert('Invalid file type. Please upload PDF, JPG, or PNG files only.');
+                clearFileSelection(itemId);
+                return;
+            }
+        }
+    }
+
+    function clearFileSelection(itemId) {
+        const uploadArea = document.getElementById(`upload-area-${itemId}`);
+        const input = document.getElementById(`file-input-${itemId}`);
+        const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
+        const label = uploadArea.querySelector('.upload-label');
+        
+        input.value = '';
+        selectedFileDiv.style.display = 'none';
+        label.style.display = 'flex';
+    }
+
+    // Form submission with loading state
+    document.querySelectorAll('.modern-upload-form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-upload');
+            const fileInput = this.querySelector('.file-input');
+            
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                alert('Please select a file to upload.');
+                return;
+            }
+            
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
         });
     });
-</script>
+
+    // Drag and drop functionality
+    document.querySelectorAll('.upload-area').forEach(uploadArea => {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.add('dragging');
+            }, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, () => {
+                uploadArea.classList.remove('dragging');
+            }, false);
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            const fileInput = this.querySelector('.file-input');
+            const files = e.dataTransfer.files;
+            
+            if (files.length) {
+                fileInput.files = files;
+                const itemId = fileInput.id.replace('file-input-', '');
+                handleFileSelect(itemId, fileInput);
+            }
+        }, false);
 @endpush
