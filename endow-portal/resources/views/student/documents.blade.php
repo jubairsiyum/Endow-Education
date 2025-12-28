@@ -37,7 +37,7 @@
                             <i class="fas fa-file-pdf text-danger me-1"></i> PDF, JPG, PNG Accepted
                         </span>
                         <span class="badge bg-white text-dark px-3 py-2">
-                            <i class="fas fa-weight text-warning me-1"></i> Max 5MB per file
+                            <i class="fas fa-weight text-warning me-1"></i> Max 10MB per file
                         </span>
                         <span class="badge bg-white text-dark px-3 py-2">
                             <i class="fas fa-shield-alt text-success me-1"></i> Secure Upload
@@ -175,7 +175,7 @@
                                                 </div>
                                                 <div class="upload-text">
                                                     <span class="upload-main">{{ $studentChecklist && $studentChecklist->document_path ? 'Replace Document' : 'Choose File or Drag & Drop' }}</span>
-                                                    <span class="upload-sub">PDF, JPG, PNG up to 5MB</span>
+                                                    <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
                                                 </div>
                                             </label>
                                             <div class="selected-file" id="selected-file-{{ $item->id }}" style="display: none;">
@@ -253,7 +253,7 @@
                             </li>
                             <li class="mb-2 small">
                                 <i class="fas fa-check text-success me-2"></i>
-                                Keep file sizes under 5MB
+                                Keep file sizes under 10MB
                             </li>
                             <li class="mb-2 small">
                                 <i class="fas fa-check text-success me-2"></i>
@@ -717,8 +717,8 @@
             label.style.display = 'none';
 
             // Validate file size
-            if (file.size > 5 * 1024 * 1024) {
-                alert('File size exceeds 5MB limit. Please choose a smaller file.');
+            if (file.size > 10 * 1024 * 1024) {
+                alert('File size exceeds 10MB limit. Please choose a smaller file.');
                 clearFileSelection(itemId);
                 return;
             }

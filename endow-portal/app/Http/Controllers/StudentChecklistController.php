@@ -122,10 +122,19 @@ class StudentChecklistController extends Controller
         $student = Student::where('user_id', $user->id)->firstOrFail();
 
         $request->validate([
-            'document' => 'required|file|max:5120|mimes:pdf,jpg,jpeg,png',
+            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
         ]);
 
-        // Store the file
+        // Delete old file if exists
+        $existingChecklist = StudentChecklist::where('student_id', $student->id)
+            ->where('checklist_item_id', $checklistItem->id)
+            ->first();
+
+        if ($existingChecklist && $existingChecklist->document_path) {
+            Storage::disk('public')->delete($existingChecklist->document_path);
+        }
+
+        // Store the file in file system
         $path = $request->file('document')->store('student-documents/' . $student->id, 'public');
 
         // Create or update student checklist entry
