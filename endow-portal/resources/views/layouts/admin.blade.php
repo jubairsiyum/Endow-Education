@@ -694,6 +694,18 @@
                 @endcanany
 
                 @canany(['view checklists', 'create checklists'])
+                <div class="menu-section-title">Configuration</div>
+
+                <a href="{{ route('universities.index') }}" class="menu-item {{ request()->routeIs('universities.*') ? 'active' : '' }}">
+                    <i class="fas fa-university"></i>
+                    <span>Universities</span>
+                </a>
+
+                <a href="{{ route('programs.index') }}" class="menu-item {{ request()->routeIs('programs.*') ? 'active' : '' }}">
+                    <i class="fas fa-graduation-cap"></i>
+                    <span>Programs</span>
+                </a>
+
                 <a href="{{ route('checklist-items.index') }}" class="menu-item {{ request()->routeIs('checklist-items.*') ? 'active' : '' }}">
                     <i class="fas fa-tasks"></i>
                     <span>Checklist Items</span>

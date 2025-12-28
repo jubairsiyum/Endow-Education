@@ -5,6 +5,9 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\FollowUpController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\ProgramController;
+use App\Http\Controllers\StudentChecklistController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +63,24 @@ Route::middleware(['auth'])->group(function () {
 // Checklist Item Routes (Admin/Employee only)
 Route::middleware(['auth', 'can:create checklists'])->group(function () {
     Route::resource('checklist-items', ChecklistItemController::class);
+});
+
+// University Management Routes (Admin/Employee only)
+Route::middleware(['auth'])->group(function () {
+    Route::resource('universities', UniversityController::class);
+});
+
+// Program Management Routes (Admin/Employee only)
+Route::middleware(['auth'])->group(function () {
+    Route::resource('programs', ProgramController::class);
+    Route::get('/universities/{university}/programs', [ProgramController::class, 'byUniversity'])->name('universities.programs');
+});
+
+// Student Checklist Routes (Student portal)
+Route::middleware(['auth'])->group(function () {
+    Route::get('/my-checklist', [StudentChecklistController::class, 'index'])->name('student.checklist');
+    Route::post('/my-checklist/{checklistItem}/upload', [StudentChecklistController::class, 'uploadDocument'])->name('student.checklist.upload');
+    Route::delete('/my-documents/{document}', [StudentChecklistController::class, 'deleteDocument'])->name('student.document.delete');
 });
 
 // Document Management Routes

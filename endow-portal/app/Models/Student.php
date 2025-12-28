@@ -33,6 +33,8 @@ class Student extends Model
         'city',
         'postal_code',
         'course',
+        'target_university_id',
+        'target_program_id',
         'applying_program',
         'highest_education',
         'status',
@@ -108,6 +110,22 @@ class Student extends Model
     public function documents()
     {
         return $this->hasMany(StudentDocument::class);
+    }
+
+    /**
+     * Get the target university.
+     */
+    public function targetUniversity()
+    {
+        return $this->belongsTo(University::class, 'target_university_id');
+    }
+
+    /**
+     * Get the target program.
+     */
+    public function targetProgram()
+    {
+        return $this->belongsTo(Program::class, 'target_program_id');
     }
 
     /**

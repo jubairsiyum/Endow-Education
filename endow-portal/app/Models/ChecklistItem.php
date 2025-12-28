@@ -61,6 +61,14 @@ class ChecklistItem extends Model
     }
 
     /**
+     * Get the programs this checklist item belongs to.
+     */
+    public function programs()
+    {
+        return $this->belongsToMany(Program::class, 'checklist_program');
+    }
+
+    /**
      * Scope a query to only include active checklist items.
      */
     public function scopeActive($query)
