@@ -19,7 +19,7 @@ class DashboardController extends Controller
 
         // Role-based dashboard redirect
         if ($user->hasRole('Student')) {
-            return $this->studentDashboard();
+            return redirect()->route('student.dashboard');
         }
 
         // Admin, Super Admin, and Employee get the admin dashboard

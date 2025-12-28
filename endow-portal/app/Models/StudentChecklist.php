@@ -18,7 +18,9 @@ class StudentChecklist extends Model
         'student_id',
         'checklist_item_id',
         'status',
+        'document_path',
         'remarks',
+        'feedback',
         'approved_by',
         'approved_at',
     ];

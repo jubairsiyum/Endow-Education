@@ -26,7 +26,9 @@ class Student extends Model
         'password',
         'phone',
         'date_of_birth',
+        'gender',
         'passport_number',
+        'passport_expiry_date',
         'nationality',
         'country',
         'address',
@@ -37,11 +39,16 @@ class Student extends Model
         'target_program_id',
         'applying_program',
         'highest_education',
+        'highest_qualification',
+        'previous_institution',
         'status',
         'account_status',
         'assigned_to',
         'created_by',
         'notes',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relationship',
     ];
 
     /**
