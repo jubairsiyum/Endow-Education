@@ -151,8 +151,9 @@
         /* ========== MAIN CONTENT ========== */
         .main-content {
             margin-left: var(--sidebar-width);
+            width: calc(100% - var(--sidebar-width));
             min-height: 100vh;
-            transition: margin-left 0.3s ease;
+            transition: margin-left 0.3s ease, width 0.3s ease;
         }
 
         /* ========== TOPBAR ========== */
@@ -272,6 +273,8 @@
         /* ========== CONTENT AREA ========== */
         .content-area {
             padding: 32px;
+            width: 100%;
+            max-width: 100%;
         }
 
         /* ========== CARDS ========== */

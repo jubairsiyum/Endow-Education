@@ -82,16 +82,29 @@ class ChecklistItemController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'is_required' => 'boolean',
-            'is_active' => 'boolean',
+            'is_required' => 'sometimes|boolean',
+            'is_active' => 'sometimes|boolean',
         ]);
 
-        $checklistItem->update([
+        $updateData = [
             'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
-            'is_required' => $request->has('is_required'),
-            'is_active' => $request->has('is_active'),
-        ]);
+        ];
+
+        // Handle checkboxes - they are only present when checked
+        if ($request->has('is_required')) {
+            $updateData['is_required'] = $request->is_required == '1' || $request->is_required === true;
+        } else {
+            $updateData['is_required'] = false;
+        }
+
+        if ($request->has('is_active')) {
+            $updateData['is_active'] = $request->is_active == '1' || $request->is_active === true;
+        } else {
+            $updateData['is_active'] = false;
+        }
+
+        $checklistItem->update($updateData);
 
         return redirect()
             ->route('checklist-items.index')
