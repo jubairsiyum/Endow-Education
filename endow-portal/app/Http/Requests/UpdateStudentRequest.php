@@ -30,6 +30,8 @@ class UpdateStudentRequest extends FormRequest
             'phone' => ['required', 'string', 'max:20'],
             'country' => ['required', 'string', 'max:255'],
             'course' => ['nullable', 'string', 'max:255'],
+            'target_university_id' => ['nullable', 'exists:universities,id'],
+            'target_program_id' => ['nullable', 'exists:programs,id'],
             'status' => ['nullable', 'in:new,contacted,processing,applied,approved,rejected'],
             'account_status' => ['nullable', 'in:pending,approved,rejected'],
             'assigned_to' => ['nullable', 'exists:users,id'],

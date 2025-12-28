@@ -721,6 +721,15 @@
                 </a>
                 @endcanany
 
+                @hasanyrole('Super Admin|Admin')
+                <div class="menu-section-title">System</div>
+
+                <a href="{{ route('activity-logs.index') }}" class="menu-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
+                    <i class="fas fa-history"></i>
+                    <span>Activity Logs</span>
+                </a>
+                @endhasanyrole
+
                 @canany(['view reports'])
                 <div class="menu-section-title">Analytics</div>
 

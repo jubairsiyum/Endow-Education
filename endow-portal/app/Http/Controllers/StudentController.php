@@ -5,8 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\User;
 use App\Http\Requests\StoreStudentRequest;
-use App\Http\Requests\UpdateStudentRequest;
-use App\Services\ActivityLogService;
+use App\Http\Requests\UpdateStudentRequest;use App\Notifications\StudentApprovedNotification;
+use App\Notifications\StudentRejectedNotification;use App\Services\ActivityLogService;
 use App\Services\ChecklistService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -82,7 +82,9 @@ class StudentController extends Controller
             ->where('status', 'active')
             ->get();
 
-        return view('students.create', compact('users'));
+        $universities = \App\Models\University::active()->ordered()->get();
+
+        return view('students.create', compact('users', 'universities'));
     }
 
     /**
@@ -98,6 +100,8 @@ class StudentController extends Controller
                 'email' => $request->email,
                 'phone' => $request->phone,
                 'country' => $request->country,
+                'target_university_id' => $request->target_university_id,
+                'target_program_id' => $request->target_program_id,
                 'course' => $request->course,
                 'status' => $request->status ?? 'new',
                 'account_status' => 'pending',
@@ -157,7 +161,9 @@ class StudentController extends Controller
             ->where('status', 'active')
             ->get();
 
-        return view('students.edit', compact('student', 'users'));
+        $universities = \App\Models\University::active()->ordered()->get();
+
+        return view('students.edit', compact('student', 'users', 'universities'));
     }
 
     /**
@@ -174,6 +180,9 @@ class StudentController extends Controller
                 'name',
                 'email',
                 'phone',
+                'country',
+                'target_university_id',
+                'target_program_id',
                 'country',
                 'course',
                 'status',
@@ -231,7 +240,8 @@ class StudentController extends Controller
                 // Link user to student record
                 $student->user_id = $user->id;
 
-                // TODO: Send welcome email notification
+                // Send welcome email notification with temporary password
+                $user->notify(new StudentApprovedNotification($student, $tempPassword));
             }
 
             $student->account_status = 'approved';
@@ -263,7 +273,10 @@ class StudentController extends Controller
 
         $this->activityLog->logStudentRejected($student, $request->reason ?? '');
 
-        // TODO: Send notification to student
+        // Send rejection notification to student
+        if ($student->user) {
+            $student->user->notify(new StudentRejectedNotification($student, $request->reason ?? ''));
+        }
 
         return back()->with('success', 'Student account rejected.');
     }

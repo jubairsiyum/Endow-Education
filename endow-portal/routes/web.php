@@ -8,6 +8,7 @@ use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\StudentChecklistController;
+use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use Illuminate\Support\Facades\Route;
@@ -74,6 +75,11 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::resource('programs', ProgramController::class);
     Route::get('/universities/{university}/programs', [ProgramController::class, 'byUniversity'])->name('universities.programs');
+
+    // Activity Logs Routes
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
+    Route::get('/students/{student}/activity-logs', [ActivityLogController::class, 'studentLogs'])->name('students.activity-logs');
 });
 
 // Student Checklist Routes (Student portal)

@@ -6,11 +6,19 @@ use App\Models\Student;
 use App\Models\StudentChecklist;
 use App\Models\ChecklistItem;
 use App\Models\StudentDocument;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class StudentChecklistController extends Controller
 {
+    protected $activityLogService;
+
+    public function __construct(ActivityLogService $activityLogService)
+    {
+        $this->activityLogService = $activityLogService;
+    }
+
     /**
      * Display the student's checklist.
      */
@@ -18,6 +26,9 @@ class StudentChecklistController extends Controller
     {
         $user = Auth::user();
         $student = Student::where('user_id', $user->id)->firstOrFail();
+
+        // Log checklist access
+        $this->activityLogService->logChecklistAccessed($student);
 
         // Get checklist items based on target program or all active items
         if ($student->target_program_id) {
@@ -76,7 +87,7 @@ class StudentChecklistController extends Controller
         );
 
         // Create document record
-        StudentDocument::create([
+        $newDocument = StudentDocument::create([
             'student_id' => $student->id,
             'checklist_item_id' => $checklistItem->id,
             'title' => $checklistItem->title,
@@ -84,6 +95,9 @@ class StudentChecklistController extends Controller
             'file_type' => $request->file('document')->getClientOriginalExtension(),
             'uploaded_by' => $user->id,
         ]);
+
+        // Log activity
+        $this->activityLogService->logDocumentUploaded($newDocument);
 
         return back()->with('success', 'Document uploaded successfully.');
     }
@@ -102,6 +116,9 @@ class StudentChecklistController extends Controller
 
         // Delete file from storage
         \Storage::disk('public')->delete($document->file_path);
+
+        // Log activity before deletion
+        $this->activityLogService->logDocumentDeleted($document);
 
         $document->delete();
 

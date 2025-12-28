@@ -26,6 +26,8 @@ class ActivityLogService
         $log->log_name = $logName;
         $log->description = $description;
         $log->properties = $properties;
+        $log->ip_address = request()->ip();
+        $log->user_agent = request()->userAgent();
 
         if ($subject) {
             $log->subject_type = get_class($subject);
@@ -159,6 +161,106 @@ class ActivityLogService
                 'name' => $student->name,
                 'email' => $student->email,
                 'reason' => $reason,
+            ]
+        );
+    }
+
+    /**
+     * Log student login
+     *
+     * @param \App\Models\Student $student
+     * @return ActivityLog
+     */
+    public function logStudentLogin($student): ActivityLog
+    {
+        return $this->log(
+            'authentication',
+            'Student logged in',
+            $student,
+            [
+                'student_id' => $student->id,
+                'name' => $student->name,
+                'email' => $student->email,
+            ]
+        );
+    }
+
+    /**
+     * Log document upload
+     *
+     * @param \App\Models\StudentDocument $document
+     * @return ActivityLog
+     */
+    public function logDocumentUploaded($document): ActivityLog
+    {
+        return $this->log(
+            'document',
+            'Document uploaded',
+            $document,
+            [
+                'student_id' => $document->student_id,
+                'checklist_item_id' => $document->checklist_item_id,
+                'filename' => $document->filename,
+                'original_name' => $document->original_name,
+            ]
+        );
+    }
+
+    /**
+     * Log document deletion
+     *
+     * @param \App\Models\StudentDocument $document
+     * @return ActivityLog
+     */
+    public function logDocumentDeleted($document): ActivityLog
+    {
+        return $this->log(
+            'document',
+            'Document deleted',
+            $document,
+            [
+                'student_id' => $document->student_id,
+                'checklist_item_id' => $document->checklist_item_id,
+                'filename' => $document->filename,
+                'original_name' => $document->original_name,
+            ]
+        );
+    }
+
+    /**
+     * Log student profile update
+     *
+     * @param \App\Models\Student $student
+     * @param array $changes
+     * @return ActivityLog
+     */
+    public function logStudentUpdated($student, array $changes = []): ActivityLog
+    {
+        return $this->log(
+            'student',
+            'Student profile updated',
+            $student,
+            [
+                'student_id' => $student->id,
+                'changes' => $changes,
+            ]
+        );
+    }
+
+    /**
+     * Log checklist access
+     *
+     * @param \App\Models\Student $student
+     * @return ActivityLog
+     */
+    public function logChecklistAccessed($student): ActivityLog
+    {
+        return $this->log(
+            'checklist',
+            'Student accessed checklist',
+            $student,
+            [
+                'student_id' => $student->id,
             ]
         );
     }

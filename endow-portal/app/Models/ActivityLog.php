@@ -22,6 +22,8 @@ class ActivityLog extends Model
         'causer_type',
         'causer_id',
         'properties',
+        'ip_address',
+        'user_agent',
     ];
 
     /**

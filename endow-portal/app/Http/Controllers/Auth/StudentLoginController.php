@@ -3,11 +3,20 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Models\Student;
+use App\Services\ActivityLogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class StudentLoginController extends Controller
 {
+    protected $activityLogService;
+
+    public function __construct(ActivityLogService $activityLogService)
+    {
+        $this->activityLogService = $activityLogService;
+    }
+
     /**
      * Show the student login form.
      */
@@ -32,6 +41,12 @@ class StudentLoginController extends Controller
             // Check if user has student role
             $user = Auth::user();
             if ($user->hasRole('Student')) {
+                // Log student login
+                $student = Student::where('user_id', $user->id)->first();
+                if ($student) {
+                    $this->activityLogService->logStudentLogin($student);
+                }
+
                 return redirect()->intended(route('dashboard'));
             }
 
