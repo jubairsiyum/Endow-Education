@@ -11,16 +11,16 @@
                     <i class="fas fa-question-circle fa-4x text-danger mb-3"></i>
                     <h3 class="fw-bold mb-2">How Can We Help You?</h3>
                     <p class="text-muted mb-4">Find answers to commonly asked questions about the application process, documents, and more.</p>
-                    
+
                     <!-- Search Box -->
                     <div class="col-md-6 mx-auto">
                         <div class="input-group">
                             <span class="input-group-text bg-white">
                                 <i class="fas fa-search text-muted"></i>
                             </span>
-                            <input type="text" 
-                                   class="form-control" 
-                                   id="faqSearch" 
+                            <input type="text"
+                                   class="form-control"
+                                   id="faqSearch"
                                    placeholder="Search FAQ...">
                         </div>
                     </div>
@@ -32,7 +32,7 @@
                 <div class="col-md-4">
                     <div class="card-custom text-center h-100 faq-category-card" data-category="application">
                         <div class="card-body-custom py-4">
-                            <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-danger bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 70px; height: 70px;">
                                 <i class="fas fa-file-alt fa-2x text-danger"></i>
                             </div>
@@ -44,7 +44,7 @@
                 <div class="col-md-4">
                     <div class="card-custom text-center h-100 faq-category-card" data-category="documents">
                         <div class="card-body-custom py-4">
-                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-primary bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 70px; height: 70px;">
                                 <i class="fas fa-folder-open fa-2x text-primary"></i>
                             </div>
@@ -56,7 +56,7 @@
                 <div class="col-md-4">
                     <div class="card-custom text-center h-100 faq-category-card" data-category="general">
                         <div class="card-body-custom py-4">
-                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3" 
+                            <div class="bg-success bg-opacity-10 rounded-circle d-inline-flex align-items-center justify-content-center mb-3"
                                  style="width: 70px; height: 70px;">
                                 <i class="fas fa-info-circle fa-2x text-success"></i>
                             </div>
@@ -323,7 +323,7 @@
     document.getElementById('faqSearch').addEventListener('input', function(e) {
         const searchTerm = e.target.value.toLowerCase();
         const accordions = document.querySelectorAll('.accordion-item');
-        
+
         accordions.forEach(item => {
             const text = item.textContent.toLowerCase();
             if (text.includes(searchTerm)) {
@@ -353,7 +353,7 @@
                     section.style.display = section.dataset.category === category ? '' : 'none';
                 }
             });
-            
+
             // Scroll to first visible FAQ section
             setTimeout(() => {
                 const firstVisible = document.querySelector('.card-custom[data-category]:not([style*="display: none"])');

@@ -175,7 +175,7 @@
                     </div>
                     <h5 class="text-center fw-bold mb-3">Document Submission Progress</h5>
                     <div class="progress mb-3" style="height: 10px;">
-                        <div class="progress-bar bg-danger" role="progressbar" 
+                        <div class="progress-bar bg-danger" role="progressbar"
                              style="width: {{ $checklistProgress['percentage'] ?? 0 }}%;">
                         </div>
                     </div>

@@ -45,10 +45,10 @@
                                     $isRejected = $status === 'rejected';
                                     $isPending = $status === 'pending';
                                     $isSubmitted = $status === 'submitted';
-                                    
+
                                     // Determine if this item can be edited
                                     $canEdit = $isPending || $isRejected;
-                                    
+
                                     // Status badge config
                                     $statusConfig = [
                                         'completed' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved'],
@@ -58,12 +58,12 @@
                                     ];
                                     $config = $statusConfig[$status] ?? $statusConfig['pending'];
                                 @endphp
-                                
+
                                 <div class="list-group-item border-start-0 border-end-0 p-4 {{ $isCompleted ? 'bg-light bg-opacity-50' : '' }}">
                                     <div class="d-flex align-items-start gap-3">
                                         <!-- Step Number -->
                                         <div class="flex-shrink-0">
-                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold {{ $isCompleted ? 'bg-success text-white' : 'bg-danger bg-opacity-10 text-danger' }}" 
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold {{ $isCompleted ? 'bg-success text-white' : 'bg-danger bg-opacity-10 text-danger' }}"
                                                  style="width: 45px; height: 45px; font-size: 18px;">
                                                 @if($isCompleted)
                                                     <i class="fas fa-check"></i>
@@ -111,14 +111,14 @@
                                                             </div>
                                                         </div>
                                                         <div class="d-flex gap-2">
-                                                            <a href="{{ Storage::url($studentChecklist->document_path) }}" 
-                                                               class="btn btn-sm btn-outline-primary" 
+                                                            <a href="{{ Storage::url($studentChecklist->document_path) }}"
+                                                               class="btn btn-sm btn-outline-primary"
                                                                target="_blank">
                                                                 <i class="fas fa-eye me-1"></i>View
                                                             </a>
                                                             @if($canEdit)
-                                                                <button type="button" 
-                                                                        class="btn btn-sm btn-outline-danger" 
+                                                                <button type="button"
+                                                                        class="btn btn-sm btn-outline-danger"
                                                                         onclick="deleteDocument({{ $studentChecklist->id }})">
                                                                     <i class="fas fa-trash me-1"></i>Remove
                                                                 </button>
@@ -138,15 +138,15 @@
                                             <!-- Upload Form -->
                                             @if($canEdit)
                                                 <div class="mt-3">
-                                                    <form action="{{ route('student.checklist.upload', $item->id) }}" 
-                                                          method="POST" 
+                                                    <form action="{{ route('student.checklist.upload', $item->id) }}"
+                                                          method="POST"
                                                           enctype="multipart/form-data"
                                                           class="upload-form">
                                                         @csrf
                                                         <div class="d-flex gap-2">
-                                                            <input type="file" 
-                                                                   name="document" 
-                                                                   class="form-control form-control-sm" 
+                                                            <input type="file"
+                                                                   name="document"
+                                                                   class="form-control form-control-sm"
                                                                    accept=".pdf,.jpg,.jpeg,.png"
                                                                    required>
                                                             <button type="submit" class="btn btn-sm btn-primary-custom">
@@ -274,7 +274,7 @@
             const originalText = submitBtn.innerHTML;
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Uploading...';
-            
+
             // Re-enable after 5 seconds (in case of error)
             setTimeout(() => {
                 submitBtn.disabled = false;
