@@ -86,19 +86,19 @@ Route::middleware(['auth'])->group(function () {
 Route::middleware(['auth'])->prefix('student')->group(function () {
     // Dashboard
     Route::get('/dashboard', [StudentChecklistController::class, 'dashboard'])->name('student.dashboard');
-    
+
     // Submit Documents (formerly checklist)
     Route::get('/documents', [StudentChecklistController::class, 'index'])->name('student.documents');
     Route::post('/checklist/{checklistItem}/upload', [StudentChecklistController::class, 'uploadDocument'])->name('student.checklist.upload');
     Route::delete('/checklist/{studentChecklist}', [StudentChecklistController::class, 'deleteDocument'])->name('student.checklist.delete');
-    
+
     // Profile Management
     Route::get('/profile/edit', [StudentChecklistController::class, 'editProfile'])->name('student.profile.edit');
     Route::put('/profile', [StudentChecklistController::class, 'updateProfile'])->name('student.profile.update');
-    
+
     // FAQ
     Route::get('/faq', [StudentChecklistController::class, 'faq'])->name('student.faq');
-    
+
     // Emergency Contact
     Route::get('/emergency-contact', [StudentChecklistController::class, 'emergencyContact'])->name('student.emergency-contact');
     Route::post('/contact/submit', [StudentChecklistController::class, 'submitContact'])->name('student.contact.submit');
