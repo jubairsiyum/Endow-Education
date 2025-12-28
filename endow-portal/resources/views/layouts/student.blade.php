@@ -411,7 +411,7 @@
                 <span>Submit Documents</span>
             </a>
 
-            <a href="{{ route('student.profile') }}" class="menu-item {{ request()->routeIs('student.profile*') ? 'active' : '' }}">
+            <a href="{{ route('student.profile.edit') }}" class="menu-item {{ request()->routeIs('student.profile*') ? 'active' : '' }}">
                 <i class="fas fa-user"></i>
                 <span>Profile</span>
             </a>

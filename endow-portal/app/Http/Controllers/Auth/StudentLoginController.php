@@ -47,7 +47,7 @@ class StudentLoginController extends Controller
                     $this->activityLogService->logStudentLogin($student);
                 }
 
-                return redirect()->intended(route('dashboard'));
+                return redirect()->intended(route('student.dashboard'));
             }
 
             // If not student, logout and show error
