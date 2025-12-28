@@ -12,29 +12,29 @@
         font-weight: 500;
         padding: 1rem 1.5rem;
     }
-    
+
     .nav-tabs-custom .nav-link.active {
         border-bottom-color: var(--primary-color);
         color: var(--primary-color);
         background: transparent;
     }
-    
+
     .nav-tabs-custom {
         border-bottom: 1px solid var(--border-color);
     }
-    
+
     .timeline-item {
         position: relative;
         padding-left: 2.5rem;
         padding-bottom: 1.5rem;
         border-left: 2px solid var(--border-color);
     }
-    
+
     .timeline-item:last-child {
         border-left-color: transparent;
         padding-bottom: 0;
     }
-    
+
     .timeline-icon {
         position: absolute;
         left: -13px;
@@ -188,25 +188,25 @@
     <div class="card-custom">
         <ul class="nav nav-tabs nav-tabs-custom" id="studentTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab" 
+                <button class="nav-link active" id="profile-tab" data-bs-toggle="tab"
                         data-bs-target="#profile" type="button" role="tab">
                     <i class="fas fa-user me-2"></i> Profile
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="checklist-tab" data-bs-toggle="tab" 
+                <button class="nav-link" id="checklist-tab" data-bs-toggle="tab"
                         data-bs-target="#checklist" type="button" role="tab">
                     <i class="fas fa-tasks me-2"></i> Checklist
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="documents-tab" data-bs-toggle="tab" 
+                <button class="nav-link" id="documents-tab" data-bs-toggle="tab"
                         data-bs-target="#documents" type="button" role="tab">
                     <i class="fas fa-file-pdf me-2"></i> Documents
                 </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="followups-tab" data-bs-toggle="tab" 
+                <button class="nav-link" id="followups-tab" data-bs-toggle="tab"
                         data-bs-target="#followups" type="button" role="tab">
                     <i class="fas fa-comments me-2"></i> Follow-ups
                 </button>
@@ -277,16 +277,16 @@
                 <div class="mb-4">
                     <h5>Checklist Progress</h5>
                     <div class="progress" style="height: 24px;">
-                        <div class="progress-bar" role="progressbar" 
+                        <div class="progress-bar" role="progressbar"
                              style="width: {{ $student->checklist_progress['percentage'] ?? 0 }}%; background: var(--primary-color);"
-                             aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}" 
+                             aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}"
                              aria-valuemin="0" aria-valuemax="100">
                             {{ $student->checklist_progress['percentage'] ?? 0 }}%
                         </div>
                     </div>
                     <div class="mt-2 text-muted">
-                        {{ $student->checklist_progress['approved'] ?? 0 }} approved · 
-                        {{ $student->checklist_progress['submitted'] ?? 0 }} submitted · 
+                        {{ $student->checklist_progress['approved'] ?? 0 }} approved ·
+                        {{ $student->checklist_progress['submitted'] ?? 0 }} submitted ·
                         {{ $student->checklist_progress['pending'] ?? 0 }} pending
                     </div>
                 </div>
@@ -430,7 +430,7 @@
                 </div>
 
                 <div class="timeline">
-                    @forelse($student->followUps()->orderBy('follow_up_date', 'desc')->get() as $followUp)
+                    @forelse($student->followUps()->orderBy('created_at', 'desc')->get() as $followUp)
                     <div class="timeline-item">
                         <div class="timeline-icon">
                             <i class="fas fa-comment"></i>
@@ -440,12 +440,15 @@
                                 <div>
                                     <strong>{{ $followUp->creator->name ?? 'Unknown' }}</strong>
                                     <small class="text-muted ms-2">
-                                        {{ $followUp->follow_up_date->format('M d, Y g:i A') }}
+                                        {{ $followUp->created_at->format('M d, Y g:i A') }}
                                     </small>
+                                    @if($followUp->next_follow_up_date)
+                                        <br><small class="text-muted">Next follow-up: {{ $followUp->next_follow_up_date->format('M d, Y') }}</small>
+                                    @endif
                                 </div>
                             </div>
                             <div class="bg-light p-3 rounded">
-                                {!! nl2br(e($followUp->notes)) !!}
+                                {!! nl2br(e($followUp->note)) !!}
                             </div>
                         </div>
                     </div>

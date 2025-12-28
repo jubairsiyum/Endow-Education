@@ -41,7 +41,7 @@ class DashboardController extends Controller
         // Statistics
         $totalStudents = (clone $query)->count();
         $pendingApprovals = (clone $query)->where('account_status', 'pending')->count();
-        
+
         $statusCounts = [
             'new' => (clone $query)->where('status', 'new')->count(),
             'contacted' => (clone $query)->where('status', 'contacted')->count(),
@@ -78,12 +78,25 @@ class DashboardController extends Controller
     public function studentDashboard()
     {
         $user = Auth::user();
-        $student = Student::where('user_id', $user->id)->first();
+        $student = Student::where('user_id', $user->id)
+            ->with(['checklists.checklistItem', 'documents', 'assignedUser'])
+            ->first();
 
         if (!$student) {
             return redirect()->route('students.create')
                 ->with('warning', 'Please complete your profile to continue.');
         }
+
+        // Calculate checklist progress
+        $totalChecklists = $student->checklists->count();
+        $approvedChecklists = $student->checklists->where('status', 'approved')->count();
+        $pendingChecklists = $student->checklists->whereIn('status', ['pending', 'submitted'])->count();
+
+        $student->checklist_progress = [
+            'percentage' => $totalChecklists > 0 ? round(($approvedChecklists / $totalChecklists) * 100) : 0,
+            'approved' => $approvedChecklists,
+            'pending' => $pendingChecklists,
+        ];
 
         return view('dashboard.student', compact('student'));
     }

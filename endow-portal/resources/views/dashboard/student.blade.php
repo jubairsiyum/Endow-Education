@@ -106,14 +106,14 @@
                     </div>
                 </div>
                 <div class="progress mt-3" style="height: 12px;">
-                    <div class="progress-bar" role="progressbar" 
+                    <div class="progress-bar" role="progressbar"
                          style="width: {{ $student->checklist_progress['percentage'] ?? 0 }}%;"
-                         aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}" 
+                         aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}"
                          aria-valuemin="0" aria-valuemax="100">
                     </div>
                 </div>
                 <div class="mt-3 text-muted" style="font-size: 0.875rem;">
-                    {{ $student->checklist_progress['approved'] ?? 0 }} approved · 
+                    {{ $student->checklist_progress['approved'] ?? 0 }} approved ·
                     {{ $student->checklist_progress['pending'] ?? 0 }} pending
                 </div>
             </div>
@@ -123,23 +123,25 @@
     <!-- Checklist Items -->
     <div class="card-custom">
         <div class="card-header-custom">
-            <h5>My Checklist</h5>
+            <h5>My Document Checklist</h5>
+            <small class="text-muted">Upload required documents for your application</small>
         </div>
         <div class="table-responsive">
             <table class="table table-custom">
                 <thead>
                     <tr>
-                        <th>Item</th>
+                        <th>Document</th>
                         <th>Required</th>
                         <th>Status</th>
-                        <th>Submitted Date</th>
+                        <th>Uploaded</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($student->checklists as $checklist)
                     <tr>
                         <td>
-                            <strong>{{ $checklist->checklistItem->name }}</strong>
+                            <strong>{{ $checklist->checklistItem->title }}</strong>
                             @if($checklist->checklistItem->description)
                             <br><small class="text-muted">{{ $checklist->checklistItem->description }}</small>
                             @endif
@@ -164,14 +166,64 @@
                             <span class="badge-custom badge-{{ $checklistColor }}-custom">
                                 {{ ucfirst($checklist->status) }}
                             </span>
+                            @if($checklist->remarks)
+                                <br><small class="text-muted">{{ $checklist->remarks }}</small>
+                            @endif
                         </td>
                         <td>
-                            {{ $checklist->submitted_at ? $checklist->submitted_at->format('M d, Y') : '-' }}
+                            @php
+                                $document = $student->documents->where('checklist_item_id', $checklist->checklist_item_id)->first();
+                            @endphp
+                            @if($document)
+                                <div class="d-flex align-items-center gap-2">
+                                    <i class="fas fa-file-pdf text-danger"></i>
+                                    <div>
+                                        <small class="d-block">{{ $document->file_name }}</small>
+                                        <small class="text-muted">{{ $document->created_at->format('M d, Y') }}</small>
+                                    </div>
+                                </div>
+                            @else
+                                <span class="text-muted">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            @if($document && $checklist->status !== 'approved')
+                                <div class="d-flex gap-2">
+                                    <a href="{{ route('documents.download', $document) }}"
+                                       class="btn btn-sm btn-outline-primary"
+                                       title="Download">
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="confirmDelete({{ $document->id }})"
+                                            title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                    <form id="delete-form-{{ $document->id }}"
+                                          action="{{ route('documents.destroy', $document) }}"
+                                          method="POST"
+                                          class="d-none">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                </div>
+                            @elseif($checklist->status === 'approved')
+                                <span class="badge-custom badge-success-custom">
+                                    <i class="fas fa-check"></i> Approved
+                                </span>
+                            @else
+                                <button type="button"
+                                        class="btn btn-sm btn-primary-custom"
+                                        onclick="openUploadModal({{ $checklist->id }}, {{ $checklist->checklist_item_id }}, '{{ $checklist->checklistItem->title }}')">
+                                    <i class="fas fa-upload me-1"></i> Upload
+                                </button>
+                            @endif
                         </td>
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center py-5">
+                        <td colspan="5" class="text-center py-5">
                             <i class="fas fa-tasks fa-3x text-muted mb-3" style="opacity: 0.3;"></i>
                             <p class="text-muted mb-0">No checklist items assigned yet</p>
                         </td>
@@ -181,4 +233,76 @@
             </table>
         </div>
     </div>
+
+    <!-- Upload Modal -->
+    <div class="modal fade" id="uploadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Upload Document</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="{{ route('documents.upload') }}" method="POST" enctype="multipart/form-data">
+                    @csrf
+                    <div class="modal-body">
+                        <input type="hidden" name="student_id" value="{{ $student->id }}">
+                        <input type="hidden" name="student_checklist_id" id="student_checklist_id">
+                        <input type="hidden" name="checklist_item_id" id="checklist_item_id">
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold" id="documentTitle"></label>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="document" class="form-label">Select File <span class="text-danger">*</span></label>
+                            <input type="file"
+                                   class="form-control @error('document') is-invalid @enderror"
+                                   id="document"
+                                   name="document"
+                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                                   required>
+                            <small class="form-text text-muted">Allowed: PDF, DOC, DOCX, JPG, PNG (Max: 5MB)</small>
+                            @error('document')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notes (Optional)</label>
+                            <textarea class="form-control"
+                                      id="notes"
+                                      name="notes"
+                                      rows="3"
+                                      placeholder="Any additional information about this document"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary-custom">
+                            <i class="fas fa-upload me-1"></i> Upload Document
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
+
+@push('scripts')
+<script>
+function openUploadModal(checklistId, checklistItemId, title) {
+    document.getElementById('student_checklist_id').value = checklistId;
+    document.getElementById('checklist_item_id').value = checklistItemId;
+    document.getElementById('documentTitle').textContent = title;
+
+    const modal = new bootstrap.Modal(document.getElementById('uploadModal'));
+    modal.show();
+}
+
+function confirmDelete(documentId) {
+    if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+        document.getElementById('delete-form-' + documentId).submit();
+    }
+}
+</script>
+@endpush

@@ -18,10 +18,22 @@ class Student extends Model
     protected $fillable = [
         'user_id',
         'name',
+        'surname',
+        'given_names',
+        'father_name',
+        'mother_name',
         'email',
         'phone',
+        'date_of_birth',
+        'passport_number',
+        'nationality',
         'country',
+        'address',
+        'city',
+        'postal_code',
         'course',
+        'applying_program',
+        'highest_education',
         'status',
         'account_status',
         'assigned_to',
@@ -35,6 +47,7 @@ class Student extends Model
      * @var array<string, string>
      */
     protected $casts = [
+        'date_of_birth' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

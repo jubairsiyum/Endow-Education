@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\User;
+use App\Models\Student;
 use Illuminate\Support\Facades\Hash;
 
 class RolePermissionSeeder extends Seeder
@@ -26,7 +27,7 @@ class RolePermissionSeeder extends Seeder
             'create users',
             'edit users',
             'delete users',
-            
+
             // Student Management
             'view students',
             'create students',
@@ -34,31 +35,31 @@ class RolePermissionSeeder extends Seeder
             'delete students',
             'assign students',
             'approve students',
-            
+
             // Follow-up Management
             'view follow-ups',
             'create follow-ups',
             'edit follow-ups',
             'delete follow-ups',
-            
+
             // Checklist Management
             'view checklists',
             'create checklists',
             'edit checklists',
             'delete checklists',
-            
+
             // Document Management
             'view documents',
             'upload documents',
             'approve documents',
             'reject documents',
             'delete documents',
-            
+
             // Dashboard Access
             'view admin dashboard',
             'view employee dashboard',
             'view student dashboard',
-            
+
             // Reports
             'view reports',
             'export reports',
@@ -69,7 +70,7 @@ class RolePermissionSeeder extends Seeder
         }
 
         // Create Roles and Assign Permissions
-        
+
         // Super Admin - Full Access
         $superAdmin = Role::create(['name' => 'Super Admin']);
         $superAdmin->givePermissionTo(Permission::all());
@@ -165,9 +166,36 @@ class RolePermissionSeeder extends Seeder
         ]);
         $employeeUser->assignRole('Employee');
 
+        // Create Default Student User
+        $studentUser = User::create([
+            'name' => 'John Doe',
+            'email' => 'student@endowglobal.com',
+            'phone' => '+1234567893',
+            'password' => Hash::make('password'),
+            'status' => 'active',
+            'email_verified_at' => now(),
+        ]);
+        $studentUser->assignRole('Student');
+
+        // Create Student Profile for the Student User
+        Student::create([
+            'user_id' => $studentUser->id,
+            'name' => 'John Doe',
+            'email' => 'student@endowglobal.com',
+            'phone' => '+1234567893',
+            'country' => 'United States',
+            'course' => 'Computer Science',
+            'status' => 'approved',
+            'account_status' => 'approved',
+            'assigned_to' => $employeeUser->id,
+            'created_by' => $adminUser->id,
+            'notes' => 'Demo student account',
+        ]);
+
         $this->command->info('Roles and Permissions seeded successfully!');
         $this->command->info('Super Admin: superadmin@endowglobal.com / password');
         $this->command->info('Admin: admin@endowglobal.com / password');
         $this->command->info('Employee: employee@endowglobal.com / password');
+        $this->command->info('Student: student@endowglobal.com / password');
     }
 }

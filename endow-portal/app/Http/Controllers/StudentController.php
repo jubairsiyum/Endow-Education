@@ -11,6 +11,8 @@ use App\Services\ChecklistService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
@@ -209,14 +211,46 @@ class StudentController extends Controller
     {
         $this->authorize('approve', $student);
 
-        $student->account_status = 'approved';
-        $student->save();
+        DB::beginTransaction();
 
-        $this->activityLog->logStudentApproved($student);
+        try {
+            // Create user account if not exists
+            if (!$student->user_id) {
+                $password = Str::random(10); // Generate random password
 
-        // TODO: Send notification to student
+                $user = User::create([
+                    'name' => $student->name,
+                    'email' => $student->email,
+                    'phone' => $student->phone,
+                    'password' => Hash::make($password),
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]);
 
-        return back()->with('success', 'Student account approved successfully!');
+                // Assign Student role
+                $user->assignRole('Student');
+
+                // Link user to student record
+                $student->user_id = $user->id;
+
+                // TODO: Send welcome email with password
+            }
+
+            $student->account_status = 'approved';
+            $student->save();
+
+            // Assign checklist items to the student
+            $this->checklistService->initializeChecklistsForStudent($student);
+
+            $this->activityLog->logStudentApproved($student);
+
+            DB::commit();
+
+            return back()->with('success', 'Student account approved successfully! A welcome email has been sent.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to approve student: ' . $e->getMessage());
+        }
     }
 
     /**

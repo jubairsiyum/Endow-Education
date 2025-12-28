@@ -36,7 +36,7 @@ class ChecklistItemController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_required' => 'boolean',
             'is_active' => 'boolean',
@@ -45,11 +45,12 @@ class ChecklistItemController extends Controller
         $maxOrder = ChecklistItem::max('order') ?? 0;
 
         ChecklistItem::create([
-            'name' => $validated['name'],
+            'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'is_required' => $request->has('is_required'),
             'is_active' => $request->has('is_active'),
             'order' => $maxOrder + 1,
+            'created_by' => auth()->id(),
         ]);
 
         return redirect()
@@ -79,14 +80,14 @@ class ChecklistItemController extends Controller
     public function update(Request $request, ChecklistItem $checklistItem)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'is_required' => 'boolean',
             'is_active' => 'boolean',
         ]);
 
         $checklistItem->update([
-            'name' => $validated['name'],
+            'title' => $validated['title'],
             'description' => $validated['description'] ?? null,
             'is_required' => $request->has('is_required'),
             'is_active' => $request->has('is_active'),

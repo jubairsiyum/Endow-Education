@@ -24,6 +24,11 @@ Route::get('/', function () {
 // Authentication Routes
 Auth::routes();
 
+// Student Registration Routes
+Route::get('/student/register', [App\Http\Controllers\Auth\StudentRegisterController::class, 'showRegistrationForm'])->name('student.register.form');
+Route::post('/student/register', [App\Http\Controllers\Auth\StudentRegisterController::class, 'register'])->name('student.register');
+Route::get('/student/registration/success', [App\Http\Controllers\Auth\StudentRegisterController::class, 'success'])->name('student.registration.success');
+
 // Dashboard Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
