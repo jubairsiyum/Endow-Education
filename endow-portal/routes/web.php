@@ -5,6 +5,8 @@ use App\Http\Controllers\StudentController;
 use App\Http\Controllers\FollowUpController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\DocumentController;
+use App\Http\Controllers\Auth\AdminLoginController;
+use App\Http\Controllers\Auth\StudentLoginController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -18,11 +20,19 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    return redirect()->route('login');
+    // Redirect to admin login by default
+    return redirect()->route('admin.login');
 });
 
-// Authentication Routes
-Auth::routes();
+// Admin/Employee Login Routes
+Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name('admin.login');
+Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login.submit');
+Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
+
+// Student Login Routes
+Route::get('/student/login', [StudentLoginController::class, 'showLoginForm'])->name('student.login');
+Route::post('/student/login', [StudentLoginController::class, 'login'])->name('student.login.submit');
+Route::post('/student/logout', [StudentLoginController::class, 'logout'])->name('student.logout');
 
 // Student Registration Routes
 Route::get('/student/register', [App\Http\Controllers\Auth\StudentRegisterController::class, 'showRegistrationForm'])->name('student.register.form');

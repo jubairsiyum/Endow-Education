@@ -74,7 +74,7 @@
 
         .sidebar-header {
             padding: 24px 20px;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: var(--primary);
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
@@ -133,14 +133,14 @@
         }
 
         .menu-item.active {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: var(--primary);
             color: white;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+            box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
         }
 
         .menu-badge {
             margin-left: auto;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: var(--primary);
             color: white;
             font-size: 11px;
             padding: 2px 8px;
@@ -338,11 +338,11 @@
             color: white;
         }
 
-        .stat-icon.primary { background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); }
-        .stat-icon.success { background: linear-gradient(135deg, #10B981 0%, #34D399 100%); }
-        .stat-icon.warning { background: linear-gradient(135deg, #F59E0B 0%, #FBBF24 100%); }
-        .stat-icon.danger { background: linear-gradient(135deg, #EF4444 0%, #F87171 100%); }
-        .stat-icon.info { background: linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%); }
+        .stat-icon.primary { background: var(--primary); }
+        .stat-icon.success { background: #10B981; }
+        .stat-icon.warning { background: #F59E0B; }
+        .stat-icon.danger { background: #EF4444; }
+        .stat-icon.info { background: #3B82F6; }
 
         .stat-value {
             font-size: 32px;
@@ -378,7 +378,7 @@
 
         /* ========== BUTTONS ========== */
         .btn-primary-custom {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: var(--primary);
             border: none;
             color: white;
             padding: 10px 20px;
@@ -774,13 +774,23 @@
                             </li>
                             <li><hr class="dropdown-divider"></li>
                             <li>
-                                <a class="dropdown-item" href="{{ route('logout') }}"
+                                @if(Auth::user()->hasRole('Student'))
+                                <a class="dropdown-item" href="{{ route('student.logout') }}"
                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
                                     <i class="fas fa-sign-out-alt me-2"></i> Logout
                                 </a>
-                                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+                                <form id="logout-form" action="{{ route('student.logout') }}" method="POST" class="d-none">
                                     @csrf
                                 </form>
+                                @else
+                                <a class="dropdown-item" href="{{ route('admin.logout') }}"
+                                   onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                    <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                </a>
+                                <form id="logout-form" action="{{ route('admin.logout') }}" method="POST" class="d-none">
+                                    @csrf
+                                </form>
+                                @endif
                             </li>
                         </ul>
                     </div>
