@@ -11,6 +11,7 @@ use App\Http\Controllers\StudentChecklistController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
+use App\Http\Controllers\Auth\StudentRegisterController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -39,9 +40,9 @@ Route::post('/student/login', [StudentLoginController::class, 'login'])->name('s
 Route::post('/student/logout', [StudentLoginController::class, 'logout'])->name('student.logout');
 
 // Student Registration Routes
-Route::get('/student/register', [App\Http\Controllers\Auth\StudentRegisterController::class, 'showRegistrationForm'])->name('student.register.form');
-Route::post('/student/register', [App\Http\Controllers\Auth\StudentRegisterController::class, 'register'])->name('student.register');
-Route::get('/student/registration/success', [App\Http\Controllers\Auth\StudentRegisterController::class, 'success'])->name('student.registration.success');
+Route::get('/student/register', [StudentRegisterController::class, 'showRegistrationForm'])->name('student.register.form');
+Route::post('/student/register', [StudentRegisterController::class, 'register'])->name('student.register');
+Route::get('/student/registration/success', [StudentRegisterController::class, 'success'])->name('student.registration.success');
 
 // Dashboard Routes
 Route::middleware(['auth'])->group(function () {

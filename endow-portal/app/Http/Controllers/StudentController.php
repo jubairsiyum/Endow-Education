@@ -240,8 +240,8 @@ class StudentController extends Controller
                 // Link user to student record
                 $student->user_id = $user->id;
 
-                // Send welcome email notification with temporary password
-                $user->notify(new StudentApprovedNotification($student, $tempPassword));
+                // Send welcome email notification
+                $user->notify(new StudentApprovedNotification($student));
             }
 
             $student->account_status = 'approved';

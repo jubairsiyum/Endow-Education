@@ -235,7 +235,7 @@
                         </div>
 
                         <div class="d-grid gap-2 d-md-flex justify-content-md-between">
-                            <a href="{{ route('login') }}" class="btn btn-outline-secondary">
+                            <a href="{{ route('student.login') }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-arrow-left"></i> Back to Login
                             </a>
                             <button type="submit" class="btn btn-danger btn-lg px-5">

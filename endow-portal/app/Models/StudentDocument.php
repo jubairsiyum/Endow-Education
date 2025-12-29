@@ -10,6 +10,39 @@ class StudentDocument extends Model
 {
     use HasFactory, SoftDeletes;
 
+    // Document Type Constants - Attestation Documents
+    const TYPE_SSC_CERTIFICATE = 'ssc_certificate';
+    const TYPE_SSC_TRANSCRIPT = 'ssc_transcript';
+    const TYPE_HSC_CERTIFICATE = 'hsc_certificate';
+    const TYPE_HSC_TRANSCRIPT = 'hsc_transcript';
+    const TYPE_HONORS_CERTIFICATE = 'honors_certificate';
+    const TYPE_HONORS_TRANSCRIPT = 'honors_transcript';
+    const TYPE_IELTS_CERTIFICATE = 'ielts_certificate';
+    const TYPE_FAMILY_RELATIONSHIP_CERT = 'family_relationship_certificate';
+    const TYPE_PASSPORT_COPY = 'passport_copy';
+    const TYPE_BIRTH_CERTIFICATE = 'birth_certificate';
+    const TYPE_APPLICANT_PHOTO = 'applicant_photo';
+    const TYPE_PARENTS_NOC = 'parents_noc';
+    const TYPE_TB_TEST = 'tb_test';
+    
+    // Translation Documents
+    const TYPE_NID_FATHER = 'nid_father';
+    const TYPE_NID_MOTHER = 'nid_mother';
+    const TYPE_NID_OWN = 'nid_own';
+    const TYPE_TRADE_LICENSE = 'trade_license';
+    const TYPE_EMPLOYMENT_CERT = 'employment_certificate';
+    const TYPE_TIN_CERTIFICATE = 'tin_certificate';
+
+    // Document Categories
+    const CATEGORY_ATTESTATION = 'attestation';
+    const CATEGORY_TRANSLATION = 'translation';
+
+    // Status Constants
+    const STATUS_PENDING = 'pending';
+    const STATUS_SUBMITTED = 'submitted';
+    const STATUS_APPROVED = 'approved';
+    const STATUS_REJECTED = 'rejected';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -20,6 +53,11 @@ class StudentDocument extends Model
         'checklist_item_id',
         'student_checklist_id',
         'document_type',
+        'document_category',
+        'copy_number',
+        'attestation_details',
+        'is_notarized',
+        'is_translated',
         'filename',
         'original_name',
         'file_name',
@@ -45,6 +83,9 @@ class StudentDocument extends Model
         'reviewed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_notarized' => 'boolean',
+        'is_translated' => 'boolean',
+        'attestation_details' => 'array',
     ];
 
     /**

@@ -25,7 +25,7 @@
                         Once approved, you will be able to log in and access your dashboard to upload required documents.
                     </p>
 
-                    <a href="{{ route('login') }}" class="btn btn-primary">
+                    <a href="{{ route('student.login') }}" class="btn btn-primary">
                         <i class="fas fa-arrow-left"></i> Back to Login
                     </a>
                 </div>

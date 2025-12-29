@@ -35,6 +35,22 @@ class StudentLoginController extends Controller
             'password' => 'required',
         ]);
 
+        // Check if user exists
+        $user = \App\Models\User::where('email', $credentials['email'])->first();
+        
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'No account found with this email address.',
+            ])->onlyInput('email');
+        }
+
+        // Check if user account is active
+        if ($user->status !== 'active') {
+            return back()->withErrors([
+                'email' => 'Your account is not active. Please contact support.',
+            ])->onlyInput('email');
+        }
+
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
@@ -58,7 +74,7 @@ class StudentLoginController extends Controller
         }
 
         return back()->withErrors([
-            'email' => 'The provided credentials do not match our records.',
+            'email' => 'The password you entered is incorrect.',
         ])->onlyInput('email');
     }
 
