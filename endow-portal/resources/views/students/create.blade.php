@@ -192,33 +192,3 @@
     </script>
     @endpush
 @endsection
-
-        <div class="col-lg-4">
-            <div class="card-custom">
-                <div class="card-header-custom">
-                    <h5><i class="fas fa-info-circle me-2"></i> Information</h5>
-                </div>
-                <div class="card-body-custom">
-                    <p><strong>What happens next?</strong></p>
-                    <ul class="ps-3">
-                        <li class="mb-2">Student will be created with "Pending" account status</li>
-                        <li class="mb-2">A checklist will be automatically initialized</li>
-                        <li class="mb-2">You will be assigned as the counselor</li>
-                        <li class="mb-2">Student can be approved/rejected by admins</li>
-                    </ul>
-
-                    <hr>
-
-                    <p class="mb-2"><strong>Required Fields:</strong></p>
-                    <ul class="ps-3 mb-0">
-                        <li>Full Name</li>
-                        <li>Email Address</li>
-                        <li>Phone Number</li>
-                        <li>Country</li>
-                        <li>Course/Program</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-@endsection
