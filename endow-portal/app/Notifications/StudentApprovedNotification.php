@@ -40,7 +40,7 @@ class StudentApprovedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $message = (new MailMessage)
-            ->subject('Welcome to Endow Education Portal')
+            ->subject('Welcome to Endow Connect')
             ->greeting('Hello ' . $this->student->name . '!')
             ->line('Congratulations! Your student account has been approved.')
             ->line('You can now access your student portal to manage your application and upload documents.');
@@ -54,7 +54,7 @@ class StudentApprovedNotification extends Notification implements ShouldQueue
 
         $message->action('Login to Portal', route('student.login'))
             ->line('If you have any questions, please contact your assigned counselor.')
-            ->line('Thank you for choosing Endow Education!');
+            ->line('Thank you for choosing Endow Connect!');
 
         return $message;
     }

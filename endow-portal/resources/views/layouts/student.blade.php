@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('page-title', 'Student Portal') - Endow Education</title>
+    <title>@hasSection('page-title')Endow Connect - @yield('page-title')@elseEndow Connect - Student Portal@endif</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -394,7 +394,7 @@
             <a href="{{ route('dashboard') }}" class="sidebar-brand">
                 <div class="brand-icon">E</div>
                 <div class="brand-text">
-                    <h4>Endow Education</h4>
+                    <h4>Endow Connect</h4>
                     <p>Student Portal</p>
                 </div>
             </a>

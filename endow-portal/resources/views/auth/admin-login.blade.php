@@ -7,7 +7,7 @@
             <div class="card shadow-lg border-0">
                 <div class="card-header text-white py-4" style="background-color: #1a1a1a;">
                     <h3 class="mb-0 fw-bold"><i class="fas fa-user-shield text-danger"></i> Admin / Employee Login</h3>
-                    <small class="opacity-90">Access your Endow Education admin account</small>
+                    <small class="opacity-90">Access your Endow Connect admin account</small>
                 </div>
 
                 <div class="card-body p-4">

@@ -40,9 +40,9 @@ class StudentRejectedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         $message = (new MailMessage)
-            ->subject('Application Status Update - Endow Education')
+            ->subject('Application Status Update - Endow Connect')
             ->greeting('Hello ' . $this->student->name . ',')
-            ->line('Thank you for your interest in Endow Education.')
+            ->line('Thank you for your interest in Endow Connect.')
             ->line('We regret to inform you that your application has not been approved at this time.');
 
         if ($this->reason) {

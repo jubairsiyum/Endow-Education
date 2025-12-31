@@ -34,6 +34,11 @@ Route::get('/admin/login', [AdminLoginController::class, 'showLoginForm'])->name
 Route::post('/admin/login', [AdminLoginController::class, 'login'])->name('admin.login.submit');
 Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('admin.logout');
 
+// Fallback 'login' route for legacy compatibility
+Route::get('/login', function () {
+    return redirect()->route('admin.login');
+})->name('login');
+
 // Student Login Routes
 Route::get('/student/login', [StudentLoginController::class, 'showLoginForm'])->name('student.login');
 Route::post('/student/login', [StudentLoginController::class, 'login'])->name('student.login.submit');

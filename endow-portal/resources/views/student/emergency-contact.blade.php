@@ -44,9 +44,9 @@
                                 <i class="fas fa-envelope fa-2x"></i>
                             </div>
                             <h4 class="fw-bold text-primary mb-2">Email Support</h4>
-                            <h5 class="fw-bold mb-3">support@endoweducation.com</h5>
+                            <h5 class="fw-bold mb-3">support@endowconnect.com</h5>
                             <p class="text-muted mb-3">Response within 24 hours</p>
-                            <a href="mailto:support@endoweducation.com" class="btn btn-primary btn-lg">
+                            <a href="mailto:support@endowconnect.com" class="btn btn-primary btn-lg">
                                 <i class="fas fa-paper-plane me-2"></i>Send Email
                             </a>
                         </div>
@@ -126,7 +126,7 @@
                             </div>
                             <h6 class="fw-bold mb-2">Office Location</h6>
                             <p class="text-muted mb-0 small">
-                                Endow Education<br>
+                                Endow Connect<br>
                                 123 Education Street<br>
                                 Suite 456<br>
                                 City, State 12345

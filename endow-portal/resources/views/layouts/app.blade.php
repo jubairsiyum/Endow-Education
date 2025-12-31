@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Endow Global Education') }} - @yield('title')</title>
+    <title>@hasSection('title'){{ config('app.name', 'Endow Connect') }} - @yield('title')@else{{ config('app.name', 'Endow Connect') }}@endif</title>
 
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.bunny.net">
@@ -28,7 +28,7 @@
         <nav class="navbar navbar-expand-md navbar-dark shadow-sm" style="background-color: #1a1a1a;">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="{{ url('/') }}">
-                    <i class="fas fa-graduation-cap text-danger"></i> <span class="text-danger">Endow</span> Education
+                    <i class="fas fa-graduation-cap text-danger"></i> <span class="text-danger">Endow</span> Connect
                 </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
                     <span class="navbar-toggler-icon"></span>
@@ -65,17 +65,15 @@
                     <!-- Right Side Of Navbar -->
                     <ul class="navbar-nav ms-auto">
                         @guest
-                            @if (Route::has('login'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('login') }}">{{ __('Login') }}</a>
-                                </li>
-                            @endif
-
-                            @if (Route::has('register'))
-                                <li class="nav-item">
-                                    <a class="nav-link" href="{{ route('register') }}">{{ __('Register') }}</a>
-                                </li>
-                            @endif
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('admin.login') }}">{{ __('Admin Login') }}</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('student.login') }}">{{ __('Student Login') }}</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ route('student.register.form') }}">{{ __('Register') }}</a>
+                            </li>
                         @else
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
@@ -155,7 +153,7 @@
         <!-- Footer -->
         <footer class="bg-light text-center text-lg-start mt-5">
             <div class="text-center p-3" style="background-color: rgba(0, 0, 0, 0.05);">
-                © {{ date('Y') }} Endow Global Education. All rights reserved.
+                © {{ date('Y') }} Endow Connect. All rights reserved.
             </div>
         </footer>
     </div>

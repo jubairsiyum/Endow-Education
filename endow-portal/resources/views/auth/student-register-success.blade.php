@@ -13,7 +13,7 @@
                     <h2 class="mb-3">Registration Submitted Successfully!</h2>
 
                     <p class="lead text-muted mb-4">
-                        Thank you for registering with Endow Education Portal.
+                        Thank you for registering with Endow Connect.
                     </p>
 
                     <div class="alert alert-info">
