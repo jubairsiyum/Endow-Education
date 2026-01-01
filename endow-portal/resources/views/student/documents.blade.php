@@ -86,7 +86,7 @@
                     @php
                         $studentChecklist = $item->studentChecklists->firstWhere('student_id', $student->id);
                         $status = $studentChecklist->status ?? 'pending';
-                        $isCompleted = $status === 'completed';
+                        $isCompleted = $status === 'completed' || $status === 'approved';
                         $isRejected = $status === 'rejected';
                         $isPending = $status === 'pending';
                         $isSubmitted = $status === 'submitted';
@@ -94,6 +94,7 @@
 
                         $statusConfig = [
                             'completed' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved', 'bg' => 'success'],
+                            'approved' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved', 'bg' => 'success'],
                             'submitted' => ['class' => 'info', 'icon' => 'clock', 'text' => 'Under Review', 'bg' => 'info'],
                             'rejected' => ['class' => 'danger', 'icon' => 'times-circle', 'text' => 'Needs Revision', 'bg' => 'danger'],
                             'pending' => ['class' => 'warning', 'icon' => 'exclamation-circle', 'text' => 'Not Submitted', 'bg' => 'warning'],
@@ -174,8 +175,50 @@
                                     @endif
                                 @endif
 
-                                @if($canEdit)
-                                    <!-- Modern Upload Form -->
+                                @if($isRejected && $studentChecklist && $studentChecklist->document_path)
+                                    <!-- Resubmit Form for Rejected Documents -->
+                                    <div class="alert alert-warning mb-3">
+                                        <strong><i class="fas fa-info-circle me-2"></i>Document Rejected</strong>
+                                        <p class="mb-2 small">Please review the feedback and upload a corrected document.</p>
+                                    </div>
+                                    <form action="{{ route('student.checklist.resubmit', $studentChecklist->id) }}"
+                                          method="POST"
+                                          enctype="multipart/form-data"
+                                          class="modern-upload-form"
+                                          id="resubmit-form-{{ $item->id }}">
+                                        @csrf
+                                        <div class="upload-area" id="resubmit-area-{{ $item->id }}">
+                                            <input type="file"
+                                                   name="document"
+                                                   id="resubmit-input-{{ $item->id }}"
+                                                   class="file-input"
+                                                   accept=".pdf,.jpg,.jpeg,.png"
+                                                   required
+                                                   onchange="handleFileSelect({{ $item->id }}, this, true)">
+                                            <label for="resubmit-input-{{ $item->id }}" class="upload-label">
+                                                <div class="upload-icon">
+                                                    <i class="fas fa-redo-alt fa-2x"></i>
+                                                </div>
+                                                <div class="upload-text">
+                                                    <span class="upload-main">Resubmit Corrected Document</span>
+                                                    <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
+                                                </div>
+                                            </label>
+                                            <div class="selected-file" id="resubmit-selected-{{ $item->id }}" style="display: none;">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span class="filename"></span>
+                                                <button type="button" class="clear-file" onclick="clearResubmitSelection({{ $item->id }})">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning btn-upload w-100 mt-2">
+                                            <i class="fas fa-redo me-2"></i>
+                                            Resubmit Document
+                                        </button>
+                                    </form>
+                                @elseif($canEdit && !($studentChecklist && $studentChecklist->document_path))
+                                    <!-- Initial Upload Form -->
                                     <form action="{{ route('student.checklist.upload', $item->id) }}"
                                           method="POST"
                                           enctype="multipart/form-data"
@@ -725,11 +768,12 @@
         modal.show();
     }
 
-    function handleFileSelect(itemId, input) {
+    function handleFileSelect(itemId, input, isResubmit = false) {
         const file = input.files[0];
         if (file) {
-            const uploadArea = document.getElementById(`upload-area-${itemId}`);
-            const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
+            const prefix = isResubmit ? 'resubmit' : 'upload';
+            const uploadArea = document.getElementById(`${prefix}-area-${itemId}`);
+            const selectedFileDiv = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-selected' : 'selected-file'}-${itemId}`);
             const label = uploadArea.querySelector('.upload-label');
 
             // Show selected file
@@ -740,7 +784,11 @@
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
                 alert('File size exceeds 10MB limit. Please choose a smaller file.');
-                clearFileSelection(itemId);
+                if (isResubmit) {
+                    clearResubmitSelection(itemId);
+                } else {
+                    clearFileSelection(itemId);
+                }
                 return;
             }
 
@@ -749,7 +797,11 @@
             const fileExt = '.' + file.name.split('.').pop().toLowerCase();
             if (!allowedTypes.includes(fileExt)) {
                 alert('Invalid file type. Please upload PDF, JPG, or PNG files only.');
-                clearFileSelection(itemId);
+                if (isResubmit) {
+                    clearResubmitSelection(itemId);
+                } else {
+                    clearFileSelection(itemId);
+                }
                 return;
             }
         }
@@ -759,6 +811,17 @@
         const uploadArea = document.getElementById(`upload-area-${itemId}`);
         const input = document.getElementById(`file-input-${itemId}`);
         const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
+        const label = uploadArea.querySelector('.upload-label');
+
+        input.value = '';
+        selectedFileDiv.style.display = 'none';
+        label.style.display = 'flex';
+    }
+
+    function clearResubmitSelection(itemId) {
+        const uploadArea = document.getElementById(`resubmit-area-${itemId}`);
+        const input = document.getElementById(`resubmit-input-${itemId}`);
+        const selectedFileDiv = document.getElementById(`resubmit-selected-${itemId}`);
         const label = uploadArea.querySelector('.upload-label');
 
         input.value = '';
@@ -812,8 +875,9 @@
 
             if (files.length) {
                 fileInput.files = files;
-                const itemId = fileInput.id.replace('file-input-', '');
-                handleFileSelect(itemId, fileInput);
+                const itemId = fileInput.id.replace('file-input-', '').replace('resubmit-input-', '');
+                const isResubmit = fileInput.id.includes('resubmit');
+                handleFileSelect(itemId, fileInput, isResubmit);
             }
         }, false);
     });

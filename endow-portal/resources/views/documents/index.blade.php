@@ -65,6 +65,8 @@
                                             <span class="badge bg-success">Approved</span>
                                         @elseif($document->status == 'rejected')
                                             <span class="badge bg-danger">Rejected</span>
+                                        @elseif($document->status == 'submitted')
+                                            <span class="badge bg-info">Submitted</span>
                                         @else
                                             <span class="badge bg-warning">Pending</span>
                                         @endif
@@ -88,7 +90,7 @@
                                             @endcan
 
                                             @can('update', $document->student)
-                                                @if($document->status == 'pending')
+                                                @if($document->status == 'pending' || $document->status == 'submitted')
                                                     <form action="{{ route('documents.approve', $document) }}"
                                                           method="POST"
                                                           class="d-inline">

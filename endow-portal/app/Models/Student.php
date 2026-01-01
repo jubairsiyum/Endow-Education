@@ -154,17 +154,43 @@ class Student extends Model
     /**
      * Get checklist completion percentage.
      */
-    public function getChecklistProgressAttribute(): int
+    public function getChecklistProgressAttribute(): array
     {
         $total = $this->checklists()->count();
         if ($total === 0) {
-            return 0;
+            return [
+                'total' => 0,
+                'approved' => 0,
+                'submitted' => 0,
+                'rejected' => 0,
+                'pending' => 0,
+                'percentage' => 0,
+            ];
         }
 
-        $completed = $this->checklists()
-            ->whereIn('status', ['approved'])
+        $approved = $this->checklists()
+            ->whereIn('status', ['approved', 'completed'])
             ->count();
 
-        return (int) (($completed / $total) * 100);
+        $submitted = $this->checklists()
+            ->where('status', 'submitted')
+            ->count();
+
+        $rejected = $this->checklists()
+            ->where('status', 'rejected')
+            ->count();
+
+        $pending = $this->checklists()
+            ->where('status', 'pending')
+            ->count();
+
+        return [
+            'total' => $total,
+            'approved' => $approved,
+            'submitted' => $submitted,
+            'rejected' => $rejected,
+            'pending' => $pending,
+            'percentage' => (int) (($approved / $total) * 100),
+        ];
     }
 }

@@ -101,6 +101,7 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
     Route::get('/documents', [StudentChecklistController::class, 'index'])->name('student.documents');
     Route::post('/checklist/{checklistItem}/upload', [StudentChecklistController::class, 'uploadDocument'])->name('student.checklist.upload');
     Route::delete('/checklist/{studentChecklist}', [StudentChecklistController::class, 'deleteDocument'])->name('student.checklist.delete');
+    Route::post('/checklist/{studentChecklist}/resubmit', [StudentChecklistController::class, 'resubmitDocument'])->name('student.checklist.resubmit');
 
     // Profile Management
     Route::get('/profile/edit', [StudentChecklistController::class, 'editProfile'])->name('student.profile.edit');
@@ -127,6 +128,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+    // Student Checklist Document Approval/Rejection
+    Route::post('/student-checklist/{studentChecklist}/approve', [StudentChecklistController::class, 'approveDocument'])->name('student.checklist.approve');
+    Route::post('/student-checklist/{studentChecklist}/reject', [StudentChecklistController::class, 'rejectDocument'])->name('student.checklist.reject');
 });
 
 // Home route redirect to dashboard

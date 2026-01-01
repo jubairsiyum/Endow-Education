@@ -357,11 +357,28 @@
                                                     <i class="fas fa-file-pdf text-danger me-2"></i>
                                                     <span>{{ $document->original_name ?? $document->file_name }}</span>
                                                     <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
+                                                    @php
+                                                        $docStatusColors = [
+                                                            'pending' => 'secondary',
+                                                            'submitted' => 'warning',
+                                                            'approved' => 'success',
+                                                            'rejected' => 'danger'
+                                                        ];
+                                                        $docColor = $docStatusColors[$document->status] ?? 'secondary';
+                                                    @endphp
+                                                    <span class="badge bg-{{ $docColor }} ms-2">{{ ucfirst($document->status) }}</span>
                                                     <br>
                                                     <small class="text-muted ms-4">
-                                                        Uploaded by {{ $document->uploadedBy->name ?? 'Unknown' }} on
+                                                        Uploaded by {{ $document->uploader->name ?? 'Unknown' }} on
                                                         {{ $document->created_at->format('M d, Y g:i A') }}
                                                     </small>
+                                                    @if($document->reviewed_by && $document->reviewed_at)
+                                                    <br>
+                                                    <small class="text-muted ms-4">
+                                                        Reviewed by {{ $document->reviewer->name ?? 'Unknown' }} on
+                                                        {{ $document->reviewed_at->format('M d, Y g:i A') }}
+                                                    </small>
+                                                    @endif
                                                 </div>
                                                 <div class="d-flex gap-2">
                                                     @if($document->file_data || ($document->file_path && \Storage::exists($document->file_path)))
@@ -403,10 +420,13 @@
                                 @if($checklist->status === 'submitted')
                                     @can('update', $student)
                                     <div class="mt-3">
-                                        <button class="btn btn-sm btn-success me-2">
-                                            <i class="fas fa-check me-1"></i> Approve
-                                        </button>
-                                        <button class="btn btn-sm btn-danger">
+                                        <form action="{{ route('student.checklist.approve', $checklist) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <button type="submit" class="btn btn-sm btn-success me-2" onclick="return confirm('Are you sure you want to approve this document?');">
+                                                <i class="fas fa-check me-1"></i> Approve
+                                            </button>
+                                        </form>
+                                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $checklist->id }}">
                                             <i class="fas fa-times me-1"></i> Reject
                                         </button>
                                     </div>
@@ -471,4 +491,32 @@
             </div>
         </div>
     </div>
+
+    <!-- Reject Modals -->
+    @foreach($student->checklists as $checklist)
+    <div class="modal fade" id="rejectModal{{ $checklist->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Document: {{ $checklist->checklistItem->title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('student.checklist.reject', $checklist) }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="feedback{{ $checklist->id }}" class="form-label">Feedback/Reason for Rejection <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="feedback{{ $checklist->id }}" name="feedback" rows="4" required placeholder="Please provide specific feedback about why this document is being rejected..."></textarea>
+                            <small class="text-muted">This feedback will be shown to the student so they can resubmit correctly.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject Document</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
 @endsection

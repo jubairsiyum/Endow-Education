@@ -26,6 +26,8 @@ class StudentChecklist extends Model
         'feedback',
         'approved_by',
         'approved_at',
+        'reviewed_by',
+        'reviewed_at',
         'submitted_at',
     ];
 
@@ -36,6 +38,7 @@ class StudentChecklist extends Model
      */
     protected $casts = [
         'approved_at' => 'datetime',
+        'reviewed_at' => 'datetime',
         'submitted_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
@@ -63,6 +66,14 @@ class StudentChecklist extends Model
     public function approver()
     {
         return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Get the user who reviewed this checklist.
+     */
+    public function reviewer()
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 
     /**

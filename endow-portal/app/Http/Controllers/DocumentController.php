@@ -25,7 +25,7 @@ class DocumentController extends Controller
         $user = Auth::user();
 
         // Build query based on role
-        $query = StudentDocument::with(['student.user']);
+        $query = StudentDocument::with(['student', 'student.user', 'checklistItem', 'uploader']);
 
         // Employees only see documents for their assigned students
         if ($user->hasRole('Employee') && !$user->hasRole(['Super Admin', 'Admin'])) {
@@ -82,11 +82,12 @@ class DocumentController extends Controller
                     'document_type' => 'student_document',
                     'filename' => $file->getClientOriginalName(),
                     'file_name' => $file->getClientOriginalName(),
+                    'original_name' => $file->getClientOriginalName(),
                     'file_size' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
                     'file_data' => $base64Content,
                     'uploaded_by' => Auth::id(),
-                    'status' => 'pending',
+                    'status' => 'submitted',
                     'notes' => $request->notes,
                 ]);
 

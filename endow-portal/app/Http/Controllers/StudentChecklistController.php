@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
 
 class StudentChecklistController extends Controller
 {
@@ -132,6 +133,8 @@ class StudentChecklistController extends Controller
 
         if ($existingChecklist && $existingChecklist->document_path) {
             Storage::disk('public')->delete($existingChecklist->document_path);
+            // Delete old document records
+            StudentDocument::where('student_checklist_id', $existingChecklist->id)->delete();
         }
 
         // Store the file in file system
@@ -146,8 +149,32 @@ class StudentChecklistController extends Controller
             [
                 'status' => 'submitted',
                 'document_path' => $path,
+                'submitted_at' => now(),
             ]
         );
+
+        // Create document record in student_documents table
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $fileContent = file_get_contents($file->getRealPath());
+            $base64Content = base64_encode($fileContent);
+
+            StudentDocument::create([
+                'student_id' => $student->id,
+                'checklist_item_id' => $checklistItem->id,
+                'student_checklist_id' => $studentChecklist->id,
+                'document_type' => 'student_document',
+                'filename' => $file->getClientOriginalName(),
+                'file_name' => $file->getClientOriginalName(),
+                'original_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'file_data' => $base64Content,
+                'file_path' => $path,
+                'uploaded_by' => $user->id,
+                'status' => 'submitted',
+            ]);
+        }
 
         // Log activity
         $this->activityLogService->log(
@@ -177,6 +204,9 @@ class StudentChecklistController extends Controller
             Storage::disk('public')->delete($studentChecklist->document_path);
         }
 
+        // Delete associated document records
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
+
         // Log activity before deletion
         $this->activityLogService->log(
             'student',
@@ -190,6 +220,9 @@ class StudentChecklistController extends Controller
             'status' => 'pending',
             'document_path' => null,
             'feedback' => null,
+            'submitted_at' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
         ]);
 
         return back()->with('success', 'Document deleted successfully.');
@@ -328,5 +361,172 @@ class StudentChecklistController extends Controller
         // Mail::to($student->assignedUser->email)->send(new StudentContactMessage($student, $request->all()));
 
         return back()->with('success', 'Your message has been submitted successfully! We will get back to you soon.');
+    }
+
+    /**
+     * Approve a student's submitted document.
+     */
+    public function approveDocument(StudentChecklist $studentChecklist)
+    {
+        $user = Auth::user();
+
+        // Authorize - only employees can approve
+        $student = $studentChecklist->student;
+        if (Gate::denies('update', $student)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Update checklist status to approved/completed
+        $studentChecklist->update([
+            'status' => 'approved',
+            'reviewed_by' => $user->id,
+            'reviewed_at' => now(),
+            'feedback' => null, // Clear any previous feedback
+        ]);
+
+        // Update all associated documents to approved status
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)
+            ->where('status', 'submitted')
+            ->update([
+                'status' => 'approved',
+                'reviewed_by' => $user->id,
+                'reviewed_at' => now(),
+            ]);
+
+        // Log activity
+        $this->activityLogService->log(
+            'employee',
+            "Approved document: {$studentChecklist->checklistItem->title} for {$student->name}",
+            $student,
+            ['checklist_item_id' => $studentChecklist->checklist_item_id]
+        );
+
+        return back()->with('success', 'Document approved successfully!');
+    }
+
+    /**
+     * Reject a student's submitted document with feedback.
+     */
+    public function rejectDocument(Request $request, StudentChecklist $studentChecklist)
+    {
+        $user = Auth::user();
+
+        // Authorize - only employees can reject
+        $student = $studentChecklist->student;
+        if (Gate::denies('update', $student)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'feedback' => 'required|string|max:1000',
+        ]);
+
+        // Update checklist status to rejected with feedback
+        $studentChecklist->update([
+            'status' => 'rejected',
+            'reviewed_by' => $user->id,
+            'reviewed_at' => now(),
+            'feedback' => $request->feedback,
+        ]);
+
+        // Update all associated documents to rejected status
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)
+            ->where('status', 'submitted')
+            ->update([
+                'status' => 'rejected',
+                'reviewed_by' => $user->id,
+                'reviewed_at' => now(),
+                'notes' => $request->feedback,
+            ]);
+
+        // Log activity
+        $this->activityLogService->log(
+            'employee',
+            "Rejected document: {$studentChecklist->checklistItem->title} for {$student->name}",
+            $student,
+            [
+                'checklist_item_id' => $studentChecklist->checklist_item_id,
+                'feedback' => $request->feedback
+            ]
+        );
+
+        return back()->with('success', 'Document rejected. Feedback has been sent to the student.');
+    }
+
+    /**
+     * Allow student to resubmit a rejected document.
+     */
+    public function resubmitDocument(Request $request, StudentChecklist $studentChecklist)
+    {
+        $user = Auth::user();
+        $student = Student::where('user_id', $user->id)->firstOrFail();
+
+        // Check authorization
+        if ($studentChecklist->student_id !== $student->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Only allow resubmission if status is rejected
+        if ($studentChecklist->status !== 'rejected') {
+            return back()->with('error', 'You can only resubmit rejected documents.');
+        }
+
+        $request->validate([
+            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
+        ]);
+
+        // Delete old file if exists
+        if ($studentChecklist->document_path) {
+            Storage::disk('public')->delete($studentChecklist->document_path);
+        }
+
+        // Delete old document records for this checklist
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
+
+        // Store the new file
+        $path = $request->file('document')->store('student-documents/' . $student->id, 'public');
+
+        // Update student checklist entry
+        $studentChecklist->update([
+            'status' => 'submitted',
+            'document_path' => $path,
+            'submitted_at' => now(),
+            'feedback' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
+        ]);
+
+        // Create new document record
+        if ($request->hasFile('document')) {
+            $file = $request->file('document');
+            $fileContent = file_get_contents($file->getRealPath());
+            $base64Content = base64_encode($fileContent);
+
+            StudentDocument::create([
+                'student_id' => $student->id,
+                'checklist_item_id' => $studentChecklist->checklist_item_id,
+                'student_checklist_id' => $studentChecklist->id,
+                'document_type' => 'student_document',
+                'filename' => $file->getClientOriginalName(),
+                'file_name' => $file->getClientOriginalName(),
+                'original_name' => $file->getClientOriginalName(),
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'file_data' => $base64Content,
+                'file_path' => $path,
+                'uploaded_by' => $user->id,
+                'status' => 'submitted',
+            ]);
+        }
+
+        // Log activity
+        $this->activityLogService->log(
+            'student',
+            "Resubmitted document for: {$studentChecklist->checklistItem->title}",
+            $student,
+            ['checklist_item_id' => $studentChecklist->checklist_item_id, 'document_path' => $path]
+        );
+
+        return back()->with('success', 'Document resubmitted successfully! Your document is now under review.');
     }
 }
