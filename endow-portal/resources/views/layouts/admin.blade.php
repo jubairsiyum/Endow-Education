@@ -662,6 +662,7 @@
         }
     </style>
 
+    @yield('styles')
     @stack('styles')
 </head>
 <body>
@@ -690,6 +691,11 @@
                     @if(isset($pendingCount) && $pendingCount > 0)
                         <span class="menu-badge">{{ $pendingCount }}</span>
                     @endif
+                </a>
+
+                <a href="{{ route('student-visits.index') }}" class="menu-item {{ request()->routeIs('student-visits.*') ? 'active' : '' }}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Student Visits</span>
                 </a>
                 @endcanany
 
@@ -843,6 +849,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    @yield('scripts')
     @stack('scripts')
 </body>
 </html>
