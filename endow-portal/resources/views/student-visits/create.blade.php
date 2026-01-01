@@ -28,10 +28,10 @@
                                 <label for="student_name" class="form-label fw-semibold">
                                     Student Full Name <span class="text-danger">*</span>
                                 </label>
-                                <input type="text" 
-                                       class="form-control @error('student_name') is-invalid @enderror" 
-                                       id="student_name" 
-                                       name="student_name" 
+                                <input type="text"
+                                       class="form-control @error('student_name') is-invalid @enderror"
+                                       id="student_name"
+                                       name="student_name"
                                        value="{{ old('student_name') }}"
                                        placeholder="Enter student's full name"
                                        required>
@@ -47,10 +47,10 @@
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-phone"></i></span>
-                                    <input type="text" 
-                                           class="form-control @error('phone') is-invalid @enderror" 
-                                           id="phone" 
-                                           name="phone" 
+                                    <input type="text"
+                                           class="form-control @error('phone') is-invalid @enderror"
+                                           id="phone"
+                                           name="phone"
                                            value="{{ old('phone') }}"
                                            placeholder="+1234567890"
                                            required>
@@ -67,10 +67,10 @@
                                 </label>
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                                    <input type="email" 
-                                           class="form-control @error('email') is-invalid @enderror" 
-                                           id="email" 
-                                           name="email" 
+                                    <input type="email"
+                                           class="form-control @error('email') is-invalid @enderror"
+                                           id="email"
+                                           name="email"
                                            value="{{ old('email') }}"
                                            placeholder="student@example.com">
                                     @error('email')
@@ -85,12 +85,12 @@
                                 <label for="employee_id" class="form-label fw-semibold">
                                     Assign to Employee
                                 </label>
-                                <select class="form-select @error('employee_id') is-invalid @enderror" 
-                                        id="employee_id" 
+                                <select class="form-select @error('employee_id') is-invalid @enderror"
+                                        id="employee_id"
                                         name="employee_id">
                                     <option value="">Select Employee (Default: You)</option>
                                     @foreach($employees as $employee)
-                                    <option value="{{ $employee->id }}" 
+                                    <option value="{{ $employee->id }}"
                                             {{ old('employee_id') == $employee->id ? 'selected' : '' }}>
                                         {{ $employee->name }}
                                     </option>
@@ -108,12 +108,10 @@
                                 <label for="notes" class="form-label fw-semibold">
                                     Visit Notes
                                 </label>
-                                <textarea class="form-control tinymce-editor @error('notes') is-invalid @enderror" 
-                                          id="notes" 
-                                          name="notes" 
-                                          rows="10">{{ old('notes') }}</textarea>
+                                <div id="quill-editor" style="height: 300px;"></div>
+                                <textarea name="notes" id="notes" style="display:none;">{{ old('notes') }}</textarea>
                                 @error('notes')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                                 <small class="text-muted">Document the visit details, student queries, requirements, and follow-up actions</small>
                             </div>
@@ -167,25 +165,55 @@
     </div>
 @endsection
 
+@section('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
+<style>
+    .ql-editor {
+        min-height: 300px;
+        font-size: 14px;
+    }
+    .ql-toolbar.ql-snow {
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+    }
+    .ql-container.ql-snow {
+        border-bottom-left-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+    }
+</style>
+@endsection
+
 @section('scripts')
-<script src="https://cdn.tiny.cloud/1/4wswwg07jpmzsbi0dwn2j5tk4zky0ofs2539l59f7eolbl5l/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+<script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        tinymce.init({
-            selector: '.tinymce-editor',
-            height: 400,
-            menubar: false,
-            plugins: [
-                'advlist', 'autolink', 'lists', 'link', 'charmap', 'preview',
-                'searchreplace', 'visualblocks', 'code', 'fullscreen',
-                'insertdatetime', 'table', 'help', 'wordcount'
-            ],
-            toolbar: 'undo redo | formatselect | bold italic underline | ' +
-                'alignleft aligncenter alignright alignjustify | ' +
-                'bullist numlist outdent indent | link | removeformat | help',
-            content_style: 'body { font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; font-size: 14px; }',
-            branding: false,
+        var quill = new Quill('#quill-editor', {
+            theme: 'snow',
+            placeholder: 'Document the visit details, student queries, requirements, and follow-up actions...',
+            modules: {
+                toolbar: [
+                    [{ 'header': [1, 2, 3, false] }],
+                    ['bold', 'italic', 'underline', 'strike'],
+                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                    [{ 'color': [] }, { 'background': [] }],
+                    [{ 'align': [] }],
+                    ['link'],
+                    ['clean']
+                ]
+            }
         });
+
+        // Sync Quill content with hidden textarea
+        quill.on('text-change', function() {
+            document.getElementById('notes').value = quill.root.innerHTML;
+        });
+
+        // Set initial content if exists
+        var initialContent = document.getElementById('notes').value;
+        if (initialContent) {
+            quill.root.innerHTML = initialContent;
+        }
     });
 </script>
 @endsection
