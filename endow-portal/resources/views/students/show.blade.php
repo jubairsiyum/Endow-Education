@@ -381,18 +381,20 @@
                                                     @endif
                                                 </div>
                                                 <div class="d-flex gap-2">
-                                                    @if($document->file_data || ($document->file_path && \Storage::exists($document->file_path)))
+                                                    @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
+                                                        <a href="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
+                                                           class="btn btn-sm btn-primary"
+                                                           target="_blank"
+                                                           title="View Document">
+                                                            <i class="fas fa-eye me-1"></i> View
+                                                        </a>
                                                         <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
-                                                           class="btn btn-sm btn-outline-primary"
+                                                           class="btn btn-sm btn-outline-secondary"
                                                            title="Download">
                                                             <i class="fas fa-download"></i>
                                                         </a>
-                                                        <a href="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
-                                                           class="btn btn-sm btn-outline-info"
-                                                           target="_blank"
-                                                           title="View">
-                                                            <i class="fas fa-eye"></i>
-                                                        </a>
+                                                    @else
+                                                        <span class="badge bg-danger">File Missing</span>
                                                     @endif
                                                     @can('update', $student)
                                                         <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
