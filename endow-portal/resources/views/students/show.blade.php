@@ -196,13 +196,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="checklist-tab" data-bs-toggle="tab"
                         data-bs-target="#checklist" type="button" role="tab">
-                    <i class="fas fa-tasks me-2"></i> Checklist
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="documents-tab" data-bs-toggle="tab"
-                        data-bs-target="#documents" type="button" role="tab">
-                    <i class="fas fa-file-pdf me-2"></i> Documents
+                    <i class="fas fa-tasks me-2"></i> Checklist & Documents
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -291,133 +285,148 @@
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Required</th>
-                                <th>Status</th>
-                                <th>Submitted Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($student->checklists as $checklist)
-                            <tr>
-                                <td>
-                                    <strong>{{ $checklist->checklistItem->name }}</strong>
-                                    @if($checklist->checklistItem->description)
-                                    <br><small class="text-muted">{{ $checklist->checklistItem->description }}</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($checklist->checklistItem->is_required)
-                                        <span class="badge-custom badge-danger-custom">Required</span>
-                                    @else
-                                        <span class="badge-custom badge-secondary-custom">Optional</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $checklistColors = [
-                                            'pending' => 'secondary',
-                                            'submitted' => 'warning',
-                                            'approved' => 'success',
-                                            'rejected' => 'danger'
-                                        ];
-                                        $checklistColor = $checklistColors[$checklist->status] ?? 'secondary';
-                                    @endphp
-                                    <span class="badge-custom badge-{{ $checklistColor }}-custom">
-                                        {{ ucfirst($checklist->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {{ $checklist->submitted_at ? $checklist->submitted_at->format('M d, Y') : '-' }}
-                                </td>
-                                <td>
-                                    @if($checklist->status === 'submitted')
-                                        @can('update', $student)
-                                        <button class="btn btn-sm btn-success">Approve</button>
-                                        <button class="btn btn-sm btn-danger">Reject</button>
-                                        @endcan
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4">
-                                    No checklist items found
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Documents Tab -->
-            <div class="tab-pane fade" id="documents" role="tabpanel">
-                <div class="mb-4">
-                    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                        <i class="fas fa-upload me-2"></i> Upload Document
-                    </button>
-                </div>
-
-                <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th>Document</th>
-                                <th>Checklist Item</th>
-                                <th>Size</th>
-                                <th>Uploaded</th>
-                                <th>Uploaded By</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($student->documents as $document)
-                            <tr>
-                                <td>
-                                    <i class="fas fa-file-pdf text-danger me-2"></i>
-                                    <strong>{{ $document->original_filename }}</strong>
-                                </td>
-                                <td>{{ $document->checklistItem->name ?? 'General' }}</td>
-                                <td>{{ $document->file_size_human }}</td>
-                                <td>{{ $document->created_at->format('M d, Y g:i A') }}</td>
-                                <td>{{ $document->uploadedBy->name ?? 'Unknown' }}</td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="#" class="action-btn view" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="action-btn info" title="Download">
-                                            <i class="fas fa-download"></i>
-                                        </a>
-                                        @can('update', $student)
-                                        <form action="#" method="POST" class="d-inline">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="action-btn delete" title="Delete"
-                                                    onclick="return confirm('Are you sure?');">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </form>
-                                        @endcan
+                <div class="list-group">
+                    @forelse($student->checklists as $checklist)
+                    <div class="list-group-item mb-3 border rounded">
+                        <div class="row align-items-start">
+                            <div class="col-auto">
+                                @if($checklist->status === 'approved')
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-check"></i>
                                     </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-5">
-                                    <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">No documents uploaded yet</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                @elseif($checklist->status === 'submitted')
+                                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                @elseif($checklist->status === 'rejected')
+                                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                @else
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">
+                                            {{ $checklist->checklistItem->title }}
+                                            @if($checklist->checklistItem->is_required)
+                                                <span class="badge bg-danger ms-2">Required</span>
+                                            @else
+                                                <span class="badge bg-secondary ms-2">Optional</span>
+                                            @endif
+                                        </h6>
+                                    </div>
+                                    <div class="ms-3">
+                                        @php
+                                            $checklistColors = [
+                                                'pending' => 'secondary',
+                                                'submitted' => 'warning',
+                                                'approved' => 'success',
+                                                'rejected' => 'danger'
+                                            ];
+                                            $checklistColor = $checklistColors[$checklist->status] ?? 'secondary';
+                                        @endphp
+                                        <span class="badge bg-{{ $checklistColor }}">
+                                            {{ ucfirst($checklist->status) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                @if($checklist->submitted_at)
+                                    <p class="small text-muted mb-2">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Submitted: {{ $checklist->submitted_at->format('M d, Y g:i A') }}
+                                    </p>
+                                @endif
+
+                                @if($checklist->documents->count() > 0)
+                                    <div class="mt-3">
+                                        <strong class="small">Documents:</strong>
+                                        <div class="list-group list-group-flush mt-2">
+                                            @foreach($checklist->documents as $document)
+                                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                    <span>{{ $document->original_name ?? $document->file_name }}</span>
+                                                    <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
+                                                    <br>
+                                                    <small class="text-muted ms-4">
+                                                        Uploaded by {{ $document->uploadedBy->name ?? 'Unknown' }} on
+                                                        {{ $document->created_at->format('M d, Y g:i A') }}
+                                                    </small>
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    @if($document->file_data || ($document->file_path && \Storage::exists($document->file_path)))
+                                                        <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           title="Download">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                        <a href="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
+                                                           class="btn btn-sm btn-outline-info"
+                                                           target="_blank"
+                                                           title="View">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    @endif
+                                                    @can('update', $student)
+                                                        <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
+                                                              method="POST"
+                                                              class="d-inline"
+                                                              onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endcan
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="alert alert-info alert-sm mt-2 mb-0">
+                                        <small><i class="fas fa-info-circle me-1"></i> No documents uploaded yet for this item</small>
+                                    </div>
+                                @endif
+
+                                @if($checklist->status === 'submitted')
+                                    @can('update', $student)
+                                    <div class="mt-3">
+                                        <button class="btn btn-sm btn-success me-2">
+                                            <i class="fas fa-check me-1"></i> Approve
+                                        </button>
+                                        <button class="btn btn-sm btn-danger">
+                                            <i class="fas fa-times me-1"></i> Reject
+                                        </button>
+                                    </div>
+                                    @endcan
+                                @endif
+
+                                @if($checklist->feedback)
+                                    <div class="alert alert-warning alert-sm mt-2 mb-0">
+                                        <strong>Feedback:</strong> {{ $checklist->feedback }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-5">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No checklist items found</p>
+                    </div>
+                    @endforelse
                 </div>
             </div>
 

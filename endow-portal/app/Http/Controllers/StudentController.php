@@ -142,7 +142,9 @@ class StudentController extends Controller
             'creator',
             'followUps.creator',
             'checklists.checklistItem',
-            'documents.checklistItem'
+            'checklists.documents.uploadedBy',
+            'documents.checklistItem',
+            'documents.uploadedBy'
         ]);
 
         $checklistProgress = $this->checklistService->getChecklistProgress($student);

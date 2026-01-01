@@ -26,6 +26,7 @@ class StudentChecklist extends Model
         'feedback',
         'approved_by',
         'approved_at',
+        'submitted_at',
     ];
 
     /**
@@ -35,6 +36,7 @@ class StudentChecklist extends Model
      */
     protected $casts = [
         'approved_at' => 'datetime',
+        'submitted_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

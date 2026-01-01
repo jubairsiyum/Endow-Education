@@ -92,8 +92,11 @@ class DocumentController extends Controller
 
                 // Update checklist status to submitted
                 $checklist = StudentChecklist::find($request->student_checklist_id);
-                if ($checklist) {
-                    $checklist->update(['status' => 'submitted']);
+                if ($checklist && $checklist->status === 'pending') {
+                    $checklist->update([
+                        'status' => 'submitted',
+                        'submitted_at' => now(),
+                    ]);
                 }
 
                 DB::commit();
