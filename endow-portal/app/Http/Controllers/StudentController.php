@@ -175,6 +175,7 @@ class StudentController extends Controller
 
         try {
             $oldAssignedTo = $student->assigned_to;
+            $oldProgramId = $student->target_program_id;
 
             $student->update($request->only([
                 'name',
@@ -197,6 +198,26 @@ class StudentController extends Controller
                 if ($oldAssignedTo != $request->assigned_to) {
                     $this->activityLog->logStudentAssigned($student, $oldAssignedTo, $request->assigned_to);
                 }
+            }
+
+            // If program has changed, reinitialize checklists
+            if ($oldProgramId != $request->target_program_id) {
+                $this->checklistService->reinitializeChecklistsForProgramChange($student);
+
+                $oldProgramName = $oldProgramId ? \App\Models\Program::find($oldProgramId)?->name ?? 'Unknown' : 'None';
+                $newProgramName = $request->target_program_id ? \App\Models\Program::find($request->target_program_id)?->name ?? 'Unknown' : 'None';
+
+                $this->activityLog->log(
+                    'student',
+                    "Program changed from {$oldProgramName} to {$newProgramName}",
+                    $student,
+                    [
+                        'old_program_id' => $oldProgramId,
+                        'new_program_id' => $request->target_program_id,
+                        'old_program_name' => $oldProgramName,
+                        'new_program_name' => $newProgramName,
+                    ]
+                );
             }
 
             DB::commit();

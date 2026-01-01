@@ -64,6 +64,10 @@
                         <h5><i class="fas fa-graduation-cap me-2 text-danger"></i>Academic Information</h5>
                     </div>
                     <div class="card-body-custom">
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Important:</strong> When you assign a program to a student, they will only see the required documents specific to that program. If no program is assigned, all available checklist items will be shown.
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="target_university_id" class="form-label">Target University</label>
