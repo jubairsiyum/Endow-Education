@@ -18,6 +18,15 @@
                                 <div>
                                     <h4 class="mb-1 fw-bold">Document Submission Center</h4>
                                     <p class="mb-0 text-muted">Upload your required documents for review and approval</p>
+                                    @if($student->targetProgram)
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-graduation-cap me-1"></i>
+                                            Program: <strong>{{ $student->targetProgram->name }}</strong>
+                                            @if($student->targetUniversity)
+                                                at {{ $student->targetUniversity->name }}
+                                            @endif
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -42,11 +51,23 @@
                         <span class="badge bg-white text-dark px-3 py-2">
                             <i class="fas fa-shield-alt text-success me-1"></i> Secure Upload
                         </span>
+                        @if($student->targetProgram)
+                            <span class="badge bg-white text-success px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i> Program-Specific Documents
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @if($student->targetProgram)
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Note:</strong> The documents shown below are specifically required for the <strong>{{ $student->targetProgram->name }}</strong> program. If your program changes, your required documents may also change.
+    </div>
+    @endif
 
     <div class="row">
         <div class="col-lg-8">

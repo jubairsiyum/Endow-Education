@@ -65,6 +65,10 @@
                         <h5><i class="fas fa-university me-2"></i>Academic Information</h5>
                     </div>
                     <div class="card-body-custom">
+                        <div class="alert alert-info mb-3">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Important:</strong> Changing the program will update the student's required document checklist. Any pending (not submitted) checklist items will be removed and replaced with the new program's requirements.
+                        </div>
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="target_university_id" class="form-label">Target University</label>

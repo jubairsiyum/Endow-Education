@@ -12,13 +12,25 @@ class ChecklistService
     /**
      * Initialize checklists for a student
      * Creates StudentChecklist entries for all active checklist items
+     * If student has an assigned program, only initialize checklist items for that program
      *
      * @param Student $student
      * @return void
      */
     public function initializeChecklistsForStudent(Student $student): void
     {
-        $checklistItems = ChecklistItem::active()->ordered()->get();
+        // If student has an assigned program, get only checklist items for that program
+        if ($student->target_program_id) {
+            $checklistItems = ChecklistItem::active()
+                ->whereHas('programs', function ($query) use ($student) {
+                    $query->where('program_id', $student->target_program_id);
+                })
+                ->ordered()
+                ->get();
+        } else {
+            // If no program assigned, get all active checklist items
+            $checklistItems = ChecklistItem::active()->ordered()->get();
+        }
 
         foreach ($checklistItems as $item) {
             StudentChecklist::firstOrCreate(
@@ -34,6 +46,24 @@ class ChecklistService
     }
 
     /**
+     * Reinitialize checklists for a student when program is changed
+     * This will remove old checklists and create new ones based on the new program
+     *
+     * @param Student $student
+     * @return void
+     */
+    public function reinitializeChecklistsForProgramChange(Student $student): void
+    {
+        // Delete existing checklists that haven't been submitted yet
+        $student->checklists()
+            ->where('status', 'pending')
+            ->delete();
+
+        // Initialize new checklists based on the new program
+        $this->initializeChecklistsForStudent($student);
+    }
+
+    /**
      * Get checklist progress for a student
      *
      * @param Student $student
@@ -42,7 +72,7 @@ class ChecklistService
     public function getChecklistProgress(Student $student): array
     {
         $total = $student->checklists()->count();
-        
+
         if ($total === 0) {
             return [
                 'total' => 0,
@@ -87,7 +117,7 @@ class ChecklistService
         ?int $approvedBy = null
     ): StudentChecklist {
         $checklist->status = $status;
-        
+
         if ($remarks) {
             $checklist->remarks = $remarks;
         }

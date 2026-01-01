@@ -31,7 +31,19 @@ class UpdateStudentRequest extends FormRequest
             'country' => ['required', 'string', 'max:255'],
             'course' => ['nullable', 'string', 'max:255'],
             'target_university_id' => ['nullable', 'exists:universities,id'],
-            'target_program_id' => ['nullable', 'exists:programs,id'],
+            'target_program_id' => [
+                'nullable',
+                'exists:programs,id',
+                function ($attribute, $value, $fail) {
+                    // If program is selected, ensure it belongs to the selected university
+                    if ($value && $this->target_university_id) {
+                        $program = \App\Models\Program::find($value);
+                        if ($program && $program->university_id != $this->target_university_id) {
+                            $fail('The selected program does not belong to the selected university.');
+                        }
+                    }
+                },
+            ],
             'status' => ['nullable', 'in:new,contacted,processing,applied,approved,rejected'],
             'account_status' => ['nullable', 'in:pending,approved,rejected'],
             'assigned_to' => ['nullable', 'exists:users,id'],
