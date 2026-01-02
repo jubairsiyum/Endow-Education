@@ -67,6 +67,7 @@ class Student extends Model
      */
     protected $casts = [
         'date_of_birth' => 'date',
+        'passport_expiry_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -117,6 +118,30 @@ class Student extends Model
     public function documents()
     {
         return $this->hasMany(StudentDocument::class);
+    }
+
+    /**
+     * Get the student profile.
+     */
+    public function profile()
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    /**
+     * Get all profile photos.
+     */
+    public function profilePhotos()
+    {
+        return $this->hasMany(StudentProfilePhoto::class);
+    }
+
+    /**
+     * Get the active profile photo.
+     */
+    public function activeProfilePhoto()
+    {
+        return $this->hasOne(StudentProfilePhoto::class)->where('is_active', true);
     }
 
     /**

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\FollowUpController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\DocumentController;
@@ -60,6 +61,13 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('students', StudentController::class);
     Route::post('/students/{student}/approve', [StudentController::class, 'approve'])->name('students.approve');
     Route::post('/students/{student}/reject', [StudentController::class, 'reject'])->name('students.reject');
+    
+    // Student Profile Management (Admin/Staff)
+    Route::get('/students/{student}/profile', [StudentProfileController::class, 'show'])->name('students.profile.show');
+    Route::get('/students/{student}/profile/edit', [StudentProfileController::class, 'edit'])->name('students.profile.edit');
+    Route::put('/students/{student}/profile', [StudentProfileController::class, 'update'])->name('students.profile.update');
+    Route::post('/students/{student}/profile/photo', [StudentProfileController::class, 'uploadPhoto'])->name('students.profile.photo.upload');
+    Route::delete('/students/{student}/profile/photo', [StudentProfileController::class, 'deletePhoto'])->name('students.profile.photo.delete');
 });
 
 // Follow-up Routes
@@ -103,9 +111,12 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
     Route::delete('/checklist/{studentChecklist}', [StudentChecklistController::class, 'deleteDocument'])->name('student.checklist.delete');
     Route::post('/checklist/{studentChecklist}/resubmit', [StudentChecklistController::class, 'resubmitDocument'])->name('student.checklist.resubmit');
 
-    // Profile Management
-    Route::get('/profile/edit', [StudentChecklistController::class, 'editProfile'])->name('student.profile.edit');
-    Route::put('/profile', [StudentChecklistController::class, 'updateProfile'])->name('student.profile.update');
+    // Profile Management - Enhanced
+    Route::get('/profile', [StudentProfileController::class, 'edit'])->name('student.profile');
+    Route::get('/profile/edit', [StudentProfileController::class, 'edit'])->name('student.profile.edit');
+    Route::put('/profile', [StudentProfileController::class, 'update'])->name('student.profile.update');
+    Route::post('/profile/photo', [StudentProfileController::class, 'uploadPhoto'])->name('student.profile.photo.upload');
+    Route::delete('/profile/photo', [StudentProfileController::class, 'deletePhoto'])->name('student.profile.photo.delete');
 
     // FAQ
     Route::get('/faq', [StudentChecklistController::class, 'faq'])->name('student.faq');
