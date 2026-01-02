@@ -116,11 +116,24 @@ class DocumentController extends Controller
     /**
      * Download a document
      */
-    public function download(StudentDocument $document)
+    public function download(Student $student = null, StudentDocument $document)
     {
-        $this->authorize('view', $document->student);
+        if ($student) {
+            $this->authorize('view', $student);
+            if ($document->student_id !== $student->id) {
+                abort(404);
+            }
+        } else {
+            $this->authorize('view', $document->student);
+        }
 
-        $fileContent = base64_decode($document->file_data);
+        if ($document->file_data) {
+            $fileContent = base64_decode($document->file_data);
+        } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+            $fileContent = Storage::disk('public')->get($document->file_path);
+        } else {
+            abort(404, 'Document file not found.');
+        }
 
         return response($fileContent)
             ->header('Content-Type', $document->mime_type)
@@ -130,23 +143,41 @@ class DocumentController extends Controller
     /**
      * View a document in browser
      */
-    public function view(StudentDocument $document)
+    public function view(Student $student = null, StudentDocument $document)
     {
-        $this->authorize('view', $document->student);
+        if ($student) {
+            $this->authorize('view', $student);
+            if ($document->student_id !== $student->id) {
+                abort(404);
+            }
+        } else {
+            $this->authorize('view', $document->student);
+        }
 
-        $fileContent = base64_decode($document->file_data);
+        if ($document->file_data) {
+            $fileContent = base64_decode($document->file_data);
+        } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+            $fileContent = Storage::disk('public')->get($document->file_path);
+        } else {
+            abort(404, 'Document file not found.');
+        }
 
-        return response($fileContent)
-            ->header('Content-Type', $document->mime_type)
-            ->header('Content-Disposition', 'inline; filename="' . $document->filename . '"');
+        return view('students.documents.view', compact('student', 'document', 'fileContent'));
     }
 
     /**
      * Approve a document
      */
-    public function approve(StudentDocument $document)
+    public function approve(Student $student = null, StudentDocument $document)
     {
-        $this->authorize('update', $document->student);
+        if ($student) {
+            $this->authorize('update', $student);
+            if ($document->student_id !== $student->id) {
+                abort(404);
+            }
+        } else {
+            $this->authorize('update', $document->student);
+        }
 
         $document->update([
             'status' => 'approved',
@@ -160,9 +191,16 @@ class DocumentController extends Controller
     /**
      * Reject a document
      */
-    public function reject(Request $request, StudentDocument $document)
+    public function reject(Request $request, Student $student = null, StudentDocument $document)
     {
-        $this->authorize('update', $document->student);
+        if ($student) {
+            $this->authorize('update', $student);
+            if ($document->student_id !== $student->id) {
+                abort(404);
+            }
+        } else {
+            $this->authorize('update', $document->student);
+        }
 
         $request->validate([
             'rejection_reason' => 'nullable|string|max:500',
@@ -181,9 +219,16 @@ class DocumentController extends Controller
     /**
      * Delete a document
      */
-    public function destroy(StudentDocument $document)
+    public function destroy(Student $student = null, StudentDocument $document)
     {
-        $this->authorize('delete', $document->student);
+        if ($student) {
+            $this->authorize('delete', $student);
+            if ($document->student_id !== $student->id) {
+                abort(404);
+            }
+        } else {
+            $this->authorize('delete', $document->student);
+        }
 
         $document->delete();
 
