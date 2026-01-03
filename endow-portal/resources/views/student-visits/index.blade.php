@@ -138,10 +138,11 @@
                                 <form action="{{ route('student-visits.destroy', $visit) }}" 
                                       method="POST" 
                                       class="d-inline"
-                                      onsubmit="return confirm('Are you sure you want to delete this visit record?');">
+                                      id="delete-visit-form-{{ $visit->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                            onclick="confirmDeleteVisitIndex({{ $visit->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -177,4 +178,25 @@
         </div>
         @endif
     </div>
+
+@push('scripts')
+<script>
+    function confirmDeleteVisitIndex(visitId) {
+        Swal.fire({
+            title: 'Delete Visit Record?',
+            text: 'Are you sure you want to delete this visit record? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-visit-form-' + visitId).submit();
+            }
+        });
+    }
+</script>
+@endpush
 @endsection

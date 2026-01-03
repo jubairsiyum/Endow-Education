@@ -115,12 +115,13 @@
                                                 <form action="{{ route('documents.destroy', $document) }}"
                                                       method="POST"
                                                       class="d-inline"
-                                                      onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                      id="delete-document-form-{{ $document->id }}">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit"
+                                                    <button type="button"
                                                             class="btn btn-sm btn-danger"
-                                                            title="Delete">
+                                                            title="Delete"
+                                                            onclick="confirmDeleteDocumentIndex({{ $document->id }})">
                                                         <i class="fas fa-trash"></i>
                                                     </button>
                                                 </form>
@@ -176,4 +177,25 @@
             @endif
         </div>
     </div>
+
+@push('scripts')
+<script>
+    function confirmDeleteDocumentIndex(documentId) {
+        Swal.fire({
+            title: 'Delete Document?',
+            text: 'Are you sure you want to delete this document? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-document-form-' + documentId).submit();
+            }
+        });
+    }
+</script>
+@endpush
 @endsection

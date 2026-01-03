@@ -134,11 +134,11 @@
                                 <a href="{{ route('programs.edit', $program) }}" class="btn btn-outline-primary" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('programs.destroy', $program) }}" method="POST" class="d-inline">
+                                <form action="{{ route('programs.destroy', $program) }}" method="POST" class="d-inline" id="delete-program-form-{{ $program->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" title="Delete"
-                                            onclick="return confirm('Are you sure? This will affect {{ $program->students_count }} students.');">
+                                    <button type="button" class="btn btn-outline-danger" title="Delete"
+                                            onclick="confirmDeleteProgramIndex({{ $program->id }}, {{ $program->students_count }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -170,4 +170,25 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    function confirmDeleteProgramIndex(programId, studentCount) {
+        Swal.fire({
+            title: 'Delete Program?',
+            text: `Are you sure? This will affect ${studentCount} students.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-program-form-' + programId).submit();
+            }
+        });
+    }
+</script>
+@endpush
 @endsection

@@ -177,10 +177,11 @@
                                 @endcan
                                 @can('delete', $student)
                                 <form action="{{ route('students.destroy', $student) }}" method="POST"
-                                      onsubmit="return confirm('Are you sure you want to delete this student?');" class="d-inline">
+                                      class="d-inline" id="delete-student-form-{{ $student->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete">
+                                    <button type="button" class="btn btn-outline-danger btn-sm" title="Delete"
+                                            onclick="confirmDeleteStudent({{ $student->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -213,4 +214,25 @@
         </div>
         @endif
     </div>
+
+    @push('scripts')
+    <script>
+        function confirmDeleteStudent(studentId) {
+            Swal.fire({
+                title: 'Delete Student?',
+                text: 'Are you sure you want to delete this student? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-student-form-' + studentId).submit();
+                }
+            });
+        }
+    </script>
+    @endpush
 @endsection

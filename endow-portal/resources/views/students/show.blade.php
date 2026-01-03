@@ -172,10 +172,10 @@
                     <i class="fas fa-check me-2"></i> Approve
                 </button>
             </form>
-            <form action="{{ route('students.reject', $student) }}" method="POST" class="d-inline">
+            <form action="{{ route('students.reject', $student) }}" method="POST" class="d-inline" id="reject-student-form">
                 @csrf
-                <button type="submit" class="btn btn-danger"
-                        onclick="return confirm('Are you sure you want to reject this student?');">
+                <button type="button" class="btn btn-danger"
+                        onclick="confirmRejectStudent()">
                     <i class="fas fa-times me-2"></i> Reject
                 </button>
             </form>
@@ -400,10 +400,11 @@
                                                         <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
                                                               method="POST"
                                                               class="d-inline"
-                                                              onsubmit="return confirm('Are you sure you want to delete this document?');">
+                                                              id="delete-doc-form-{{ $document->id }}">
                                                             @csrf
                                                             @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                                                    onclick="confirmDeleteDocument({{ $document->id }})">
                                                                 <i class="fas fa-trash"></i>
                                                             </button>
                                                         </form>
@@ -422,9 +423,9 @@
                                 @if($checklist->status === 'submitted')
                                     @can('update', $student)
                                     <div class="mt-3">
-                                        <form action="{{ route('student.checklist.approve', $checklist) }}" method="POST" class="d-inline">
+                                        <form action="{{ route('student.checklist.approve', $checklist) }}" method="POST" class="d-inline" id="approve-form-{{ $checklist->id }}">
                                             @csrf
-                                            <button type="submit" class="btn btn-sm btn-success me-2" onclick="return confirm('Are you sure you want to approve this document?');">
+                                            <button type="button" class="btn btn-sm btn-success me-2" onclick="confirmApproveDocument({{ $checklist->id }})">
                                                 <i class="fas fa-check me-1"></i> Approve
                                             </button>
                                         </form>
@@ -521,4 +522,59 @@
         </div>
     </div>
     @endforeach
+
+    @push('scripts')
+    <script>
+        function confirmRejectStudent() {
+            Swal.fire({
+                title: 'Reject Student?',
+                text: 'Are you sure you want to reject this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, reject it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('reject-student-form').submit();
+                }
+            });
+        }
+
+        function confirmDeleteDocument(documentId) {
+            Swal.fire({
+                title: 'Delete Document?',
+                text: 'Are you sure you want to delete this document?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-doc-form-' + documentId).submit();
+                }
+            });
+        }
+
+        function confirmApproveDocument(checklistId) {
+            Swal.fire({
+                title: 'Approve Document?',
+                text: 'Are you sure you want to approve this document?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, approve it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('approve-form-' + checklistId).submit();
+                }
+            });
+        }
+    </script>
+    @endpush
 @endsection

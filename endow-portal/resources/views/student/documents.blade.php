@@ -783,7 +783,12 @@
 
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
-                alert('File size exceeds 10MB limit. Please choose a smaller file.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Too Large',
+                    text: 'File size exceeds 10MB limit. Please choose a smaller file.',
+                    confirmButtonColor: '#DC143C'
+                });
                 if (isResubmit) {
                     clearResubmitSelection(itemId);
                 } else {
@@ -796,7 +801,12 @@
             const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
             const fileExt = '.' + file.name.split('.').pop().toLowerCase();
             if (!allowedTypes.includes(fileExt)) {
-                alert('Invalid file type. Please upload PDF, JPG, or PNG files only.');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: 'Please upload PDF, JPG, or PNG files only.',
+                    confirmButtonColor: '#DC143C'
+                });
                 if (isResubmit) {
                     clearResubmitSelection(itemId);
                 } else {
@@ -837,7 +847,12 @@
 
             if (!fileInput.files.length) {
                 e.preventDefault();
-                alert('Please select a file to upload.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No File Selected',
+                    text: 'Please select a file to upload.',
+                    confirmButtonColor: '#DC143C'
+                });
                 return;
             }
 

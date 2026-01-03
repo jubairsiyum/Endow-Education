@@ -125,10 +125,11 @@
                             @if($hasActivePhoto)
                                 <form action="{{ route('student.profile.photo.delete') }}" 
                                       method="POST"
-                                      onsubmit="return confirm('Are you sure you want to delete your profile photo?')">
+                                      id="delete-photo-form">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                    <button type="button" class="btn btn-outline-danger w-100"
+                                            onclick="confirmDeletePhoto()">
                                         <i class="fas fa-trash me-2"></i>Remove Photo
                                     </button>
                                 </form>
@@ -736,5 +737,22 @@
             });
         }, 5000);
     });
+
+    function confirmDeletePhoto() {
+        Swal.fire({
+            title: 'Delete Profile Photo?',
+            text: 'Are you sure you want to delete your profile photo?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-photo-form').submit();
+            }
+        });
+    }
 </script>
 @endsection

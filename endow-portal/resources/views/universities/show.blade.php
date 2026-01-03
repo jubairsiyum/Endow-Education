@@ -13,11 +13,11 @@
             <a href="{{ route('universities.edit', $university) }}" class="btn btn-primary btn-sm">
                 <i class="fas fa-edit me-1"></i> Edit
             </a>
-            <form action="{{ route('universities.destroy', $university) }}" method="POST" class="d-inline">
+            <form action="{{ route('universities.destroy', $university) }}" method="POST" class="d-inline" id="delete-university-form">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-danger btn-sm"
-                        onclick="return confirm('Are you sure you want to delete this university?');">
+                <button type="button" class="btn btn-danger btn-sm"
+                        onclick="confirmDeleteUniversity()">
                     <i class="fas fa-trash me-1"></i> Delete
                 </button>
             </form>
@@ -186,4 +186,25 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    function confirmDeleteUniversity() {
+        Swal.fire({
+            title: 'Delete University?',
+            text: 'Are you sure you want to delete this university? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-university-form').submit();
+            }
+        });
+    }
+</script>
+@endpush
 @endsection

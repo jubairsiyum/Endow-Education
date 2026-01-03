@@ -167,7 +167,7 @@
                     </a>
                     @can('delete', $student)
                     <button type="button" class="btn btn-outline-danger ms-auto"
-                            onclick="if(confirm('Are you sure you want to delete this student?')) { document.getElementById('delete-form').submit(); }">
+                            onclick="confirmDeleteStudentEdit()">
                         <i class="fas fa-trash me-2"></i> Delete Student
                     </button>
                     @endcan
@@ -255,10 +255,10 @@
                         </button>
                     </form>
 
-                    <form action="{{ route('students.reject', $student) }}" method="POST">
+                    <form action="{{ route('students.reject', $student) }}" method="POST" id="reject-student-form-edit">
                         @csrf
-                        <button type="submit" class="btn btn-danger w-100"
-                                onclick="return confirm('Are you sure you want to reject this student?');">
+                        <button type="button" class="btn btn-danger w-100"
+                                onclick="confirmRejectStudentEdit()">
                             <i class="fas fa-times me-2"></i> Reject Account
                         </button>
                     </form>
@@ -318,6 +318,40 @@
                 document.getElementById('target_university_id').dispatchEvent(new Event('change'));
             }
         });
+
+        function confirmDeleteStudentEdit() {
+            Swal.fire({
+                title: 'Delete Student?',
+                text: 'Are you sure you want to delete this student? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-form').submit();
+                }
+            });
+        }
+
+        function confirmRejectStudentEdit() {
+            Swal.fire({
+                title: 'Reject Student?',
+                text: 'Are you sure you want to reject this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, reject it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('reject-student-form-edit').submit();
+                }
+            });
+        }
     </script>
     @endpush
 @endsection

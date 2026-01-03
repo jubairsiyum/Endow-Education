@@ -302,9 +302,20 @@ function openUploadModal(checklistId, checklistItemId, title) {
 }
 
 function confirmDelete(documentId) {
-    if (confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
-        document.getElementById('delete-form-' + documentId).submit();
-    }
+    Swal.fire({
+        title: 'Delete Document?',
+        text: 'This action cannot be undone.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#DC143C',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            document.getElementById('delete-form-' + documentId).submit();
+        }
+    });
 }
 </script>
 @endpush
