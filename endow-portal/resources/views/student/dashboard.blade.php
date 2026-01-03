@@ -281,3 +281,37 @@
     }
 </style>
 @endpush
+
+@push('scripts')
+<script>
+    // Show SweetAlert for success/error messages
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#DC143C',
+            timer: 3000,
+            showConfirmButton: true
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#DC143C'
+        });
+    @endif
+
+    @if(session('info'))
+        Swal.fire({
+            icon: 'info',
+            title: 'Information',
+            text: '{{ session('info') }}',
+            confirmButtonColor: '#DC143C'
+        });
+    @endif
+</script>
+@endpush
