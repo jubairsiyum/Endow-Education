@@ -624,6 +624,11 @@
             document.getElementById('documentError').style.display = 'none';
             document.getElementById('documentContent').style.display = 'none';
 
+            // Clear iframe content immediately to prevent showing old content
+            const iframe = document.getElementById('documentFrame');
+            iframe.src = 'about:blank';
+            iframe.srcdoc = '';
+
             // Fetch document data
             fetch(`/api/documents/${documentId}/data`, {
                 method: 'GET',
@@ -651,9 +656,11 @@
 
                 // Display document based on mime type
                 const iframe = document.getElementById('documentFrame');
+                const timestamp = new Date().getTime(); // Unique timestamp to prevent caching
+                
                 if (data.mime_type === 'application/pdf') {
-                    // For PDF, use data URI
-                    iframe.src = `data:application/pdf;base64,${data.file_data}`;
+                    // For PDF, use data URI with timestamp to force reload
+                    iframe.src = `data:application/pdf;base64,${data.file_data}#${timestamp}`;
                 } else if (data.mime_type.startsWith('image/')) {
                     // For images, create HTML with image tag
                     const imageHtml = `
@@ -705,6 +712,24 @@
                 document.getElementById('errorMessage').textContent = error.message || 'Failed to load document. Please try again.';
             });
         }
+
+        // Clean up modal when it's hidden to prevent content bleeding between views
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalElement = document.getElementById('documentViewerModal');
+            if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', function () {
+                    // Clear iframe content when modal is closed
+                    const iframe = document.getElementById('documentFrame');
+                    iframe.src = 'about:blank';
+                    iframe.srcdoc = '';
+                    
+                    // Reset to loading state
+                    document.getElementById('documentLoading').style.display = 'block';
+                    document.getElementById('documentError').style.display = 'none';
+                    document.getElementById('documentContent').style.display = 'none';
+                });
+            }
+        });
     </script>
     @endpush
 @endsection
