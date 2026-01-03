@@ -80,7 +80,7 @@
                                     }
                                 @endphp
                                 @if($activePhoto && $activePhoto->photo_path)
-                                    <img src="{{ $activePhoto->photo_url }}?t={{ time() }}" 
+                                  <img src="{{ $activePhoto->photo_url }}?t={{ time() }}"
                                          alt="Profile Photo" 
                                          class="profile-photo"
                                          id="profilePhotoPreview"

@@ -53,7 +53,7 @@ class StudentProfilePhoto extends Model
         if (!$this->photo_path) {
             return asset('images/default-avatar.png');
         }
-        return asset('storage/' . $this->photo_path);
+        return url('storage/' . $this->photo_path);
     }
 
     /**
@@ -64,7 +64,7 @@ class StudentProfilePhoto extends Model
         if (!$this->thumbnail_path) {
             return null;
         }
-        return asset('storage/' . $this->thumbnail_path);
+        return url('storage/' . $this->thumbnail_path);
     }
 
     /**
