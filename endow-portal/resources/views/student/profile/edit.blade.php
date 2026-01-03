@@ -68,7 +68,7 @@
                         <div class="card-body text-center">
                             <h5 class="card-title mb-4">Profile Photo</h5>
                             
-                            <div class="profile-photo-container mb-3">
+                            <div class="profile-photo-container mb-3" id="photoContainer">
                                 @php
                                     $activePhoto = null;
                                     try {
@@ -78,10 +78,11 @@
                                     }
                                 @endphp
                                 @if($activePhoto)
-                                    <img src="{{ $activePhoto->photo_url }}" 
+                                    <img src="{{ $activePhoto->photo_url }}?t={{ time() }}" 
                                          alt="Profile Photo" 
                                          class="profile-photo"
-                                         id="profilePhotoPreview">
+                                         id="profilePhotoPreview"
+                                         onerror="this.onerror=null; this.src='{{ asset('images/default-avatar.png') }}'; console.error('Failed to load image:', this.src);">
                                 @else
                                     <div class="profile-photo-placeholder" id="profilePhotoPreview">
                                         <i class="fas fa-user"></i>
@@ -601,7 +602,7 @@
 
         // Validate file size (2MB)
         if (file.size > 2 * 1024 * 1024) {
-            alert('File size must not exceed 2MB');
+            showError('File size must not exceed 2MB');
             event.target.value = '';
             return;
         }
@@ -609,7 +610,7 @@
         // Validate file type
         const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!allowedTypes.includes(file.type)) {
-            alert('Please select a JPG, JPEG, or PNG image');
+            showError('Please select a JPG, JPEG, or PNG image');
             event.target.value = '';
             return;
         }
@@ -617,26 +618,62 @@
         // Preview the image
         const reader = new FileReader();
         reader.onload = function(e) {
-            const preview = document.getElementById('profilePhotoPreview');
-            if (preview.tagName === 'IMG') {
-                preview.src = e.target.result;
-            } else {
-                preview.innerHTML = `<img src="${e.target.result}" alt="Preview" class="profile-photo">`;
-                preview.classList.remove('profile-photo-placeholder');
-            }
+            updatePhotoPreview(e.target.result);
         }
         reader.readAsDataURL(file);
     }
 
-    // Handle form submission
+    function updatePhotoPreview(imageSrc) {
+        const container = document.getElementById('photoContainer');
+        const preview = document.getElementById('profilePhotoPreview');
+        
+        if (preview.tagName === 'IMG') {
+            preview.src = imageSrc;
+        } else {
+            // Replace placeholder with image
+            container.innerHTML = `<img src="${imageSrc}" alt="Profile Photo" class="profile-photo" id="profilePhotoPreview">`;
+        }
+    }
+
+    function showSuccess(message) {
+        showAlert(message, 'success');
+    }
+
+    function showError(message) {
+        showAlert(message, 'danger');
+    }
+
+    function showAlert(message, type) {
+        const alertHtml = `
+            <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation'}-circle me-2"></i>${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        const alertContainer = document.querySelector('.container-fluid.py-4 .row .col-12');
+        const firstCard = alertContainer.querySelector('.d-flex');
+        firstCard.insertAdjacentHTML('afterend', alertHtml);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            const alert = alertContainer.querySelector('.alert');
+            if (alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }
+        }, 5000);
+    }
+
+    // Handle form submission with AJAX
     document.addEventListener('DOMContentLoaded', function() {
         const uploadForm = document.getElementById('photoUploadForm');
         if (uploadForm) {
             uploadForm.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent default form submission
+                
                 const fileInput = document.getElementById('photoInput');
                 if (!fileInput.files.length) {
-                    e.preventDefault();
-                    alert('Please select a photo to upload');
+                    showError('Please select a photo to upload');
                     return false;
                 }
 
@@ -646,11 +683,45 @@
                 submitBtn.disabled = true;
                 submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
 
-                // Re-enable button after 10 seconds as fallback
-                setTimeout(() => {
+                // Prepare form data
+                const formData = new FormData(uploadForm);
+
+                // Send AJAX request
+                fetch(uploadForm.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update the photo preview with the new image
+                        updatePhotoPreview(data.photo.url);
+                        showSuccess(data.message);
+                        
+                        // Clear the file input
+                        fileInput.value = '';
+                        
+                        // Reload page after 1 second to show the delete button
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1000);
+                    } else {
+                        showError(data.message || 'Failed to upload photo');
+                    }
+                })
+                .catch(error => {
+                    console.error('Upload error:', error);
+                    showError('An error occurred while uploading the photo. Please try again.');
+                })
+                .finally(() => {
+                    // Re-enable button
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = originalText;
-                }, 10000);
+                });
             });
         }
 

@@ -198,18 +198,23 @@ class StudentProfileController extends Controller
         try {
             $photo = $this->imageService->uploadProfilePhoto($student, $request->file('photo'));
 
+            // Refresh the student model to ensure the latest relationship is loaded
+            $student->refresh();
+            $student->load('activeProfilePhoto');
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => true,
                     'message' => 'Profile photo uploaded successfully!',
                     'photo' => [
-                        'url' => $photo->photo_url,
-                        'thumbnail_url' => $photo->thumbnail_url,
+                        'id' => $photo->id,
+                        'url' => $photo->photo_url . '?t=' . time(), // Cache busting
+                        'thumbnail_url' => $photo->thumbnail_url ? $photo->thumbnail_url . '?t=' . time() : null,
                     ]
                 ]);
             }
 
-            return back()->with('success', 'Profile photo uploaded successfully!');
+            return redirect()->back()->with('success', 'Profile photo uploaded successfully!');
         } catch (\Exception $e) {
             Log::error('Profile photo upload failed: ' . $e->getMessage(), [
                 'student_id' => $student->id,
