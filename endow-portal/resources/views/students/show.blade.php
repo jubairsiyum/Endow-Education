@@ -166,12 +166,9 @@
             <strong>This account is pending approval.</strong> Review the student information and take action.
         </div>
         <div class="d-flex gap-2">
-            <form action="{{ route('students.approve', $student) }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-check me-2"></i> Approve
-                </button>
-            </form>
+            <a href="{{ route('students.approve.form', $student) }}" class="btn btn-success">
+                <i class="fas fa-check me-2"></i> Approve & Enroll
+            </a>
             <form action="{{ route('students.reject', $student) }}" method="POST" class="d-inline" id="reject-student-form">
                 @csrf
                 <button type="button" class="btn btn-danger"

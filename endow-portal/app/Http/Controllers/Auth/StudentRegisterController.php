@@ -38,9 +38,7 @@ class StudentRegisterController extends Controller
             'address' => 'required|string|max:255',
             'city' => 'required|string|max:100',
             'postal_code' => 'nullable|string|max:20',
-            'applying_program' => 'required|string|max:255',
-            'highest_education' => 'required|string|max:255',
-            'course' => 'nullable|string|max:255',
+            // Academic fields removed - will be filled by counselor during approval
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -67,9 +65,7 @@ class StudentRegisterController extends Controller
                 'address' => $request->address,
                 'city' => $request->city,
                 'postal_code' => $request->postal_code,
-                'applying_program' => $request->applying_program,
-                'highest_education' => $request->highest_education,
-                'course' => $request->course,
+                // Academic fields will be filled by counselor during approval
                 'status' => 'new',
                 'account_status' => 'pending',
             ]);

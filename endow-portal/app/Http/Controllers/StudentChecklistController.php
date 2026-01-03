@@ -476,14 +476,20 @@ class StudentChecklistController extends Controller
         ]);
 
         // Update all associated documents to rejected status
+        $updateData = [
+            'status' => 'rejected',
+            'reviewed_by' => $user->id,
+            'reviewed_at' => now(),
+        ];
+        
+        // Only add notes if the column exists
+        if (Schema::hasColumn('student_documents', 'notes')) {
+            $updateData['notes'] = $request->feedback;
+        }
+        
         StudentDocument::where('student_checklist_id', $studentChecklist->id)
             ->where('status', 'submitted')
-            ->update([
-                'status' => 'rejected',
-                'reviewed_by' => $user->id,
-                'reviewed_at' => now(),
-                'notes' => $request->feedback,
-            ]);
+            ->update($updateData);
 
         // Log activity
         $this->activityLogService->log(

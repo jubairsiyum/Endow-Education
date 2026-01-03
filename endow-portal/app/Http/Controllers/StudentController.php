@@ -240,15 +240,50 @@ class StudentController extends Controller
     }
 
     /**
-     * Approve student account.
+     * Show approve form with program selection
      */
-    public function approve(Student $student)
+    public function showApproveForm(Student $student)
     {
         $this->authorize('approve', $student);
+        
+        $universities = \App\Models\University::active()->ordered()->get();
+        $programs = \App\Models\Program::active()->get();
+        
+        return view('students.approve', compact('student', 'universities', 'programs'));
+    }
+
+    /**
+     * Approve student account with program enrollment.
+     */
+    public function approve(Request $request, Student $student)
+    {
+        $this->authorize('approve', $student);
+
+        $request->validate([
+            'target_university_id' => 'required|exists:universities,id',
+            'target_program_id' => 'required|exists:programs,id',
+            'applying_program' => 'nullable|string|max:255',
+            'course' => 'nullable|string|max:255',
+            'highest_education' => 'nullable|string|max:100',
+        ]);
 
         DB::beginTransaction();
 
         try {
+            // Update student with program information
+            $student->target_university_id = $request->target_university_id;
+            $student->target_program_id = $request->target_program_id;
+            
+            if ($request->applying_program) {
+                $student->applying_program = $request->applying_program;
+            }
+            if ($request->course) {
+                $student->course = $request->course;
+            }
+            if ($request->highest_education) {
+                $student->highest_education = $request->highest_education;
+            }
+            
             // Create user account if not exists
             if (!$student->user_id) {
                 $user = User::create([
@@ -273,14 +308,15 @@ class StudentController extends Controller
             $student->account_status = 'approved';
             $student->save();
 
-            // Assign checklist items to the student
+            // Assign checklist items based on the selected program
             $this->checklistService->initializeChecklistsForStudent($student);
 
             $this->activityLog->logStudentApproved($student);
 
             DB::commit();
 
-            return back()->with('success', 'Student account approved successfully! A welcome email has been sent.');
+            return redirect()->route('students.show', $student)
+                ->with('success', 'Student account approved and enrolled in program successfully! A welcome email has been sent.');
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Failed to approve student: ' . $e->getMessage());

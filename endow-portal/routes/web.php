@@ -59,6 +59,7 @@ Route::middleware(['auth'])->group(function () {
 // Student Management Routes
 Route::middleware(['auth'])->group(function () {
     Route::resource('students', StudentController::class);
+    Route::get('/students/{student}/approve', [StudentController::class, 'showApproveForm'])->name('students.approve.form');
     Route::post('/students/{student}/approve', [StudentController::class, 'approve'])->name('students.approve');
     Route::post('/students/{student}/reject', [StudentController::class, 'reject'])->name('students.reject');
     

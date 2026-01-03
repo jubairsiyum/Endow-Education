@@ -175,40 +175,7 @@
                             </div>
                         </div>
 
-                        <!-- Academic Information Section -->
-                        <div class="mb-4">
-                            <h5 class="border-bottom pb-2"><i class="fas fa-graduation-cap"></i> Academic Information</h5>
-
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="applying_program" class="form-label">Applying Program <span class="text-danger">*</span></label>
-                                    <input id="applying_program" type="text" class="form-control @error('applying_program') is-invalid @enderror"
-                                           name="applying_program" value="{{ old('applying_program') }}"
-                                           placeholder="e.g., Bachelor of Science, Master's Program" required>
-                                    <input id="course" type="text" class="form-control @error('course') is-invalid @enderror"
-                                           name="course" value="{{ old('course') }}" placeholder="e.g., Computer Science, Business Administration">
-                                    @error('course')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-12 mb-3">
-                                    <label for="highest_education" class="form-label">Highest Education Level <span class="text-danger">*</span></label>
-                                    <select id="highest_education" class="form-select @error('highest_education') is-invalid @enderror"
-                                            name="highest_education" required>
-                                        <option value="">Select Education Level</option>
-                                        <option value="High School" {{ old('highest_education') == 'High School' ? 'selected' : '' }}>High School</option>
-                                        <option value="Associate Degree" {{ old('highest_education') == 'Associate Degree' ? 'selected' : '' }}>Associate Degree</option>
-                                        <option value="Bachelor's Degree" {{ old('highest_education') == "Bachelor's Degree" ? 'selected' : '' }}>Bachelor's Degree</option>
-                                        <option value="Master's Degree" {{ old('highest_education') == "Master's Degree" ? 'selected' : '' }}>Master's Degree</option>
-                                        <option value="Doctorate" {{ old('highest_education') == 'Doctorate' ? 'selected' : '' }}>Doctorate</option>
-                                    </select>
-                                    @error('highest_education')
-                                        <span class="invalid-feedback">{{ $message }}</span>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
+                        <!-- Academic Information will be added after approval by counselor -->
 
                         <!-- Account Security Section -->
                         <div class="mb-4">
