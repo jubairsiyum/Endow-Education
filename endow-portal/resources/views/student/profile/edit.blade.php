@@ -72,17 +72,19 @@
                                 @php
                                     $activePhoto = null;
                                     try {
+                                        // Ensure the relationship is fresh
+                                        $student->load('activeProfilePhoto');
                                         $activePhoto = $student->activeProfilePhoto;
                                     } catch (\Exception $e) {
                                         // Photo table structure issue - ignore
                                     }
                                 @endphp
-                                @if($activePhoto)
+                                @if($activePhoto && $activePhoto->photo_path)
                                     <img src="{{ $activePhoto->photo_url }}?t={{ time() }}" 
                                          alt="Profile Photo" 
                                          class="profile-photo"
                                          id="profilePhotoPreview"
-                                         onerror="this.onerror=null; this.src='{{ asset('images/default-avatar.png') }}'; console.error('Failed to load image:', this.src);">
+                                         onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'profile-photo-placeholder\'><i class=\'fas fa-user\'></i></div>'; console.error('Failed to load image:', this.src);">
                                 @else
                                     <div class="profile-photo-placeholder" id="profilePhotoPreview">
                                         <i class="fas fa-user"></i>

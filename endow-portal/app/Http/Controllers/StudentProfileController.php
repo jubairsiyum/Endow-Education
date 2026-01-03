@@ -73,6 +73,8 @@ class StudentProfileController extends Controller
         // Check if tables exist before loading relationships
         try {
             if (Schema::hasTable('student_profiles') && Schema::hasTable('student_profile_photos')) {
+                // Force refresh to get the latest data
+                $student->refresh();
                 $student->load(['profile', 'activeProfilePhoto']);
             }
         } catch (\Exception $e) {
