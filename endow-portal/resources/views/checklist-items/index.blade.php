@@ -95,11 +95,11 @@
                                 @endcan
 
                                 @can('delete checklists')
-                                <form action="{{ route('checklist-items.destroy', $item) }}" method="POST" class="d-inline">
+                                <form action="{{ route('checklist-items.destroy', $item) }}" method="POST" class="d-inline" id="delete-checklist-form-{{ $item->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" title="Delete"
-                                            onclick="return confirm('Are you sure? This will affect all students.');">
+                                    <button type="button" class="btn btn-outline-danger" title="Delete"
+                                            onclick="confirmDeleteChecklistItem({{ $item->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -281,6 +281,23 @@
             createModal.show();
         });
     @endif
+
+    function confirmDeleteChecklistItem(itemId) {
+        Swal.fire({
+            title: 'Delete Checklist Item?',
+            text: 'Are you sure? This will affect all students.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-checklist-form-' + itemId).submit();
+            }
+        });
+    }
     </script>
 </div>
 @endsection

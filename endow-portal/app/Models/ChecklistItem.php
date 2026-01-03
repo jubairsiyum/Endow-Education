@@ -83,4 +83,12 @@ class ChecklistItem extends Model
     {
         return $query->orderBy('order');
     }
+
+    /**
+     * Get the name attribute (alias for title).
+     */
+    public function getNameAttribute()
+    {
+        return $this->title;
+    }
 }

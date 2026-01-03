@@ -87,6 +87,14 @@ class User extends Authenticatable
     }
 
     /**
+     * Get all student visits handled by this employee.
+     */
+    public function studentVisits()
+    {
+        return $this->hasMany(StudentVisit::class, 'employee_id');
+    }
+
+    /**
      * Check if user is Super Admin.
      */
     public function isSuperAdmin(): bool

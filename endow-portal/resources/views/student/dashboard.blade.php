@@ -37,6 +37,18 @@
     </div>
     @endif
 
+    @if($student->targetProgram)
+    <div class="alert alert-info border-0 shadow-sm mb-4">
+        <div class="d-flex align-items-start gap-3">
+            <i class="fas fa-graduation-cap fa-2x text-info"></i>
+            <div>
+                <h5 class="mb-1 fw-bold">Your Program: {{ $student->targetProgram->name }}</h5>
+                <p class="mb-0">You have been assigned to the <strong>{{ $student->targetProgram->name }}</strong> program. The documents you need to submit are specific to this program. If you have any questions, please contact your counselor.</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="row g-4">
         <!-- Stats Cards -->
         <div class="col-lg-3 col-md-6">
@@ -268,4 +280,38 @@
         background: white !important;
     }
 </style>
+@endpush
+
+@push('scripts')
+<script>
+    // Show SweetAlert for success/error messages
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#DC143C',
+            timer: 3000,
+            showConfirmButton: true
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#DC143C'
+        });
+    @endif
+
+    @if(session('info'))
+        Swal.fire({
+            icon: 'info',
+            title: 'Information',
+            text: '{{ session('info') }}',
+            confirmButtonColor: '#DC143C'
+        });
+    @endif
+</script>
 @endpush

@@ -662,6 +662,7 @@
         }
     </style>
 
+    @yield('styles')
     @stack('styles')
 </head>
 <body>
@@ -690,6 +691,11 @@
                     @if(isset($pendingCount) && $pendingCount > 0)
                         <span class="menu-badge">{{ $pendingCount }}</span>
                     @endif
+                </a>
+
+                <a href="{{ route('student-visits.index') }}" class="menu-item {{ request()->routeIs('student-visits.*') ? 'active' : '' }}">
+                    <i class="fas fa-clipboard-list"></i>
+                    <span>Student Visits</span>
                 </a>
                 @endcanany
 
@@ -843,6 +849,56 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Global SweetAlert Messages -->
+    <script>
+        // Success messages
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#10B981',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+
+        // Error messages
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#DC143C'
+            });
+        @endif
+
+        // Info messages
+        @if(session('info'))
+            Swal.fire({
+                icon: 'info',
+                title: 'Information',
+                text: '{{ session('info') }}',
+                confirmButtonColor: '#3B82F6'
+            });
+        @endif
+
+        // Warning messages
+        @if(session('warning'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: '{{ session('warning') }}',
+                confirmButtonColor: '#F59E0B'
+            });
+        @endif
+    </script>
+    
+    @yield('scripts')
     @stack('scripts')
 </body>
 </html>

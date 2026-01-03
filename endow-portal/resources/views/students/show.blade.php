@@ -61,6 +61,9 @@
         </div>
         <div class="d-flex gap-2">
             @can('update', $student)
+            <a href="{{ route('students.payments.index', $student) }}" class="btn btn-success">
+                <i class="fas fa-money-bill-wave me-2"></i> Payments
+            </a>
             <a href="{{ route('students.edit', $student) }}" class="btn btn-primary-custom">
                 <i class="fas fa-edit me-2"></i> Edit Student
             </a>
@@ -166,16 +169,13 @@
             <strong>This account is pending approval.</strong> Review the student information and take action.
         </div>
         <div class="d-flex gap-2">
-            <form action="{{ route('students.approve', $student) }}" method="POST" class="d-inline">
+            <a href="{{ route('students.approve.form', $student) }}" class="btn btn-success">
+                <i class="fas fa-check me-2"></i> Approve & Enroll
+            </a>
+            <form action="{{ route('students.reject', $student) }}" method="POST" class="d-inline" id="reject-student-form">
                 @csrf
-                <button type="submit" class="btn btn-success">
-                    <i class="fas fa-check me-2"></i> Approve
-                </button>
-            </form>
-            <form action="{{ route('students.reject', $student) }}" method="POST" class="d-inline">
-                @csrf
-                <button type="submit" class="btn btn-danger"
-                        onclick="return confirm('Are you sure you want to reject this student?');">
+                <button type="button" class="btn btn-danger"
+                        onclick="confirmRejectStudent()">
                     <i class="fas fa-times me-2"></i> Reject
                 </button>
             </form>
@@ -196,13 +196,7 @@
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="checklist-tab" data-bs-toggle="tab"
                         data-bs-target="#checklist" type="button" role="tab">
-                    <i class="fas fa-tasks me-2"></i> Checklist
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="documents-tab" data-bs-toggle="tab"
-                        data-bs-target="#documents" type="button" role="tab">
-                    <i class="fas fa-file-pdf me-2"></i> Documents
+                    <i class="fas fa-tasks me-2"></i> Checklist & Documents
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -291,133 +285,171 @@
                     </div>
                 </div>
 
-                <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Required</th>
-                                <th>Status</th>
-                                <th>Submitted Date</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($student->checklists as $checklist)
-                            <tr>
-                                <td>
-                                    <strong>{{ $checklist->checklistItem->name }}</strong>
-                                    @if($checklist->checklistItem->description)
-                                    <br><small class="text-muted">{{ $checklist->checklistItem->description }}</small>
-                                    @endif
-                                </td>
-                                <td>
-                                    @if($checklist->checklistItem->is_required)
-                                        <span class="badge-custom badge-danger-custom">Required</span>
-                                    @else
-                                        <span class="badge-custom badge-secondary-custom">Optional</span>
-                                    @endif
-                                </td>
-                                <td>
-                                    @php
-                                        $checklistColors = [
-                                            'pending' => 'secondary',
-                                            'submitted' => 'warning',
-                                            'approved' => 'success',
-                                            'rejected' => 'danger'
-                                        ];
-                                        $checklistColor = $checklistColors[$checklist->status] ?? 'secondary';
-                                    @endphp
-                                    <span class="badge-custom badge-{{ $checklistColor }}-custom">
-                                        {{ ucfirst($checklist->status) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    {{ $checklist->submitted_at ? $checklist->submitted_at->format('M d, Y') : '-' }}
-                                </td>
-                                <td>
-                                    @if($checklist->status === 'submitted')
-                                        @can('update', $student)
-                                        <button class="btn btn-sm btn-success">Approve</button>
-                                        <button class="btn btn-sm btn-danger">Reject</button>
-                                        @endcan
-                                    @endif
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="5" class="text-center py-4">
-                                    No checklist items found
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+                <div class="list-group">
+                    @forelse($student->checklists as $checklist)
+                    <div class="list-group-item mb-3 border rounded">
+                        <div class="row align-items-start">
+                            <div class="col-auto">
+                                @if($checklist->status === 'approved')
+                                    <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-check"></i>
+                                    </div>
+                                @elseif($checklist->status === 'submitted')
+                                    <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                @elseif($checklist->status === 'rejected')
+                                    <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-times"></i>
+                                    </div>
+                                @else
+                                    <div class="bg-secondary text-white rounded-circle d-flex align-items-center justify-content-center"
+                                         style="width: 40px; height: 40px; font-size: 20px;">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="col">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1 fw-bold">
+                                            {{ $checklist->checklistItem->title }}
+                                            @if($checklist->checklistItem->is_required)
+                                                <span class="badge bg-danger ms-2">Required</span>
+                                            @else
+                                                <span class="badge bg-secondary ms-2">Optional</span>
+                                            @endif
+                                        </h6>
+                                    </div>
+                                    <div class="ms-3">
+                                        @php
+                                            $checklistColors = [
+                                                'pending' => 'secondary',
+                                                'submitted' => 'warning',
+                                                'approved' => 'success',
+                                                'rejected' => 'danger'
+                                            ];
+                                            $checklistColor = $checklistColors[$checklist->status] ?? 'secondary';
+                                        @endphp
+                                        <span class="badge bg-{{ $checklistColor }}">
+                                            {{ ucfirst($checklist->status) }}
+                                        </span>
+                                    </div>
+                                </div>
 
-            <!-- Documents Tab -->
-            <div class="tab-pane fade" id="documents" role="tabpanel">
-                <div class="mb-4">
-                    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#uploadModal">
-                        <i class="fas fa-upload me-2"></i> Upload Document
-                    </button>
-                </div>
+                                @if($checklist->submitted_at)
+                                    <p class="small text-muted mb-2">
+                                        <i class="fas fa-calendar me-1"></i>
+                                        Submitted: {{ $checklist->submitted_at->format('M d, Y g:i A') }}
+                                    </p>
+                                @endif
 
-                <div class="table-responsive">
-                    <table class="table table-custom">
-                        <thead>
-                            <tr>
-                                <th>Document</th>
-                                <th>Checklist Item</th>
-                                <th>Size</th>
-                                <th>Uploaded</th>
-                                <th>Uploaded By</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($student->documents as $document)
-                            <tr>
-                                <td>
-                                    <i class="fas fa-file-pdf text-danger me-2"></i>
-                                    <strong>{{ $document->original_filename }}</strong>
-                                </td>
-                                <td>{{ $document->checklistItem->name ?? 'General' }}</td>
-                                <td>{{ $document->file_size_human }}</td>
-                                <td>{{ $document->created_at->format('M d, Y g:i A') }}</td>
-                                <td>{{ $document->uploadedBy->name ?? 'Unknown' }}</td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <a href="#" class="action-btn view" title="View">
-                                            <i class="fas fa-eye"></i>
-                                        </a>
-                                        <a href="#" class="action-btn info" title="Download">
-                                            <i class="fas fa-download"></i>
-                                        </a>
-                                        @can('update', $student)
-                                        <form action="#" method="POST" class="d-inline">
+                                @if($checklist->documents->count() > 0)
+                                    <div class="mt-3">
+                                        <strong class="small">Documents:</strong>
+                                        <div class="list-group list-group-flush mt-2">
+                                            @foreach($checklist->documents as $document)
+                                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
+                                                <div>
+                                                    <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                    <span>{{ $document->original_name ?? $document->file_name }}</span>
+                                                    <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
+                                                    @php
+                                                        $docStatusColors = [
+                                                            'pending' => 'secondary',
+                                                            'submitted' => 'warning',
+                                                            'approved' => 'success',
+                                                            'rejected' => 'danger'
+                                                        ];
+                                                        $docColor = $docStatusColors[$document->status] ?? 'secondary';
+                                                    @endphp
+                                                    <span class="badge bg-{{ $docColor }} ms-2">{{ ucfirst($document->status) }}</span>
+                                                    <br>
+                                                    <small class="text-muted ms-4">
+                                                        Uploaded by {{ $document->uploader->name ?? 'Unknown' }} on
+                                                        {{ $document->created_at->format('M d, Y g:i A') }}
+                                                    </small>
+                                                    @if($document->reviewed_by && $document->reviewed_at)
+                                                    <br>
+                                                    <small class="text-muted ms-4">
+                                                        Reviewed by {{ $document->reviewer->name ?? 'Unknown' }} on
+                                                        {{ $document->reviewed_at->format('M d, Y g:i A') }}
+                                                    </small>
+                                                    @endif
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-primary"
+                                                                onclick="viewDocument({{ $document->id }}, '{{ addslashes($document->filename ?? 'Document') }}')"
+                                                                title="View Document">
+                                                            <i class="fas fa-eye me-1"></i> View
+                                                        </button>
+                                                        <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
+                                                           class="btn btn-sm btn-outline-secondary"
+                                                           title="Download">
+                                                            <i class="fas fa-download"></i>
+                                                        </a>
+                                                    @else
+                                                        <span class="badge bg-danger">File Missing</span>
+                                                    @endif
+                                                    @can('update', $student)
+                                                        <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
+                                                              method="POST"
+                                                              class="d-inline"
+                                                              id="delete-doc-form-{{ $document->id }}">
+                                                            @csrf
+                                                            @method('DELETE')
+                                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                                                    onclick="confirmDeleteDocument({{ $document->id }})">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endcan
+                                                </div>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="alert alert-info alert-sm mt-2 mb-0">
+                                        <small><i class="fas fa-info-circle me-1"></i> No documents uploaded yet for this item</small>
+                                    </div>
+                                @endif
+
+                                @if($checklist->status === 'submitted')
+                                    @can('update', $student)
+                                    <div class="mt-3">
+                                        <form action="{{ route('student.checklist.approve', $checklist) }}" method="POST" class="d-inline" id="approve-form-{{ $checklist->id }}">
                                             @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="action-btn delete" title="Delete"
-                                                    onclick="return confirm('Are you sure?');">
-                                                <i class="fas fa-trash"></i>
+                                            <button type="button" class="btn btn-sm btn-success me-2" onclick="confirmApproveDocument({{ $checklist->id }})">
+                                                <i class="fas fa-check me-1"></i> Approve
                                             </button>
                                         </form>
-                                        @endcan
+                                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#rejectModal{{ $checklist->id }}">
+                                            <i class="fas fa-times me-1"></i> Reject
+                                        </button>
                                     </div>
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="6" class="text-center py-5">
-                                    <i class="fas fa-file-pdf fa-3x text-muted mb-3"></i>
-                                    <p class="text-muted mb-0">No documents uploaded yet</p>
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                                    @endcan
+                                @endif
+
+                                @if($checklist->feedback)
+                                    <div class="alert alert-warning alert-sm mt-2 mb-0">
+                                        <strong>Feedback:</strong> {{ $checklist->feedback }}
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @empty
+                    <div class="text-center py-5">
+                        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                        <p class="text-muted mb-0">No checklist items found</p>
+                    </div>
+                    @endforelse
                 </div>
             </div>
 
@@ -462,4 +494,260 @@
             </div>
         </div>
     </div>
+
+    <!-- Reject Modals -->
+    @foreach($student->checklists as $checklist)
+    <div class="modal fade" id="rejectModal{{ $checklist->id }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reject Document: {{ $checklist->checklistItem->title }}</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('student.checklist.reject', $checklist) }}" method="POST">
+                    @csrf
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="feedback{{ $checklist->id }}" class="form-label">Feedback/Reason for Rejection <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="feedback{{ $checklist->id }}" name="feedback" rows="4" required placeholder="Please provide specific feedback about why this document is being rejected..."></textarea>
+                            <small class="text-muted">This feedback will be shown to the student so they can resubmit correctly.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-danger">Reject Document</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endforeach
+
+    <!-- Document Viewer Modal -->
+    <div class="modal fade" id="documentViewerModal" tabindex="-1" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        <span id="documentTitle">Document Viewer</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" style="min-height: 70vh;">
+                    <div id="documentLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading document...</p>
+                    </div>
+                    <div id="documentError" class="alert alert-danger m-4" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage">Error loading document</span>
+                    </div>
+                    <div id="documentContent" style="display: none; height: 70vh; overflow: hidden;">
+                        <!-- Container for document display -->
+                        <div id="documentViewer" style="width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Close
+                    </button>
+                    <a id="documentDownloadBtn" href="#" class="btn btn-primary" download>
+                        <i class="fas fa-download me-1"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @push('scripts')
+    <script>
+        function confirmRejectStudent() {
+            Swal.fire({
+                title: 'Reject Student?',
+                text: 'Are you sure you want to reject this student?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, reject it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('reject-student-form').submit();
+                }
+            });
+        }
+
+        function confirmDeleteDocument(documentId) {
+            Swal.fire({
+                title: 'Delete Document?',
+                text: 'Are you sure you want to delete this document?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-doc-form-' + documentId).submit();
+                }
+            });
+        }
+
+        function confirmApproveDocument(checklistId) {
+            Swal.fire({
+                title: 'Approve Document?',
+                text: 'Are you sure you want to approve this document?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, approve it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('approve-form-' + checklistId).submit();
+                }
+            });
+        }
+
+        function viewDocument(documentId, documentName) {
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('documentViewerModal'));
+            modal.show();
+
+            // Set document title
+            document.getElementById('documentTitle').textContent = documentName;
+
+            // Reset states
+            document.getElementById('documentLoading').style.display = 'block';
+            document.getElementById('documentError').style.display = 'none';
+            document.getElementById('documentContent').style.display = 'none';
+
+            // Clear viewer content immediately to prevent showing old content
+            const viewer = document.getElementById('documentViewer');
+            viewer.innerHTML = '';
+
+            // Fetch document data
+            fetch(`/api/documents/${documentId}/data`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load document');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('documentLoading').style.display = 'none';
+                document.getElementById('documentContent').style.display = 'block';
+
+                // Set download button
+                const downloadBtn = document.getElementById('documentDownloadBtn');
+                downloadBtn.href = `/students/{{ $student->id }}/documents/${documentId}/download`;
+                downloadBtn.download = data.filename;
+
+                // Display document based on mime type
+                const viewer = document.getElementById('documentViewer');
+                viewer.innerHTML = ''; // Clear previous content
+                const timestamp = new Date().getTime(); // Unique timestamp to prevent caching
+                
+                if (data.mime_type === 'application/pdf') {
+                    // For PDF, use object tag with embed fallback for better compatibility
+                    viewer.innerHTML = `
+                        <object
+                            data="data:application/pdf;base64,${data.file_data}#toolbar=1&navpanes=0&scrollbar=1&view=FitH"
+                            type="application/pdf"
+                            style="width: 100%; height: 100%; border: none;">
+                            <embed
+                                src="data:application/pdf;base64,${data.file_data}#toolbar=1&navpanes=0&scrollbar=1&view=FitH"
+                                type="application/pdf"
+                                style="width: 100%; height: 100%; border: none;" />
+                            <div style="padding: 40px; text-align: center; background: #f8f9fa;">
+                                <div style="font-size: 48px; color: #6c757d; margin-bottom: 20px;">📄</div>
+                                <h4 style="color: #495057; margin-bottom: 10px;">${data.filename}</h4>
+                                <p style="color: #6c757d; margin-bottom: 20px;">Your browser cannot display PDF files.</p>
+                                <a href="${downloadBtn.href}" class="btn btn-primary" download="${data.filename}">
+                                    <i class="fas fa-download me-1"></i> Download PDF
+                                </a>
+                            </div>
+                        </object>
+                    `;
+                } else if (data.mime_type.startsWith('image/')) {
+                    // For images, display directly with proper styling
+                    viewer.innerHTML = `
+                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #f5f5f5; overflow: auto; padding: 20px;">
+                            <img
+                                src="data:${data.mime_type};base64,${data.file_data}"
+                                alt="${data.filename}"
+                                style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white;"
+                                onerror="this.parentElement.innerHTML='<div style=\\'text-align: center; color: #dc3545;\\'><i class=\\'fas fa-exclamation-triangle\\' style=\\'font-size: 48px; margin-bottom: 20px;\\'></i><p>Failed to load image</p></div>';"
+                            />
+                        </div>
+                    `;
+                } else if (data.mime_type === 'application/msword' || data.mime_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    // For Word documents
+                    viewer.innerHTML = `
+                        <div style="padding: 40px; text-align: center; background: #f8f9fa; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <div style="font-size: 64px; color: #2b579a; margin-bottom: 20px;">📝</div>
+                            <h4 style="color: #495057; margin-bottom: 10px;">${data.filename}</h4>
+                            <p style="color: #6c757d; margin-bottom: 10px;">Microsoft Word Document</p>
+                            <p style="color: #6c757d; margin-bottom: 20px;">Preview not available for Word documents.</p>
+                            <a href="${downloadBtn.href}" class="btn btn-primary" download="${data.filename}">
+                                <i class="fas fa-download me-1"></i> Download Document
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    // For other/unknown types
+                    const fileIcon = '📄';
+                    viewer.innerHTML = `
+                        <div style="padding: 40px; text-align: center; background: #f8f9fa; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <div style="font-size: 64px; color: #6c757d; margin-bottom: 20px;">${fileIcon}</div>
+                            <h4 style="color: #495057; margin-bottom: 10px;">${data.filename}</h4>
+                            <p style="color: #6c757d; margin-bottom: 10px;">File Type: ${data.mime_type}</p>
+                            <p style="color: #6c757d; margin-bottom: 20px;">Preview not available for this file type.</p>
+                            <a href="${downloadBtn.href}" class="btn btn-primary" download="${data.filename}">
+                                <i class="fas fa-download me-1"></i> Download File
+                            </a>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading document:', error);
+                document.getElementById('documentLoading').style.display = 'none';
+                document.getElementById('documentError').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message || 'Failed to load document. Please try again.';
+            });
+        }
+
+        // Clean up modal when it's hidden to prevent content bleeding between views
+        document.addEventListener('DOMContentLoaded', function() {
+            const modalElement = document.getElementById('documentViewerModal');
+            if (modalElement) {
+                modalElement.addEventListener('hidden.bs.modal', function () {
+                    // Clear viewer content when modal is closed
+                    const viewer = document.getElementById('documentViewer');
+                    viewer.innerHTML = '';
+                    
+                    // Reset to loading state
+                    document.getElementById('documentLoading').style.display = 'block';
+                    document.getElementById('documentError').style.display = 'none';
+                    document.getElementById('documentContent').style.display = 'none';
+                });
+            }
+        });
+    </script>
+    @endpush
 @endsection

@@ -1,0 +1,202 @@
+@extends('layouts.admin')
+
+@section('page-title', 'Student Visits')
+@section('breadcrumb', 'Home / Student Visits')
+
+@section('content')
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-clipboard-list text-danger"></i> Student Visits Management</h4>
+            <small class="text-muted">Track and manage student visit records</small>
+        </div>
+        <a href="{{ route('student-visits.create') }}" class="btn btn-danger">
+            <i class="fas fa-plus me-1"></i> New Visit Record
+        </a>
+    </div>
+
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- Filters -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body p-3">
+            <form method="GET" action="{{ route('student-visits.index') }}" class="row g-2 align-items-end">
+                <div class="col-md-3">
+                    <input type="text" name="search" class="form-control form-control-sm" 
+                           placeholder="Search by name, phone, email..."
+                           value="{{ request('search') }}">
+                </div>
+
+                @if(Auth::user()->isAdmin())
+                <div class="col-md-2">
+                    <select name="employee_id" class="form-select form-select-sm">
+                        <option value="">All Employees</option>
+                        @foreach($employees as $employee)
+                        <option value="{{ $employee->id }}" {{ request('employee_id') == $employee->id ? 'selected' : '' }}>
+                            {{ $employee->name }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+
+                <div class="col-md-2">
+                    <input type="date" name="date_from" class="form-control form-control-sm" 
+                           placeholder="From Date"
+                           value="{{ request('date_from') }}">
+                </div>
+
+                <div class="col-md-2">
+                    <input type="date" name="date_to" class="form-control form-control-sm" 
+                           placeholder="To Date"
+                           value="{{ request('date_to') }}">
+                </div>
+
+                <div class="col-md-2 d-flex gap-1">
+                    <button type="submit" class="btn btn-danger btn-sm flex-grow-1">
+                        <i class="fas fa-filter"></i> Filter
+                    </button>
+                    <a href="{{ route('student-visits.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-redo"></i>
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Visits Table -->
+    <div class="card shadow-sm border-0">
+        <div class="table-responsive">
+            <table class="table table-sm table-hover align-middle mb-0">
+                <thead class="bg-light">
+                    <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
+                        <th>Student Name</th>
+                        <th>Phone</th>
+                        <th>Email</th>
+                        <th>Assigned Employee</th>
+                        <th>Visit Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($visits as $visit)
+                    <tr>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <div class="fw-semibold text-dark">{{ $visit->student_name }}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark">
+                                <i class="fas fa-phone me-1"></i>{{ $visit->phone }}
+                            </span>
+                        </td>
+                        <td>
+                            @if($visit->email)
+                                <span class="text-muted small">{{ $visit->email }}</span>
+                            @else
+                                <span class="text-muted small">-</span>
+                            @endif
+                        </td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; font-size: 0.7rem;">
+                                    {{ strtoupper(substr($visit->employee->name, 0, 2)) }}
+                                </div>
+                                <span class="small">{{ $visit->employee->name }}</span>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="small">
+                                <i class="fas fa-calendar-alt text-muted me-1"></i>
+                                {{ $visit->created_at->format('M d, Y') }}
+                            </div>
+                            <div class="text-muted" style="font-size: 0.7rem;">
+                                {{ $visit->created_at->format('h:i A') }}
+                            </div>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ route('student-visits.show', $visit) }}" 
+                                   class="btn btn-sm btn-outline-primary" title="View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                @if(Auth::user()->isAdmin() || $visit->employee_id == Auth::id())
+                                <a href="{{ route('student-visits.edit', $visit) }}" 
+                                   class="btn btn-sm btn-outline-warning" title="Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form action="{{ route('student-visits.destroy', $visit) }}" 
+                                      method="POST" 
+                                      class="d-inline"
+                                      id="delete-visit-form-{{ $visit->id }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
+                                            onclick="confirmDeleteVisitIndex({{ $visit->id }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-muted">
+                            <i class="fas fa-clipboard-list fa-3x mb-3 d-block opacity-25"></i>
+                            <p class="mb-0">No student visit records found.</p>
+                            <a href="{{ route('student-visits.create') }}" class="btn btn-sm btn-danger mt-2">
+                                <i class="fas fa-plus me-1"></i> Create First Visit Record
+                            </a>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($visits->hasPages())
+        <div class="card-footer bg-white border-top">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    Showing {{ $visits->firstItem() }} to {{ $visits->lastItem() }} of {{ $visits->total() }} visits
+                </div>
+                <div>
+                    {{ $visits->links() }}
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+
+@push('scripts')
+<script>
+    function confirmDeleteVisitIndex(visitId) {
+        Swal.fire({
+            title: 'Delete Visit Record?',
+            text: 'Are you sure you want to delete this visit record? This action cannot be undone.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-visit-form-' + visitId).submit();
+            }
+        });
+    }
+</script>
+@endpush
+@endsection

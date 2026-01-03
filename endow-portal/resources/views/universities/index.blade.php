@@ -97,11 +97,11 @@
                                 <a href="{{ route('universities.edit', $university) }}" class="btn btn-outline-primary" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
-                                <form action="{{ route('universities.destroy', $university) }}" method="POST" class="d-inline">
+                                <form action="{{ route('universities.destroy', $university) }}" method="POST" class="d-inline" id="delete-university-form-{{ $university->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-outline-danger" title="Delete"
-                                            onclick="return confirm('Are you sure? This will affect {{ $university->students_count }} students.');">
+                                    <button type="button" class="btn btn-outline-danger" title="Delete"
+                                            onclick="confirmDeleteUniversityIndex({{ $university->id }}, {{ $university->students_count }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
@@ -133,4 +133,25 @@
     </div>
     @endif
 </div>
+
+@push('scripts')
+<script>
+    function confirmDeleteUniversityIndex(universityId, studentCount) {
+        Swal.fire({
+            title: 'Delete University?',
+            text: `Are you sure? This will affect ${studentCount} students.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-university-form-' + universityId).submit();
+            }
+        });
+    }
+</script>
+@endpush
 @endsection

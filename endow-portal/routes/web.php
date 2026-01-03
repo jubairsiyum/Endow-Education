@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
+use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\FollowUpController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\DocumentController;
@@ -9,6 +11,7 @@ use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\StudentChecklistController;
 use App\Http\Controllers\ActivityLogController;
+use App\Http\Controllers\StudentVisitController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Auth\StudentRegisterController;
@@ -57,8 +60,24 @@ Route::middleware(['auth'])->group(function () {
 // Student Management Routes
 Route::middleware(['auth'])->group(function () {
     Route::resource('students', StudentController::class);
+    Route::get('/students/{student}/approve', [StudentController::class, 'showApproveForm'])->name('students.approve.form');
     Route::post('/students/{student}/approve', [StudentController::class, 'approve'])->name('students.approve');
     Route::post('/students/{student}/reject', [StudentController::class, 'reject'])->name('students.reject');
+    
+    // Student Profile Management (Admin/Staff)
+    Route::get('/students/{student}/profile', [StudentProfileController::class, 'show'])->name('students.profile.show');
+    Route::get('/students/{student}/profile/edit', [StudentProfileController::class, 'edit'])->name('students.profile.edit');
+    Route::put('/students/{student}/profile', [StudentProfileController::class, 'update'])->name('students.profile.update');
+    Route::post('/students/{student}/profile/photo', [StudentProfileController::class, 'uploadPhoto'])->name('students.profile.photo.upload');
+    Route::delete('/students/{student}/profile/photo', [StudentProfileController::class, 'deletePhoto'])->name('students.profile.photo.delete');
+    
+    // Student Payment Routes
+    Route::get('/students/{student}/payments', [StudentPaymentController::class, 'index'])->name('students.payments.index');
+    Route::get('/students/{student}/payments/create', [StudentPaymentController::class, 'create'])->name('students.payments.create');
+    Route::post('/students/{student}/payments', [StudentPaymentController::class, 'store'])->name('students.payments.store');
+    Route::get('/students/{student}/payments/{payment}/edit', [StudentPaymentController::class, 'edit'])->name('students.payments.edit');
+    Route::put('/students/{student}/payments/{payment}', [StudentPaymentController::class, 'update'])->name('students.payments.update');
+    Route::delete('/students/{student}/payments/{payment}', [StudentPaymentController::class, 'destroy'])->name('students.payments.destroy');
 });
 
 // Follow-up Routes
@@ -82,6 +101,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('programs', ProgramController::class);
     Route::get('/universities/{university}/programs', [ProgramController::class, 'byUniversity'])->name('universities.programs');
 
+    // Student Visits Routes
+    Route::resource('student-visits', StudentVisitController::class);
+
     // Activity Logs Routes
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     Route::get('/activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
@@ -97,10 +119,14 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
     Route::get('/documents', [StudentChecklistController::class, 'index'])->name('student.documents');
     Route::post('/checklist/{checklistItem}/upload', [StudentChecklistController::class, 'uploadDocument'])->name('student.checklist.upload');
     Route::delete('/checklist/{studentChecklist}', [StudentChecklistController::class, 'deleteDocument'])->name('student.checklist.delete');
+    Route::post('/checklist/{studentChecklist}/resubmit', [StudentChecklistController::class, 'resubmitDocument'])->name('student.checklist.resubmit');
 
-    // Profile Management
-    Route::get('/profile/edit', [StudentChecklistController::class, 'editProfile'])->name('student.profile.edit');
-    Route::put('/profile', [StudentChecklistController::class, 'updateProfile'])->name('student.profile.update');
+    // Profile Management - Enhanced
+    Route::get('/profile', [StudentProfileController::class, 'edit'])->name('student.profile');
+    Route::get('/profile/edit', [StudentProfileController::class, 'edit'])->name('student.profile.edit');
+    Route::put('/profile', [StudentProfileController::class, 'update'])->name('student.profile.update');
+    Route::post('/profile/photo', [StudentProfileController::class, 'uploadPhoto'])->name('student.profile.photo.upload');
+    Route::delete('/profile/photo', [StudentProfileController::class, 'deletePhoto'])->name('student.profile.photo.delete');
 
     // FAQ
     Route::get('/faq', [StudentChecklistController::class, 'faq'])->name('student.faq');
@@ -117,9 +143,17 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/documents/upload', [DocumentController::class, 'upload'])->name('documents.upload');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
+    Route::get('/students/{student}/documents/{document}/download', [DocumentController::class, 'download'])->name('students.documents.download');
+    Route::get('/students/{student}/documents/{document}/view', [DocumentController::class, 'view'])->name('students.documents.view');
+    Route::get('/api/documents/{document}/data', [DocumentController::class, 'getData'])->name('documents.data');
+    Route::delete('/students/{student}/documents/{document}', [DocumentController::class, 'destroy'])->name('students.documents.destroy');
     Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');
+
+    // Student Checklist Document Approval/Rejection
+    Route::post('/student-checklist/{studentChecklist}/approve', [StudentChecklistController::class, 'approveDocument'])->name('student.checklist.approve');
+    Route::post('/student-checklist/{studentChecklist}/reject', [StudentChecklistController::class, 'rejectDocument'])->name('student.checklist.reject');
 });
 
 // Home route redirect to dashboard

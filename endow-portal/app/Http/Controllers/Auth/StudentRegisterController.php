@@ -25,22 +25,10 @@ class StudentRegisterController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
-            'surname' => 'required|string|max:255',
-            'given_names' => 'nullable|string|max:255',
-            'father_name' => 'required|string|max:255',
-            'mother_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:students,email',
             'phone' => 'required|string|max:20',
-            'date_of_birth' => 'required|date|before:today',
-            'passport_number' => 'nullable|string|max:50',
-            'nationality' => 'required|string|max:100',
-            'country' => 'required|string|max:100',
-            'address' => 'required|string|max:255',
-            'city' => 'required|string|max:100',
-            'postal_code' => 'nullable|string|max:20',
-            'applying_program' => 'required|string|max:255',
-            'highest_education' => 'required|string|max:255',
-            'course' => 'nullable|string|max:255',
+            'gender' => 'required|in:Male,Female,Other',
+            'date_of_birth' => 'required|date|before:-15 years',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
@@ -53,23 +41,12 @@ class StudentRegisterController extends Controller
         try {
             $student = Student::create([
                 'name' => $request->name,
-                'surname' => $request->surname,
-                'given_names' => $request->given_names,
-                'father_name' => $request->father_name,
-                'mother_name' => $request->mother_name,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
                 'phone' => $request->phone,
+                'gender' => $request->gender,
                 'date_of_birth' => $request->date_of_birth,
-                'passport_number' => $request->passport_number,
-                'nationality' => $request->nationality,
-                'country' => $request->country,
-                'address' => $request->address,
-                'city' => $request->city,
-                'postal_code' => $request->postal_code,
-                'applying_program' => $request->applying_program,
-                'highest_education' => $request->highest_education,
-                'course' => $request->course,
+                'country' => 'Bangladesh', // Default country
                 'status' => 'new',
                 'account_status' => 'pending',
             ]);
@@ -77,8 +54,14 @@ class StudentRegisterController extends Controller
             return redirect()->route('student.registration.success')
                 ->with('success', 'Your registration has been submitted successfully! You will receive an email once your account is verified.');
         } catch (\Exception $e) {
+            // Log the actual error for debugging
+            \Log::error('Student registration failed: ' . $e->getMessage(), [
+                'email' => $request->email,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
             return redirect()->back()
-                ->with('error', 'An error occurred during registration. Please try again.')
+                ->with('error', 'Registration failed: ' . $e->getMessage())
                 ->withInput();
         }
     }

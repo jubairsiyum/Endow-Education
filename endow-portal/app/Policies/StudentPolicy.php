@@ -67,6 +67,11 @@ class StudentPolicy
             return $student->assigned_to === $user->id && $user->can('edit students');
         }
 
+        // Students can update their own profile
+        if ($user->isStudent()) {
+            return $student->user_id === $user->id;
+        }
+
         return false;
     }
 

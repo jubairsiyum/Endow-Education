@@ -67,6 +67,7 @@ class Student extends Model
      */
     protected $casts = [
         'date_of_birth' => 'date',
+        'passport_expiry_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
@@ -120,6 +121,30 @@ class Student extends Model
     }
 
     /**
+     * Get the student profile.
+     */
+    public function profile()
+    {
+        return $this->hasOne(StudentProfile::class);
+    }
+
+    /**
+     * Get all profile photos.
+     */
+    public function profilePhotos()
+    {
+        return $this->hasMany(StudentProfilePhoto::class);
+    }
+
+    /**
+     * Get the active profile photo.
+     */
+    public function activeProfilePhoto()
+    {
+        return $this->hasOne(StudentProfilePhoto::class)->where('is_active', true);
+    }
+
+    /**
      * Get the target university.
      */
     public function targetUniversity()
@@ -154,17 +179,51 @@ class Student extends Model
     /**
      * Get checklist completion percentage.
      */
-    public function getChecklistProgressAttribute(): int
+    public function getChecklistProgressAttribute(): array
     {
         $total = $this->checklists()->count();
         if ($total === 0) {
-            return 0;
+            return [
+                'total' => 0,
+                'approved' => 0,
+                'submitted' => 0,
+                'rejected' => 0,
+                'pending' => 0,
+                'percentage' => 0,
+            ];
         }
 
-        $completed = $this->checklists()
-            ->whereIn('status', ['approved'])
+        $approved = $this->checklists()
+            ->whereIn('status', ['approved', 'completed'])
             ->count();
 
-        return (int) (($completed / $total) * 100);
+        $submitted = $this->checklists()
+            ->where('status', 'submitted')
+            ->count();
+
+        $rejected = $this->checklists()
+            ->where('status', 'rejected')
+            ->count();
+
+        $pending = $this->checklists()
+            ->where('status', 'pending')
+            ->count();
+
+        return [
+            'total' => $total,
+            'approved' => $approved,
+            'submitted' => $submitted,
+            'rejected' => $rejected,
+            'pending' => $pending,
+            'percentage' => (int) (($approved / $total) * 100),
+        ];
+    }
+
+    /**
+     * Get the student's payments.
+     */
+    public function payments()
+    {
+        return $this->hasMany(StudentPayment::class);
     }
 }

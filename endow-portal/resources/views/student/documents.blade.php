@@ -18,6 +18,15 @@
                                 <div>
                                     <h4 class="mb-1 fw-bold">Document Submission Center</h4>
                                     <p class="mb-0 text-muted">Upload your required documents for review and approval</p>
+                                    @if($student->targetProgram)
+                                        <small class="text-muted d-block mt-1">
+                                            <i class="fas fa-graduation-cap me-1"></i>
+                                            Program: <strong>{{ $student->targetProgram->name }}</strong>
+                                            @if($student->targetUniversity)
+                                                at {{ $student->targetUniversity->name }}
+                                            @endif
+                                        </small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -42,11 +51,23 @@
                         <span class="badge bg-white text-dark px-3 py-2">
                             <i class="fas fa-shield-alt text-success me-1"></i> Secure Upload
                         </span>
+                        @if($student->targetProgram)
+                            <span class="badge bg-white text-success px-3 py-2">
+                                <i class="fas fa-check-circle me-1"></i> Program-Specific Documents
+                            </span>
+                        @endif
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @if($student->targetProgram)
+    <div class="alert alert-info mb-4">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Note:</strong> The documents shown below are specifically required for the <strong>{{ $student->targetProgram->name }}</strong> program. If your program changes, your required documents may also change.
+    </div>
+    @endif
 
     <div class="row">
         <div class="col-lg-8">
@@ -65,7 +86,7 @@
                     @php
                         $studentChecklist = $item->studentChecklists->firstWhere('student_id', $student->id);
                         $status = $studentChecklist->status ?? 'pending';
-                        $isCompleted = $status === 'completed';
+                        $isCompleted = $status === 'completed' || $status === 'approved';
                         $isRejected = $status === 'rejected';
                         $isPending = $status === 'pending';
                         $isSubmitted = $status === 'submitted';
@@ -73,6 +94,7 @@
 
                         $statusConfig = [
                             'completed' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved', 'bg' => 'success'],
+                            'approved' => ['class' => 'success', 'icon' => 'check-circle', 'text' => 'Approved', 'bg' => 'success'],
                             'submitted' => ['class' => 'info', 'icon' => 'clock', 'text' => 'Under Review', 'bg' => 'info'],
                             'rejected' => ['class' => 'danger', 'icon' => 'times-circle', 'text' => 'Needs Revision', 'bg' => 'danger'],
                             'pending' => ['class' => 'warning', 'icon' => 'exclamation-circle', 'text' => 'Not Submitted', 'bg' => 'warning'],
@@ -153,8 +175,50 @@
                                     @endif
                                 @endif
 
-                                @if($canEdit)
-                                    <!-- Modern Upload Form -->
+                                @if($isRejected && $studentChecklist && $studentChecklist->document_path)
+                                    <!-- Resubmit Form for Rejected Documents -->
+                                    <div class="alert alert-warning mb-3">
+                                        <strong><i class="fas fa-info-circle me-2"></i>Document Rejected</strong>
+                                        <p class="mb-2 small">Please review the feedback and upload a corrected document.</p>
+                                    </div>
+                                    <form action="{{ route('student.checklist.resubmit', $studentChecklist->id) }}"
+                                          method="POST"
+                                          enctype="multipart/form-data"
+                                          class="modern-upload-form"
+                                          id="resubmit-form-{{ $item->id }}">
+                                        @csrf
+                                        <div class="upload-area" id="resubmit-area-{{ $item->id }}">
+                                            <input type="file"
+                                                   name="document"
+                                                   id="resubmit-input-{{ $item->id }}"
+                                                   class="file-input"
+                                                   accept=".pdf,.jpg,.jpeg,.png"
+                                                   required
+                                                   onchange="handleFileSelect({{ $item->id }}, this, true)">
+                                            <label for="resubmit-input-{{ $item->id }}" class="upload-label">
+                                                <div class="upload-icon">
+                                                    <i class="fas fa-redo-alt fa-2x"></i>
+                                                </div>
+                                                <div class="upload-text">
+                                                    <span class="upload-main">Resubmit Corrected Document</span>
+                                                    <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
+                                                </div>
+                                            </label>
+                                            <div class="selected-file" id="resubmit-selected-{{ $item->id }}" style="display: none;">
+                                                <i class="fas fa-file-alt"></i>
+                                                <span class="filename"></span>
+                                                <button type="button" class="clear-file" onclick="clearResubmitSelection({{ $item->id }})">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <button type="submit" class="btn btn-warning btn-upload w-100 mt-2">
+                                            <i class="fas fa-redo me-2"></i>
+                                            Resubmit Document
+                                        </button>
+                                    </form>
+                                @elseif($canEdit && !($studentChecklist && $studentChecklist->document_path))
+                                    <!-- Initial Upload Form -->
                                     <form action="{{ route('student.checklist.upload', $item->id) }}"
                                           method="POST"
                                           enctype="multipart/form-data"
@@ -704,11 +768,12 @@
         modal.show();
     }
 
-    function handleFileSelect(itemId, input) {
+    function handleFileSelect(itemId, input, isResubmit = false) {
         const file = input.files[0];
         if (file) {
-            const uploadArea = document.getElementById(`upload-area-${itemId}`);
-            const selectedFileDiv = document.getElementById(`selected-file-${itemId}`);
+            const prefix = isResubmit ? 'resubmit' : 'upload';
+            const uploadArea = document.getElementById(`${prefix}-area-${itemId}`);
+            const selectedFileDiv = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-selected' : 'selected-file'}-${itemId}`);
             const label = uploadArea.querySelector('.upload-label');
 
             // Show selected file
@@ -718,8 +783,17 @@
 
             // Validate file size
             if (file.size > 10 * 1024 * 1024) {
-                alert('File size exceeds 10MB limit. Please choose a smaller file.');
-                clearFileSelection(itemId);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Too Large',
+                    text: 'File size exceeds 10MB limit. Please choose a smaller file.',
+                    confirmButtonColor: '#DC143C'
+                });
+                if (isResubmit) {
+                    clearResubmitSelection(itemId);
+                } else {
+                    clearFileSelection(itemId);
+                }
                 return;
             }
 
@@ -727,8 +801,17 @@
             const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
             const fileExt = '.' + file.name.split('.').pop().toLowerCase();
             if (!allowedTypes.includes(fileExt)) {
-                alert('Invalid file type. Please upload PDF, JPG, or PNG files only.');
-                clearFileSelection(itemId);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Invalid File Type',
+                    text: 'Please upload PDF, JPG, or PNG files only.',
+                    confirmButtonColor: '#DC143C'
+                });
+                if (isResubmit) {
+                    clearResubmitSelection(itemId);
+                } else {
+                    clearFileSelection(itemId);
+                }
                 return;
             }
         }
@@ -745,6 +828,17 @@
         label.style.display = 'flex';
     }
 
+    function clearResubmitSelection(itemId) {
+        const uploadArea = document.getElementById(`resubmit-area-${itemId}`);
+        const input = document.getElementById(`resubmit-input-${itemId}`);
+        const selectedFileDiv = document.getElementById(`resubmit-selected-${itemId}`);
+        const label = uploadArea.querySelector('.upload-label');
+
+        input.value = '';
+        selectedFileDiv.style.display = 'none';
+        label.style.display = 'flex';
+    }
+
     // Form submission with loading state
     document.querySelectorAll('.modern-upload-form').forEach(form => {
         form.addEventListener('submit', function(e) {
@@ -753,7 +847,12 @@
 
             if (!fileInput.files.length) {
                 e.preventDefault();
-                alert('Please select a file to upload.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No File Selected',
+                    text: 'Please select a file to upload.',
+                    confirmButtonColor: '#DC143C'
+                });
                 return;
             }
 
@@ -791,8 +890,9 @@
 
             if (files.length) {
                 fileInput.files = files;
-                const itemId = fileInput.id.replace('file-input-', '');
-                handleFileSelect(itemId, fileInput);
+                const itemId = fileInput.id.replace('file-input-', '').replace('resubmit-input-', '');
+                const isResubmit = fileInput.id.includes('resubmit');
+                handleFileSelect(itemId, fileInput, isResubmit);
             }
         }, false);
     });

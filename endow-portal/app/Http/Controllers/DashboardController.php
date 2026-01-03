@@ -3,13 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Student;
+use App\Repositories\StudentRepository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function __construct()
+    protected $studentRepository;
+
+    public function __construct(StudentRepository $studentRepository)
     {
+        $this->studentRepository = $studentRepository;
         $this->middleware('auth');
     }
 
@@ -30,56 +34,57 @@ class DashboardController extends Controller
     {
         $user = Auth::user();
 
-        // Build query based on role
-        $query = Student::query();
-
-        // Employees only see their assigned students
+        // Determine user ID for filtering (employees see only their students)
+        $userId = null;
         if ($user->hasRole('Employee') && !$user->hasRole(['Super Admin', 'Admin'])) {
-            $query->where('assigned_to', $user->id);
+            $userId = $user->id;
         }
 
-        // Statistics
-        $totalStudents = (clone $query)->count();
-        $pendingApprovals = (clone $query)->where('account_status', 'pending')->count();
+        // Get all statistics in optimized queries (2-3 queries total instead of 8-10)
+        $stats = $this->studentRepository->getDashboardStats($userId);
+        
+        // Get recent students with only needed columns and relationships
+        $recentStudents = $this->studentRepository->getRecent($userId, 10);
 
-        $statusCounts = [
-            'new' => (clone $query)->where('status', 'new')->count(),
-            'contacted' => (clone $query)->where('status', 'contacted')->count(),
-            'processing' => (clone $query)->where('status', 'processing')->count(),
-            'applied' => (clone $query)->where('status', 'applied')->count(),
-            'approved' => (clone $query)->where('status', 'approved')->count(),
-            'rejected' => (clone $query)->where('status', 'rejected')->count(),
-        ];
+        // Get pending approvals list
+        $pendingStudents = $this->studentRepository->getPendingApprovals($userId, 5);
 
-        // Recent students (last 10)
-        $recentStudents = (clone $query)
-            ->with(['user', 'assignedUser', 'creator'])
-            ->latest()
-            ->limit(10)
-            ->get();
-
-        // Pending approvals list
-        $pendingStudents = (clone $query)
-            ->where('account_status', 'pending')
-            ->with(['user', 'creator'])
-            ->latest()
-            ->limit(5)
-            ->get();
-
-        return view('dashboard.admin', compact(
-            'totalStudents',
-            'pendingApprovals',
-            'statusCounts',
-            'recentStudents',
-            'pendingStudents'
-        ));
+        return view('dashboard.admin', [
+            'totalStudents' => $stats['total'],
+            'pendingApprovals' => $stats['pending_approvals'],
+            'statusCounts' => $stats['status_counts'],
+            'recentStudents' => $recentStudents,
+            'pendingStudents' => $pendingStudents,
+        ]);
     }
 
     public function studentDashboard()
     {
         $user = Auth::user();
+        
+        // Optimized query with withCount for aggregates
         $student = Student::where('user_id', $user->id)
-            ->with(['checklists.checklistItem', 'documents', 'assignedUser'])
+            ->with([
+                'checklists' => function($query) {
+                    $query->select('id', 'student_id', 'checklist_item_id', 'status')
+                        ->with('checklistItem:id,title,description');
+                },
+                'documents' => function($query) {
+                    $query->select('id', 'student_id', 'checklist_item_id', 'status', 'file_path', 'created_at')
+                        ->latest('created_at')
+                        ->limit(10); // Only recent documents for dashboard
+                },
+                'assignedUser:id,name,email'
+            ])
+            ->withCount([
+                'checklists',
+                'checklists as approved_checklists_count' => function($query) {
+                    $query->where('status', 'approved');
+                },
+                'checklists as pending_checklists_count' => function($query) {
+                    $query->whereIn('status', ['pending', 'submitted']);
+                }
+            ])
             ->first();
 
         if (!$student) {
@@ -87,15 +92,13 @@ class DashboardController extends Controller
                 ->with('warning', 'Please complete your profile to continue.');
         }
 
-        // Calculate checklist progress
-        $totalChecklists = $student->checklists->count();
-        $approvedChecklists = $student->checklists->where('status', 'approved')->count();
-        $pendingChecklists = $student->checklists->whereIn('status', ['pending', 'submitted'])->count();
-
+        // Calculate checklist progress using withCount results
         $student->checklist_progress = [
-            'percentage' => $totalChecklists > 0 ? round(($approvedChecklists / $totalChecklists) * 100) : 0,
-            'approved' => $approvedChecklists,
-            'pending' => $pendingChecklists,
+            'percentage' => $student->checklists_count > 0 
+                ? round(($student->approved_checklists_count / $student->checklists_count) * 100) 
+                : 0,
+            'approved' => $student->approved_checklists_count,
+            'pending' => $student->pending_checklists_count,
         ];
 
         return view('dashboard.student', compact('student'));

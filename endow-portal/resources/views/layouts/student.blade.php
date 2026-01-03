@@ -448,8 +448,26 @@
 
             <div class="topbar-actions">
                 <div class="user-menu">
-                    <div class="user-avatar">
-                        {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                    @php
+                        $currentStudent = Auth::user()->student;
+                        $profilePhoto = null;
+                        if ($currentStudent) {
+                            try {
+                                $profilePhoto = $currentStudent->activeProfilePhoto;
+                            } catch (\Exception $e) {
+                                // Ignore if table doesn't exist
+                            }
+                        }
+                    @endphp
+                    <div class="user-avatar" style="overflow: hidden;">
+                        @if($profilePhoto && $profilePhoto->photo_path)
+                            <img src="{{ $profilePhoto->photo_url }}?t={{ time() }}" 
+                                 alt="{{ Auth::user()->name }}" 
+                                 style="width: 100%; height: 100%; object-fit: cover;"
+                                 onerror="this.style.display='none'; this.parentElement.innerHTML='{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}'">
+                        @else
+                            {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                        @endif
                     </div>
                     <div class="user-info">
                         <span class="user-name">{{ Auth::user()->name }}</span>
@@ -481,6 +499,9 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @stack('scripts')
 </body>

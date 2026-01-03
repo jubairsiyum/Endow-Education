@@ -7,19 +7,24 @@ use App\Models\StudentChecklist;
 use App\Models\ChecklistItem;
 use App\Models\StudentDocument;
 use App\Services\ActivityLogService;
+use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 class StudentChecklistController extends Controller
 {
     protected $activityLogService;
+    protected $imageProcessingService;
 
-    public function __construct(ActivityLogService $activityLogService)
+    public function __construct(ActivityLogService $activityLogService, ImageProcessingService $imageProcessingService)
     {
         $this->activityLogService = $activityLogService;
+        $this->imageProcessingService = $imageProcessingService;
     }
 
     /**
@@ -132,10 +137,38 @@ class StudentChecklistController extends Controller
 
         if ($existingChecklist && $existingChecklist->document_path) {
             Storage::disk('public')->delete($existingChecklist->document_path);
+            // Delete old document records
+            StudentDocument::where('student_checklist_id', $existingChecklist->id)->delete();
         }
 
-        // Store the file in file system
-        $path = $request->file('document')->store('student-documents/' . $student->id, 'public');
+        $file = $request->file('document');
+        
+        // Check if the file is an image and convert to PDF
+        $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
+        
+        if ($shouldConvert) {
+            // Convert image to PDF
+            $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
+            
+            // Use PDF data for storage
+            $fileContent = base64_decode($pdfData['content']);
+            $fileName = $pdfData['filename'];
+            $mimeType = $pdfData['mime_type'];
+            $fileSize = $pdfData['size'];
+            $base64Content = $pdfData['content'];
+            
+            // Store PDF file
+            $path = 'student-documents/' . $student->id . '/' . $fileName;
+            Storage::disk('public')->put($path, $fileContent);
+        } else {
+            // Store original PDF file
+            $path = $file->store('student-documents/' . $student->id, 'public');
+            $fileContent = file_get_contents($file->getRealPath());
+            $base64Content = base64_encode($fileContent);
+            $fileName = $file->getClientOriginalName();
+            $mimeType = $file->getMimeType();
+            $fileSize = $file->getSize();
+        }
 
         // Create or update student checklist entry
         $studentChecklist = StudentChecklist::updateOrCreate(
@@ -146,18 +179,58 @@ class StudentChecklistController extends Controller
             [
                 'status' => 'submitted',
                 'document_path' => $path,
+                'submitted_at' => now(),
             ]
         );
 
+        // Build document data with only essential fields to avoid column errors
+        $documentData = [
+            'student_id' => $student->id,
+            'checklist_item_id' => $checklistItem->id,
+            'student_checklist_id' => $studentChecklist->id,
+            'filename' => $fileName,
+            'file_size' => $fileSize,
+            'mime_type' => $mimeType,
+            'file_data' => $base64Content,
+            'uploaded_by' => $user->id,
+        ];
+
+        // Add optional fields only if column exists (avoid migration errors)
+        if (Schema::hasColumn('student_documents', 'document_type')) {
+            $documentData['document_type'] = 'student_document';
+        }
+        if (Schema::hasColumn('student_documents', 'file_name')) {
+            $documentData['file_name'] = $fileName;
+        }
+        if (Schema::hasColumn('student_documents', 'original_name')) {
+            $documentData['original_name'] = $shouldConvert ? $file->getClientOriginalName() : $fileName;
+        }
+        if (Schema::hasColumn('student_documents', 'file_path')) {
+            $documentData['file_path'] = $path;
+        }
+        if (Schema::hasColumn('student_documents', 'status')) {
+            $documentData['status'] = 'submitted';
+        }
+
+        StudentDocument::create($documentData);
+
         // Log activity
+        $logMessage = $shouldConvert 
+            ? "Uploaded image document (converted to PDF) for: {$checklistItem->title}"
+            : "Uploaded document for: {$checklistItem->title}";
+        
         $this->activityLogService->log(
             'student',
-            "Uploaded document for: {$checklistItem->title}",
+            $logMessage,
             $student,
             ['checklist_item_id' => $checklistItem->id, 'document_path' => $path]
         );
 
-        return back()->with('success', 'Document uploaded successfully! Your document is now under review.');
+        $successMessage = $shouldConvert 
+            ? 'Image uploaded and converted to PDF successfully! Your document is now under review.'
+            : 'Document uploaded successfully! Your document is now under review.';
+
+        return back()->with('success', $successMessage);
     }
 
     /**
@@ -177,6 +250,9 @@ class StudentChecklistController extends Controller
             Storage::disk('public')->delete($studentChecklist->document_path);
         }
 
+        // Delete associated document records
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
+
         // Log activity before deletion
         $this->activityLogService->log(
             'student',
@@ -190,6 +266,9 @@ class StudentChecklistController extends Controller
             'status' => 'pending',
             'document_path' => null,
             'feedback' => null,
+            'submitted_at' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
         ]);
 
         return back()->with('success', 'Document deleted successfully.');
@@ -328,5 +407,220 @@ class StudentChecklistController extends Controller
         // Mail::to($student->assignedUser->email)->send(new StudentContactMessage($student, $request->all()));
 
         return back()->with('success', 'Your message has been submitted successfully! We will get back to you soon.');
+    }
+
+    /**
+     * Approve a student's submitted document.
+     */
+    public function approveDocument(StudentChecklist $studentChecklist)
+    {
+        $user = Auth::user();
+
+        // Authorize - only employees can approve
+        $student = $studentChecklist->student;
+        if (Gate::denies('update', $student)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Update checklist status to approved/completed
+        $studentChecklist->update([
+            'status' => 'approved',
+            'reviewed_by' => $user->id,
+            'reviewed_at' => now(),
+            'feedback' => null, // Clear any previous feedback
+        ]);
+
+        // Update all associated documents to approved status
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)
+            ->where('status', 'submitted')
+            ->update([
+                'status' => 'approved',
+                'reviewed_by' => $user->id,
+                'reviewed_at' => now(),
+            ]);
+
+        // Log activity
+        $this->activityLogService->log(
+            'employee',
+            "Approved document: {$studentChecklist->checklistItem->title} for {$student->name}",
+            $student,
+            ['checklist_item_id' => $studentChecklist->checklist_item_id]
+        );
+
+        return back()->with('success', 'Document approved successfully!');
+    }
+
+    /**
+     * Reject a student's submitted document with feedback.
+     */
+    public function rejectDocument(Request $request, StudentChecklist $studentChecklist)
+    {
+        $user = Auth::user();
+
+        // Authorize - only employees can reject
+        $student = $studentChecklist->student;
+        if (Gate::denies('update', $student)) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $request->validate([
+            'feedback' => 'required|string|max:1000',
+        ]);
+
+        // Update checklist status to rejected with feedback
+        $studentChecklist->update([
+            'status' => 'rejected',
+            'reviewed_by' => $user->id,
+            'reviewed_at' => now(),
+            'feedback' => $request->feedback,
+        ]);
+
+        // Update all associated documents to rejected status
+        $updateData = [
+            'status' => 'rejected',
+            'reviewed_by' => $user->id,
+            'reviewed_at' => now(),
+        ];
+        
+        // Only add notes if the column exists
+        if (Schema::hasColumn('student_documents', 'notes')) {
+            $updateData['notes'] = $request->feedback;
+        }
+        
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)
+            ->where('status', 'submitted')
+            ->update($updateData);
+
+        // Log activity
+        $this->activityLogService->log(
+            'employee',
+            "Rejected document: {$studentChecklist->checklistItem->title} for {$student->name}",
+            $student,
+            [
+                'checklist_item_id' => $studentChecklist->checklist_item_id,
+                'feedback' => $request->feedback
+            ]
+        );
+
+        return back()->with('success', 'Document rejected. Feedback has been sent to the student.');
+    }
+
+    /**
+     * Allow student to resubmit a rejected document.
+     */
+    public function resubmitDocument(Request $request, StudentChecklist $studentChecklist)
+    {
+        $user = Auth::user();
+        $student = Student::where('user_id', $user->id)->firstOrFail();
+
+        // Check authorization
+        if ($studentChecklist->student_id !== $student->id) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        // Only allow resubmission if status is rejected
+        if ($studentChecklist->status !== 'rejected') {
+            return back()->with('error', 'You can only resubmit rejected documents.');
+        }
+
+        $request->validate([
+            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
+        ]);
+
+        // Delete old file if exists
+        if ($studentChecklist->document_path) {
+            Storage::disk('public')->delete($studentChecklist->document_path);
+        }
+
+        // Delete old document records for this checklist
+        StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
+
+        $file = $request->file('document');
+        
+        // Check if the file is an image and convert to PDF
+        $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
+        
+        if ($shouldConvert) {
+            // Convert image to PDF
+            $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
+            
+            // Use PDF data for storage
+            $fileContent = base64_decode($pdfData['content']);
+            $fileName = $pdfData['filename'];
+            $mimeType = $pdfData['mime_type'];
+            $fileSize = $pdfData['size'];
+            $base64Content = $pdfData['content'];
+            
+            // Store PDF file
+            $path = 'student-documents/' . $student->id . '/' . $fileName;
+            Storage::disk('public')->put($path, $fileContent);
+        } else {
+            // Store original PDF file
+            $path = $file->store('student-documents/' . $student->id, 'public');
+            $fileContent = file_get_contents($file->getRealPath());
+            $base64Content = base64_encode($fileContent);
+            $fileName = $file->getClientOriginalName();
+            $mimeType = $file->getMimeType();
+            $fileSize = $file->getSize();
+        }
+
+        // Update student checklist entry
+        $studentChecklist->update([
+            'status' => 'submitted',
+            'document_path' => $path,
+            'submitted_at' => now(),
+            'feedback' => null,
+            'reviewed_by' => null,
+            'reviewed_at' => null,
+        ]);
+
+        // Build document data with only essential fields
+        $documentData = [
+            'student_id' => $student->id,
+            'checklist_item_id' => $studentChecklist->checklist_item_id,
+            'student_checklist_id' => $studentChecklist->id,
+            'filename' => $fileName,
+            'file_size' => $fileSize,
+            'mime_type' => $mimeType,
+            'file_data' => $base64Content,
+            'uploaded_by' => $user->id,
+        ];
+
+        // Add optional fields only if column exists
+        if (Schema::hasColumn('student_documents', 'document_type')) {
+            $documentData['document_type'] = 'student_document';
+        }
+        if (Schema::hasColumn('student_documents', 'file_name')) {
+            $documentData['file_name'] = $fileName;
+        }
+        if (Schema::hasColumn('student_documents', 'original_name')) {
+            $documentData['original_name'] = $shouldConvert ? $file->getClientOriginalName() : $fileName;
+        }
+        if (Schema::hasColumn('student_documents', 'file_path')) {
+            $documentData['file_path'] = $path;
+        }
+        if (Schema::hasColumn('student_documents', 'status')) {
+            $documentData['status'] = 'submitted';
+        }
+
+        StudentDocument::create($documentData);
+
+        // Log activity
+        $logMessage = $shouldConvert 
+            ? "Resubmitted image document (converted to PDF) for: {$studentChecklist->checklistItem->title}"
+            : "Resubmitted document for: {$studentChecklist->checklistItem->title}";
+        
+        $this->activityLogService->log(
+            'student',
+            $logMessage,
+            $student,
+            ['checklist_item_id' => $studentChecklist->checklist_item_id, 'document_path' => $path]
+        );
+
+        $successMessage = $shouldConvert 
+            ? 'Image resubmitted and converted to PDF successfully! Your document is now under review.'
+            : 'Document resubmitted successfully! Your document is now under review.';
+
+        return back()->with('success', $successMessage);
     }
 }
