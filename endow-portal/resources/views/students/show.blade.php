@@ -61,6 +61,9 @@
         </div>
         <div class="d-flex gap-2">
             @can('update', $student)
+            <a href="{{ route('students.payments.index', $student) }}" class="btn btn-success">
+                <i class="fas fa-money-bill-wave me-2"></i> Payments
+            </a>
             <a href="{{ route('students.edit', $student) }}" class="btn btn-primary-custom">
                 <i class="fas fa-edit me-2"></i> Edit Student
             </a>

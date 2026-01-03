@@ -218,4 +218,12 @@ class Student extends Model
             'percentage' => (int) (($approved / $total) * 100),
         ];
     }
+
+    /**
+     * Get the student's payments.
+     */
+    public function payments()
+    {
+        return $this->hasMany(StudentPayment::class);
+    }
 }

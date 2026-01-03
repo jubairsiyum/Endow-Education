@@ -167,7 +167,7 @@
                             <a href="{{ route('students.show', $student) }}" class="btn btn-outline-secondary">
                                 <i class="fas fa-times me-2"></i> Cancel
                             </a>
-                            <button type="submit" class="btn btn-success btn-lg" onclick="return confirm('Are you sure you want to approve this student and enroll them in the selected program?')">
+                            <button type="button" class="btn btn-success btn-lg" onclick="confirmApproval()">
                                 <i class="fas fa-check-circle me-2"></i> Approve & Enroll Student
                             </button>
                         </div>
@@ -204,6 +204,46 @@
         
         // Reset program selection
         programSelect.value = '';
+    }
+    
+    function confirmApproval() {
+        // Validate form first
+        const form = document.querySelector('form');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
+        
+        const universityName = document.getElementById('target_university_id').selectedOptions[0]?.text || 'N/A';
+        const programName = document.getElementById('target_program_id').selectedOptions[0]?.text || 'N/A';
+        
+        Swal.fire({
+            title: 'Approve Student?',
+            html: `
+                <div style="text-align: left; padding: 10px;">
+                    <p><strong>Student:</strong> {{ $student->name }}</p>
+                    <p><strong>University:</strong> ${universityName}</p>
+                    <p><strong>Program:</strong> ${programName}</p>
+                    <hr>
+                    <p class="text-muted">This will:</p>
+                    <ul class="text-muted">
+                        <li>Approve the student's account</li>
+                        <li>Send a welcome email</li>
+                        <li>Assign program-specific checklists</li>
+                    </ul>
+                </div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#28a745',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="fas fa-check"></i> Yes, Approve',
+            cancelButtonText: '<i class="fas fa-times"></i> Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                form.submit();
+            }
+        });
     }
     
     // Initialize on page load

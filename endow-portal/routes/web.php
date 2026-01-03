@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\StudentProfileController;
+use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\FollowUpController;
 use App\Http\Controllers\ChecklistItemController;
 use App\Http\Controllers\DocumentController;
@@ -69,6 +70,14 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/students/{student}/profile', [StudentProfileController::class, 'update'])->name('students.profile.update');
     Route::post('/students/{student}/profile/photo', [StudentProfileController::class, 'uploadPhoto'])->name('students.profile.photo.upload');
     Route::delete('/students/{student}/profile/photo', [StudentProfileController::class, 'deletePhoto'])->name('students.profile.photo.delete');
+    
+    // Student Payment Routes
+    Route::get('/students/{student}/payments', [StudentPaymentController::class, 'index'])->name('students.payments.index');
+    Route::get('/students/{student}/payments/create', [StudentPaymentController::class, 'create'])->name('students.payments.create');
+    Route::post('/students/{student}/payments', [StudentPaymentController::class, 'store'])->name('students.payments.store');
+    Route::get('/students/{student}/payments/{payment}/edit', [StudentPaymentController::class, 'edit'])->name('students.payments.edit');
+    Route::put('/students/{student}/payments/{payment}', [StudentPaymentController::class, 'update'])->name('students.payments.update');
+    Route::delete('/students/{student}/payments/{payment}', [StudentPaymentController::class, 'destroy'])->name('students.payments.destroy');
 });
 
 // Follow-up Routes

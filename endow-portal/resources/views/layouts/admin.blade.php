@@ -853,6 +853,51 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Global SweetAlert Messages -->
+    <script>
+        // Success messages
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#10B981',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+
+        // Error messages
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#DC143C'
+            });
+        @endif
+
+        // Info messages
+        @if(session('info'))
+            Swal.fire({
+                icon: 'info',
+                title: 'Information',
+                text: '{{ session('info') }}',
+                confirmButtonColor: '#3B82F6'
+            });
+        @endif
+
+        // Warning messages
+        @if(session('warning'))
+            Swal.fire({
+                icon: 'warning',
+                title: 'Warning!',
+                text: '{{ session('warning') }}',
+                confirmButtonColor: '#F59E0B'
+            });
+        @endif
+    </script>
+    
     @yield('scripts')
     @stack('scripts')
 </body>
