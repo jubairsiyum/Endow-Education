@@ -208,6 +208,33 @@ class DocumentController extends Controller
     }
 
     /**
+     * Get document data for modal viewer (API endpoint)
+     */
+    public function getData(StudentDocument $document)
+    {
+        // Authorization check
+        $this->authorize('view', $document->student);
+
+        // Get file content
+        if ($document->file_data) {
+            $base64Content = $document->file_data;
+        } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+            $fileContent = Storage::disk('public')->get($document->file_path);
+            $base64Content = base64_encode($fileContent);
+        } else {
+            return response()->json(['error' => 'Document file not found'], 404);
+        }
+
+        return response()->json([
+            'id' => $document->id,
+            'filename' => $document->filename,
+            'mime_type' => $document->mime_type,
+            'file_size' => $document->file_size,
+            'file_data' => $base64Content,
+        ]);
+    }
+
+    /**
      * Approve a document
      */
     public function approve(Student $student = null, StudentDocument $document)

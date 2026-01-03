@@ -379,12 +379,12 @@
                                                 </div>
                                                 <div class="d-flex gap-2">
                                                     @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
-                                                        <a href="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
-                                                           class="btn btn-sm btn-primary"
-                                                           target="_blank"
-                                                           title="View Document">
+                                                        <button type="button"
+                                                                class="btn btn-sm btn-primary"
+                                                                onclick="viewDocument({{ $document->id }}, '{{ addslashes($document->filename ?? 'Document') }}')"
+                                                                title="View Document">
                                                             <i class="fas fa-eye me-1"></i> View
-                                                        </a>
+                                                        </button>
                                                         <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
                                                            class="btn btn-sm btn-outline-secondary"
                                                            title="Download">
@@ -520,6 +520,44 @@
     </div>
     @endforeach
 
+    <!-- Document Viewer Modal -->
+    <div class="modal fade" id="documentViewerModal" tabindex="-1" aria-labelledby="documentViewerModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="documentViewerModalLabel">
+                        <i class="fas fa-file-pdf me-2"></i>
+                        <span id="documentTitle">Document Viewer</span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-0" style="min-height: 70vh;">
+                    <div id="documentLoading" class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mt-3 text-muted">Loading document...</p>
+                    </div>
+                    <div id="documentError" class="alert alert-danger m-4" style="display: none;">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <span id="errorMessage">Error loading document</span>
+                    </div>
+                    <div id="documentContent" style="display: none; height: 70vh; overflow: auto;">
+                        <iframe id="documentFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i> Close
+                    </button>
+                    <a id="documentDownloadBtn" href="#" class="btn btn-primary" download>
+                        <i class="fas fa-download me-1"></i> Download
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @push('scripts')
     <script>
         function confirmRejectStudent() {
@@ -570,6 +608,101 @@
                 if (result.isConfirmed) {
                     document.getElementById('approve-form-' + checklistId).submit();
                 }
+            });
+        }
+
+        function viewDocument(documentId, documentName) {
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('documentViewerModal'));
+            modal.show();
+
+            // Set document title
+            document.getElementById('documentTitle').textContent = documentName;
+
+            // Reset states
+            document.getElementById('documentLoading').style.display = 'block';
+            document.getElementById('documentError').style.display = 'none';
+            document.getElementById('documentContent').style.display = 'none';
+
+            // Fetch document data
+            fetch(`/api/documents/${documentId}/data`, {
+                method: 'GET',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load document');
+                }
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById('documentLoading').style.display = 'none';
+                document.getElementById('documentContent').style.display = 'block';
+
+                // Set download button
+                const downloadBtn = document.getElementById('documentDownloadBtn');
+                downloadBtn.href = `/students/{{ $student->id }}/documents/${documentId}/download`;
+                downloadBtn.download = data.filename;
+
+                // Display document based on mime type
+                const iframe = document.getElementById('documentFrame');
+                if (data.mime_type === 'application/pdf') {
+                    // For PDF, use data URI
+                    iframe.src = `data:application/pdf;base64,${data.file_data}`;
+                } else if (data.mime_type.startsWith('image/')) {
+                    // For images, create HTML with image tag
+                    const imageHtml = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f5f5f5; }
+                                img { max-width: 100%; height: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white; }
+                            </style>
+                        </head>
+                        <body>
+                            <img src="data:${data.mime_type};base64,${data.file_data}" alt="${data.filename}" />
+                        </body>
+                        </html>
+                    `;
+                    iframe.srcdoc = imageHtml;
+                } else {
+                    // For other types, show download option
+                    const messageHtml = `
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <style>
+                                body { margin: 0; padding: 40px; font-family: Arial, sans-serif; text-align: center; }
+                                .message { background: #f8f9fa; padding: 30px; border-radius: 8px; }
+                                .icon { font-size: 48px; color: #6c757d; margin-bottom: 20px; }
+                                h3 { color: #495057; margin-bottom: 10px; }
+                                p { color: #6c757d; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="message">
+                                <div class="icon">📄</div>
+                                <h3>${data.filename}</h3>
+                                <p>Preview not available for this file type.</p>
+                                <p>Click the download button below to view the file.</p>
+                            </div>
+                        </body>
+                        </html>
+                    `;
+                    iframe.srcdoc = messageHtml;
+                }
+            })
+            .catch(error => {
+                console.error('Error loading document:', error);
+                document.getElementById('documentLoading').style.display = 'none';
+                document.getElementById('documentError').style.display = 'block';
+                document.getElementById('errorMessage').textContent = error.message || 'Failed to load document. Please try again.';
             });
         }
     </script>

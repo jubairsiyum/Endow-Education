@@ -136,6 +136,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
     Route::get('/students/{student}/documents/{document}/download', [DocumentController::class, 'download'])->name('students.documents.download');
     Route::get('/students/{student}/documents/{document}/view', [DocumentController::class, 'view'])->name('students.documents.view');
+    Route::get('/api/documents/{document}/data', [DocumentController::class, 'getData'])->name('documents.data');
     Route::delete('/students/{student}/documents/{document}', [DocumentController::class, 'destroy'])->name('students.documents.destroy');
     Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
