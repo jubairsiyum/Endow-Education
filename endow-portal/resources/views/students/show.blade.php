@@ -542,8 +542,9 @@
                         <i class="fas fa-exclamation-triangle me-2"></i>
                         <span id="errorMessage">Error loading document</span>
                     </div>
-                    <div id="documentContent" style="display: none; height: 70vh; overflow: auto;">
-                        <iframe id="documentFrame" style="width: 100%; height: 100%; border: none;"></iframe>
+                    <div id="documentContent" style="display: none; height: 70vh; overflow: hidden;">
+                        <!-- Container for document display -->
+                        <div id="documentViewer" style="width: 100%; height: 100%;"></div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -624,10 +625,9 @@
             document.getElementById('documentError').style.display = 'none';
             document.getElementById('documentContent').style.display = 'none';
 
-            // Clear iframe content immediately to prevent showing old content
-            const iframe = document.getElementById('documentFrame');
-            iframe.src = 'about:blank';
-            iframe.srcdoc = '';
+            // Clear viewer content immediately to prevent showing old content
+            const viewer = document.getElementById('documentViewer');
+            viewer.innerHTML = '';
 
             // Fetch document data
             fetch(`/api/documents/${documentId}/data`, {
@@ -655,54 +655,70 @@
                 downloadBtn.download = data.filename;
 
                 // Display document based on mime type
-                const iframe = document.getElementById('documentFrame');
+                const viewer = document.getElementById('documentViewer');
+                viewer.innerHTML = ''; // Clear previous content
                 const timestamp = new Date().getTime(); // Unique timestamp to prevent caching
                 
                 if (data.mime_type === 'application/pdf') {
-                    // For PDF, use data URI with timestamp to force reload
-                    iframe.src = `data:application/pdf;base64,${data.file_data}#${timestamp}`;
-                } else if (data.mime_type.startsWith('image/')) {
-                    // For images, create HTML with image tag
-                    const imageHtml = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <style>
-                                body { margin: 0; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; background: #f5f5f5; }
-                                img { max-width: 100%; height: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white; }
-                            </style>
-                        </head>
-                        <body>
-                            <img src="data:${data.mime_type};base64,${data.file_data}" alt="${data.filename}" />
-                        </body>
-                        </html>
-                    `;
-                    iframe.srcdoc = imageHtml;
-                } else {
-                    // For other types, show download option
-                    const messageHtml = `
-                        <!DOCTYPE html>
-                        <html>
-                        <head>
-                            <style>
-                                body { margin: 0; padding: 40px; font-family: Arial, sans-serif; text-align: center; }
-                                .message { background: #f8f9fa; padding: 30px; border-radius: 8px; }
-                                .icon { font-size: 48px; color: #6c757d; margin-bottom: 20px; }
-                                h3 { color: #495057; margin-bottom: 10px; }
-                                p { color: #6c757d; }
-                            </style>
-                        </head>
-                        <body>
-                            <div class="message">
-                                <div class="icon">📄</div>
-                                <h3>${data.filename}</h3>
-                                <p>Preview not available for this file type.</p>
-                                <p>Click the download button below to view the file.</p>
+                    // For PDF, use object tag with embed fallback for better compatibility
+                    viewer.innerHTML = `
+                        <object
+                            data="data:application/pdf;base64,${data.file_data}#toolbar=1&navpanes=0&scrollbar=1&view=FitH"
+                            type="application/pdf"
+                            style="width: 100%; height: 100%; border: none;">
+                            <embed
+                                src="data:application/pdf;base64,${data.file_data}#toolbar=1&navpanes=0&scrollbar=1&view=FitH"
+                                type="application/pdf"
+                                style="width: 100%; height: 100%; border: none;" />
+                            <div style="padding: 40px; text-align: center; background: #f8f9fa;">
+                                <div style="font-size: 48px; color: #6c757d; margin-bottom: 20px;">📄</div>
+                                <h4 style="color: #495057; margin-bottom: 10px;">${data.filename}</h4>
+                                <p style="color: #6c757d; margin-bottom: 20px;">Your browser cannot display PDF files.</p>
+                                <a href="${downloadBtn.href}" class="btn btn-primary" download="${data.filename}">
+                                    <i class="fas fa-download me-1"></i> Download PDF
+                                </a>
                             </div>
-                        </body>
-                        </html>
+                        </object>
                     `;
-                    iframe.srcdoc = messageHtml;
+                } else if (data.mime_type.startsWith('image/')) {
+                    // For images, display directly with proper styling
+                    viewer.innerHTML = `
+                        <div style="width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; background: #f5f5f5; overflow: auto; padding: 20px;">
+                            <img
+                                src="data:${data.mime_type};base64,${data.file_data}"
+                                alt="${data.filename}"
+                                style="max-width: 100%; max-height: 100%; object-fit: contain; box-shadow: 0 2px 8px rgba(0,0,0,0.1); background: white;"
+                                onerror="this.parentElement.innerHTML='<div style=\\'text-align: center; color: #dc3545;\\'><i class=\\'fas fa-exclamation-triangle\\' style=\\'font-size: 48px; margin-bottom: 20px;\\'></i><p>Failed to load image</p></div>';"
+                            />
+                        </div>
+                    `;
+                } else if (data.mime_type === 'application/msword' || data.mime_type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+                    // For Word documents
+                    viewer.innerHTML = `
+                        <div style="padding: 40px; text-align: center; background: #f8f9fa; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <div style="font-size: 64px; color: #2b579a; margin-bottom: 20px;">📝</div>
+                            <h4 style="color: #495057; margin-bottom: 10px;">${data.filename}</h4>
+                            <p style="color: #6c757d; margin-bottom: 10px;">Microsoft Word Document</p>
+                            <p style="color: #6c757d; margin-bottom: 20px;">Preview not available for Word documents.</p>
+                            <a href="${downloadBtn.href}" class="btn btn-primary" download="${data.filename}">
+                                <i class="fas fa-download me-1"></i> Download Document
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    // For other/unknown types
+                    const fileIcon = '📄';
+                    viewer.innerHTML = `
+                        <div style="padding: 40px; text-align: center; background: #f8f9fa; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                            <div style="font-size: 64px; color: #6c757d; margin-bottom: 20px;">${fileIcon}</div>
+                            <h4 style="color: #495057; margin-bottom: 10px;">${data.filename}</h4>
+                            <p style="color: #6c757d; margin-bottom: 10px;">File Type: ${data.mime_type}</p>
+                            <p style="color: #6c757d; margin-bottom: 20px;">Preview not available for this file type.</p>
+                            <a href="${downloadBtn.href}" class="btn btn-primary" download="${data.filename}">
+                                <i class="fas fa-download me-1"></i> Download File
+                            </a>
+                        </div>
+                    `;
                 }
             })
             .catch(error => {
@@ -718,10 +734,9 @@
             const modalElement = document.getElementById('documentViewerModal');
             if (modalElement) {
                 modalElement.addEventListener('hidden.bs.modal', function () {
-                    // Clear iframe content when modal is closed
-                    const iframe = document.getElementById('documentFrame');
-                    iframe.src = 'about:blank';
-                    iframe.srcdoc = '';
+                    // Clear viewer content when modal is closed
+                    const viewer = document.getElementById('documentViewer');
+                    viewer.innerHTML = '';
                     
                     // Reset to loading state
                     document.getElementById('documentLoading').style.display = 'block';
