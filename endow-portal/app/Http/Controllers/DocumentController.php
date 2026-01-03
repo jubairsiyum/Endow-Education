@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DocumentController extends Controller
 {
@@ -75,21 +76,36 @@ class DocumentController extends Controller
                 $fileContent = file_get_contents($file->getRealPath());
                 $base64Content = base64_encode($fileContent);
 
-                $document = StudentDocument::create([
+                // Build document data with only essential fields
+                $documentData = [
                     'student_id' => $student->id,
                     'checklist_item_id' => $request->checklist_item_id,
                     'student_checklist_id' => $request->student_checklist_id,
-                    'document_type' => 'student_document',
                     'filename' => $file->getClientOriginalName(),
-                    'file_name' => $file->getClientOriginalName(),
-                    'original_name' => $file->getClientOriginalName(),
                     'file_size' => $file->getSize(),
                     'mime_type' => $file->getMimeType(),
                     'file_data' => $base64Content,
                     'uploaded_by' => Auth::id(),
-                    'status' => 'submitted',
-                    'notes' => $request->notes,
-                ]);
+                ];
+
+                // Add optional fields only if column exists
+                if (Schema::hasColumn('student_documents', 'document_type')) {
+                    $documentData['document_type'] = 'student_document';
+                }
+                if (Schema::hasColumn('student_documents', 'file_name')) {
+                    $documentData['file_name'] = $file->getClientOriginalName();
+                }
+                if (Schema::hasColumn('student_documents', 'original_name')) {
+                    $documentData['original_name'] = $file->getClientOriginalName();
+                }
+                if (Schema::hasColumn('student_documents', 'status')) {
+                    $documentData['status'] = 'submitted';
+                }
+                if (Schema::hasColumn('student_documents', 'notes') && $request->notes) {
+                    $documentData['notes'] = $request->notes;
+                }
+
+                $document = StudentDocument::create($documentData);
 
                 // Update checklist status to submitted
                 $checklist = StudentChecklist::find($request->student_checklist_id);

@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 
 class StudentChecklistController extends Controller
 {
@@ -159,21 +160,36 @@ class StudentChecklistController extends Controller
             $fileContent = file_get_contents($file->getRealPath());
             $base64Content = base64_encode($fileContent);
 
-            StudentDocument::create([
+            // Build document data with only essential fields to avoid column errors
+            $documentData = [
                 'student_id' => $student->id,
                 'checklist_item_id' => $checklistItem->id,
                 'student_checklist_id' => $studentChecklist->id,
-                'document_type' => 'student_document',
                 'filename' => $file->getClientOriginalName(),
-                'file_name' => $file->getClientOriginalName(),
-                'original_name' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'file_data' => $base64Content,
-                'file_path' => $path,
                 'uploaded_by' => $user->id,
-                'status' => 'submitted',
-            ]);
+            ];
+
+            // Add optional fields only if column exists (avoid migration errors)
+            if (Schema::hasColumn('student_documents', 'document_type')) {
+                $documentData['document_type'] = 'student_document';
+            }
+            if (Schema::hasColumn('student_documents', 'file_name')) {
+                $documentData['file_name'] = $file->getClientOriginalName();
+            }
+            if (Schema::hasColumn('student_documents', 'original_name')) {
+                $documentData['original_name'] = $file->getClientOriginalName();
+            }
+            if (Schema::hasColumn('student_documents', 'file_path')) {
+                $documentData['file_path'] = $path;
+            }
+            if (Schema::hasColumn('student_documents', 'status')) {
+                $documentData['status'] = 'submitted';
+            }
+
+            StudentDocument::create($documentData);
         }
 
         // Log activity
@@ -502,21 +518,36 @@ class StudentChecklistController extends Controller
             $fileContent = file_get_contents($file->getRealPath());
             $base64Content = base64_encode($fileContent);
 
-            StudentDocument::create([
+            // Build document data with only essential fields
+            $documentData = [
                 'student_id' => $student->id,
                 'checklist_item_id' => $studentChecklist->checklist_item_id,
                 'student_checklist_id' => $studentChecklist->id,
-                'document_type' => 'student_document',
                 'filename' => $file->getClientOriginalName(),
-                'file_name' => $file->getClientOriginalName(),
-                'original_name' => $file->getClientOriginalName(),
                 'file_size' => $file->getSize(),
                 'mime_type' => $file->getMimeType(),
                 'file_data' => $base64Content,
-                'file_path' => $path,
                 'uploaded_by' => $user->id,
-                'status' => 'submitted',
-            ]);
+            ];
+
+            // Add optional fields only if column exists
+            if (Schema::hasColumn('student_documents', 'document_type')) {
+                $documentData['document_type'] = 'student_document';
+            }
+            if (Schema::hasColumn('student_documents', 'file_name')) {
+                $documentData['file_name'] = $file->getClientOriginalName();
+            }
+            if (Schema::hasColumn('student_documents', 'original_name')) {
+                $documentData['original_name'] = $file->getClientOriginalName();
+            }
+            if (Schema::hasColumn('student_documents', 'file_path')) {
+                $documentData['file_path'] = $path;
+            }
+            if (Schema::hasColumn('student_documents', 'status')) {
+                $documentData['status'] = 'submitted';
+            }
+
+            StudentDocument::create($documentData);
         }
 
         // Log activity
