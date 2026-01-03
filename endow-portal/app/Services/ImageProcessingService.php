@@ -7,6 +7,8 @@ use App\Models\StudentProfilePhoto;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class ImageProcessingService
 {
@@ -231,5 +233,129 @@ class ImageProcessingService
     protected function getStorageDisk(): string
     {
         return config('filesystems.default', 'public');
+    }
+
+    /**
+     * Convert image (PNG/JPG) to PDF format for document viewing.
+     * Returns array with PDF file data and metadata.
+     * 
+     * @param UploadedFile $file The image file to convert
+     * @param string $originalFilename Original filename to preserve
+     * @return array ['content' => base64_encoded_pdf, 'filename' => new_filename, 'mime_type' => 'application/pdf', 'size' => file_size]
+     */
+    public function convertImageToPdf(UploadedFile $file, string $originalFilename = null): array
+    {
+        // Get original filename or use provided one
+        $originalFilename = $originalFilename ?? $file->getClientOriginalName();
+        
+        // Check if file is an image
+        $mimeType = $file->getMimeType();
+        $isImage = in_array($mimeType, ['image/jpeg', 'image/jpg', 'image/png']);
+        
+        if (!$isImage) {
+            throw new \Exception('File must be an image (JPG, JPEG, or PNG)');
+        }
+
+        // Read image and convert to base64
+        $imageData = base64_encode(file_get_contents($file->getRealPath()));
+        $imageSrc = "data:{$mimeType};base64,{$imageData}";
+
+        // Get image dimensions
+        list($width, $height) = getimagesize($file->getRealPath());
+        
+        // Calculate PDF dimensions (A4 page with margins)
+        $maxWidth = 550; // A4 width with margins
+        $maxHeight = 750; // A4 height with margins
+        
+        // Calculate scaled dimensions maintaining aspect ratio
+        $ratio = min($maxWidth / $width, $maxHeight / $height);
+        $scaledWidth = $width * $ratio;
+        $scaledHeight = $height * $ratio;
+
+        // Create HTML for PDF with centered image
+        $html = "
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <meta charset='utf-8'>
+            <style>
+                body {
+                    margin: 0;
+                    padding: 20px;
+                    font-family: Arial, sans-serif;
+                }
+                .container {
+                    text-align: center;
+                    page-break-inside: avoid;
+                }
+                .document-title {
+                    font-size: 12px;
+                    color: #666;
+                    margin-bottom: 15px;
+                    font-weight: normal;
+                }
+                .image-container {
+                    display: inline-block;
+                    max-width: 100%;
+                }
+                img {
+                    max-width: 100%;
+                    height: auto;
+                    border: 1px solid #ddd;
+                    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                }
+            </style>
+        </head>
+        <body>
+            <div class='container'>
+                <div class='document-title'>{$originalFilename}</div>
+                <div class='image-container'>
+                    <img src='{$imageSrc}' style='width: {$scaledWidth}px; height: {$scaledHeight}px;' />
+                </div>
+            </div>
+        </body>
+        </html>
+        ";
+
+        // Configure DomPDF
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $options->set('defaultFont', 'Arial');
+
+        // Create PDF
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Get PDF output
+        $pdfContent = $dompdf->output();
+        $base64Pdf = base64_encode($pdfContent);
+
+        // Generate new filename with .pdf extension
+        $newFilename = pathinfo($originalFilename, PATHINFO_FILENAME) . '.pdf';
+
+        return [
+            'content' => $base64Pdf,
+            'filename' => $newFilename,
+            'mime_type' => 'application/pdf',
+            'size' => strlen($pdfContent),
+            'original_filename' => $originalFilename,
+            'converted_from' => $mimeType,
+        ];
+    }
+
+    /**
+     * Check if file should be converted to PDF (is it an image?)
+     * 
+     * @param UploadedFile $file
+     * @return bool
+     */
+    public function shouldConvertToPdf(UploadedFile $file): bool
+    {
+        $mimeType = $file->getMimeType();
+        return in_array($mimeType, ['image/jpeg', 'image/jpg', 'image/png']);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\StudentChecklist;
+use App\Services\ImageProcessingService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,12 @@ use Illuminate\Support\Facades\Schema;
 
 class DocumentController extends Controller
 {
-    public function __construct()
+    protected $imageProcessingService;
+
+    public function __construct(ImageProcessingService $imageProcessingService)
     {
         $this->middleware('auth');
+        $this->imageProcessingService = $imageProcessingService;
     }
 
     /**
@@ -73,17 +77,35 @@ class DocumentController extends Controller
         try {
             if ($request->hasFile('document')) {
                 $file = $request->file('document');
-                $fileContent = file_get_contents($file->getRealPath());
-                $base64Content = base64_encode($fileContent);
+                
+                // Check if the file is an image and convert to PDF
+                $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
+                
+                if ($shouldConvert) {
+                    // Convert image to PDF
+                    $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
+                    
+                    $fileName = $pdfData['filename'];
+                    $mimeType = $pdfData['mime_type'];
+                    $fileSize = $pdfData['size'];
+                    $base64Content = $pdfData['content'];
+                } else {
+                    // Use original file
+                    $fileContent = file_get_contents($file->getRealPath());
+                    $base64Content = base64_encode($fileContent);
+                    $fileName = $file->getClientOriginalName();
+                    $mimeType = $file->getMimeType();
+                    $fileSize = $file->getSize();
+                }
 
                 // Build document data with only essential fields
                 $documentData = [
                     'student_id' => $student->id,
                     'checklist_item_id' => $request->checklist_item_id,
                     'student_checklist_id' => $request->student_checklist_id,
-                    'filename' => $file->getClientOriginalName(),
-                    'file_size' => $file->getSize(),
-                    'mime_type' => $file->getMimeType(),
+                    'filename' => $fileName,
+                    'file_size' => $fileSize,
+                    'mime_type' => $mimeType,
                     'file_data' => $base64Content,
                     'uploaded_by' => Auth::id(),
                 ];
@@ -93,10 +115,10 @@ class DocumentController extends Controller
                     $documentData['document_type'] = 'student_document';
                 }
                 if (Schema::hasColumn('student_documents', 'file_name')) {
-                    $documentData['file_name'] = $file->getClientOriginalName();
+                    $documentData['file_name'] = $fileName;
                 }
                 if (Schema::hasColumn('student_documents', 'original_name')) {
-                    $documentData['original_name'] = $file->getClientOriginalName();
+                    $documentData['original_name'] = $shouldConvert ? $file->getClientOriginalName() : $fileName;
                 }
                 if (Schema::hasColumn('student_documents', 'status')) {
                     $documentData['status'] = 'submitted';
@@ -118,7 +140,11 @@ class DocumentController extends Controller
 
                 DB::commit();
 
-                return redirect()->back()->with('success', 'Document uploaded successfully and is pending review.');
+                $successMessage = $shouldConvert 
+                    ? 'Image uploaded and converted to PDF successfully! Document is pending review.'
+                    : 'Document uploaded successfully and is pending review.';
+
+                return redirect()->back()->with('success', $successMessage);
             }
 
             DB::rollBack();
