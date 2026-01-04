@@ -33,7 +33,7 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $query = Student::with(['assignedUser', 'creator']);
+        $query = Student::with(['assignedUser', 'creator', 'activeProfilePhoto']);
 
         // Filter by status
         if ($request->has('status') && $request->status != '') {
@@ -66,9 +66,19 @@ class StudentController extends Controller
             });
         }
 
-        $students = $query->latest()->paginate(15);
+        // Sort students in ascending order by name
+        $students = $query->orderBy('name', 'asc')->paginate(15);
 
-        return view('students.index', compact('students'));
+        // Get employees for filter dropdown (for admins)
+        $employees = collect();
+        if (Auth::user()->hasRole(['Super Admin', 'Admin'])) {
+            $employees = User::role(['Employee', 'Admin', 'Super Admin'])
+                ->where('status', 'active')
+                ->orderBy('name')
+                ->get();
+        }
+
+        return view('students.index', compact('students', 'employees'));
     }
 
     /**
