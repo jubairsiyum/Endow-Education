@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rules\Password;
 use App\Services\ActivityLogService;
+use Spatie\Activitylog\Models\Activity;
 
 class AdminProfileController extends Controller
 {
@@ -27,14 +28,14 @@ class AdminProfileController extends Controller
         $user = Auth::user();
         
         // Get activity stats
-        $totalLogins = activity()
-            ->causedBy($user)
+        $totalLogins = Activity::where('causer_id', $user->id)
+            ->where('causer_type', get_class($user))
             ->where('log_name', 'auth')
             ->where('description', 'logged in')
             ->count();
 
-        $lastLogin = activity()
-            ->causedBy($user)
+        $lastLogin = Activity::where('causer_id', $user->id)
+            ->where('causer_type', get_class($user))
             ->where('log_name', 'auth')
             ->where('description', 'logged in')
             ->latest()
