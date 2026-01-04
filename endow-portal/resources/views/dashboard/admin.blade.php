@@ -188,7 +188,9 @@
                                 </td>
                                 <td>
                                     @php
-                                        $progress = $student->checklist_progress['percentage'] ?? 0;
+                                        $approved = $student->checklist_progress['approved'] ?? 0;
+                                        $total = $student->checklist_progress['total'] ?? 0;
+                                        $progress = $total > 0 ? (int)(($approved / $total) * 100) : 0;
                                     @endphp
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="progress" style="width: 80px; height: 8px;">
@@ -197,7 +199,7 @@
                                                  aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
                                             </div>
                                         </div>
-                                        <small class="text-muted" style="font-weight: 600;">{{ $progress }}%</small>
+                                        <small class="text-muted" style="font-weight: 600;">{{ $approved }}/{{ $total }}</small>
                                     </div>
                                 </td>
                                 <td>

@@ -12,6 +12,7 @@ use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\StudentChecklistController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\StudentVisitController;
+use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Auth\StudentRegisterController;
@@ -89,6 +90,18 @@ Route::middleware(['auth'])->group(function () {
 // Checklist Item Routes (Admin/Employee only)
 Route::middleware(['auth', 'can:create checklists'])->group(function () {
     Route::resource('checklist-items', ChecklistItemController::class);
+});
+
+// User Management Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('users')->group(function () {
+    Route::get('/', [UserManagementController::class, 'index'])->name('users.index');
+    Route::get('/create', [UserManagementController::class, 'create'])->name('users.create');
+    Route::post('/', [UserManagementController::class, 'store'])->name('users.store');
+    Route::get('/{user}', [UserManagementController::class, 'show'])->name('users.show');
+    Route::get('/{user}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
+    Route::put('/{user}', [UserManagementController::class, 'update'])->name('users.update');
+    Route::delete('/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    Route::patch('/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
 // University Management Routes (Admin/Employee only)

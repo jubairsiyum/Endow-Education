@@ -281,8 +281,8 @@
                                         stroke-linecap="round"/>
                             </svg>
                             <div class="position-absolute top-50 start-50 translate-middle">
-                                <div class="fs-2 fw-bold text-danger">{{ $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0 }}%</div>
-                                <small class="text-muted">Complete</small>
+                                <div class="fs-2 fw-bold text-danger">{{ $completedCount }}</div>
+                                <small class="text-muted">of {{ $totalCount }}</small>
                             </div>
                         </div>
                     </div>

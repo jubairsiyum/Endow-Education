@@ -730,6 +730,13 @@
                 @hasanyrole('Super Admin|Admin')
                 <div class="menu-section-title">System</div>
 
+                @hasrole('Super Admin')
+                <a href="{{ route('users.index') }}" class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <i class="fas fa-users-cog"></i>
+                    <span>User Management</span>
+                </a>
+                @endhasrole
+
                 <a href="{{ route('activity-logs.index') }}" class="menu-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
                     <i class="fas fa-history"></i>
                     <span>Activity Logs</span>

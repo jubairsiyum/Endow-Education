@@ -133,8 +133,9 @@
                     <div>
                         <div class="stat-label">Checklist Progress</div>
                         <div class="stat-value" style="font-size: 1.5rem;">
-                            {{ $student->checklist_progress['percentage'] ?? 0 }}%
+                            {{ $student->checklist_progress['approved'] ?? 0 }} of {{ $student->checklist_progress['total'] ?? 0 }}
                         </div>
+                        <small class="text-muted" style="font-size: 0.75rem;">submitted</small>
                     </div>
                     <div class="stat-icon primary">
                         <i class="fas fa-tasks"></i>
@@ -270,17 +271,22 @@
             <div class="tab-pane fade" id="checklist" role="tabpanel">
                 <div class="mb-4">
                     <h5>Checklist Progress</h5>
+                    @php
+                        $total = $student->checklist_progress['total'] ?? 0;
+                        $approved = $student->checklist_progress['approved'] ?? 0;
+                        $percentage = $total > 0 ? (int)(($approved / $total) * 100) : 0;
+                    @endphp
                     <div class="progress" style="height: 24px;">
                         <div class="progress-bar" role="progressbar"
-                             style="width: {{ $student->checklist_progress['percentage'] ?? 0 }}%; background: var(--primary-color);"
-                             aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}"
+                             style="width: {{ $percentage }}%; background: var(--primary-color);"
+                             aria-valuenow="{{ $percentage }}"
                              aria-valuemin="0" aria-valuemax="100">
-                            {{ $student->checklist_progress['percentage'] ?? 0 }}%
+                            {{ $approved }} of {{ $total }} submitted
                         </div>
                     </div>
                     <div class="mt-2 text-muted">
                         {{ $student->checklist_progress['approved'] ?? 0 }} approved ·
-                        {{ $student->checklist_progress['submitted'] ?? 0 }} submitted ·
+                        {{ $student->checklist_progress['submitted'] ?? 0 }} under review ·
                         {{ $student->checklist_progress['pending'] ?? 0 }} pending
                     </div>
                 </div>
