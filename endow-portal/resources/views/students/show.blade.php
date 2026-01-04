@@ -270,24 +270,25 @@
             <!-- Checklist Tab -->
             <div class="tab-pane fade" id="checklist" role="tabpanel">
                 <div class="mb-4">
-                    <h5>Checklist Progress</h5>
+                    <h5 class="text-dark fw-bold">Checklist Progress</h5>
                     @php
                         $total = $student->checklist_progress['total'] ?? 0;
                         $approved = $student->checklist_progress['approved'] ?? 0;
                         $percentage = $total > 0 ? (int)(($approved / $total) * 100) : 0;
+                        $progressColor = $percentage >= 75 ? 'success' : ($percentage >= 50 ? 'warning' : 'danger');
                     @endphp
                     <div class="progress" style="height: 24px;">
-                        <div class="progress-bar" role="progressbar"
-                             style="width: {{ $percentage }}%; background: var(--primary-color);"
+                        <div class="progress-bar bg-{{ $progressColor }}" role="progressbar"
+                             style="width: {{ $percentage }}%;"
                              aria-valuenow="{{ $percentage }}"
                              aria-valuemin="0" aria-valuemax="100">
-                            {{ $approved }} of {{ $total }} submitted
+                            <span class="fw-bold">{{ $approved }} of {{ $total }} completed ({{ $percentage }}%)</span>
                         </div>
                     </div>
-                    <div class="mt-2 text-muted">
-                        {{ $student->checklist_progress['approved'] ?? 0 }} approved ·
-                        {{ $student->checklist_progress['submitted'] ?? 0 }} under review ·
-                        {{ $student->checklist_progress['pending'] ?? 0 }} pending
+                    <div class="mt-2">
+                        <span class="badge bg-success me-2">{{ $student->checklist_progress['approved'] ?? 0 }} approved</span>
+                        <span class="badge bg-warning me-2">{{ $student->checklist_progress['submitted'] ?? 0 }} under review</span>
+                        <span class="badge bg-secondary">{{ $student->checklist_progress['pending'] ?? 0 }} pending</span>
                     </div>
                 </div>
 
@@ -355,14 +356,30 @@
 
                                 @if($checklist->documents->count() > 0)
                                     <div class="mt-3">
-                                        <strong class="small">Documents:</strong>
-                                        <div class="list-group list-group-flush mt-2">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <strong class="small">Documents:</strong>
+                                            @if($checklist->documents->count() > 1)
+                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                    onclick="toggleDocumentSelection({{ $checklist->id }})"
+                                                    id="select-btn-{{ $checklist->id }}">
+                                                <i class="fas fa-check-square me-1"></i> Select for Merge
+                                            </button>
+                                            @endif
+                                        </div>
+                                        <div class="list-group list-group-flush mt-2" id="doc-list-{{ $checklist->id }}">
                                             @foreach($checklist->documents as $document)
-                                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center">
-                                                <div>
-                                                    <i class="fas fa-file-pdf text-danger me-2"></i>
-                                                    <span>{{ $document->original_name ?? $document->file_name }}</span>
-                                                    <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
+                                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center document-item"
+                                                 data-checklist="{{ $checklist->id }}"
+                                                 data-document="{{ $document->id }}">
+                                                <div class="d-flex align-items-center flex-grow-1">
+                                                    <input type="checkbox" class="form-check-input me-3 doc-checkbox d-none" 
+                                                           data-checklist="{{ $checklist->id }}"
+                                                           data-document="{{ $document->id }}"
+                                                           value="{{ $document->id }}">
+                                                    <div>
+                                                        <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                        <span>{{ $document->original_name ?? $document->file_name }}</span>
+                                                        <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
                                                     @php
                                                         $docStatusColors = [
                                                             'pending' => 'secondary',
@@ -419,6 +436,18 @@
                                             </div>
                                             @endforeach
                                         </div>
+                                        @if($checklist->documents->count() > 1)
+                                        <div class="mt-3 d-none" id="merge-actions-{{ $checklist->id }}">
+                                            <button type="button" class="btn btn-sm btn-success me-2" 
+                                                    onclick="mergeSelectedDocuments({{ $checklist->id }}, {{ $student->id }})">
+                                                <i class="fas fa-file-pdf me-1"></i> Merge Selected PDFs
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-secondary" 
+                                                    onclick="cancelDocumentSelection({{ $checklist->id }})">
+                                                Cancel
+                                            </button>
+                                        </div>
+                                        @endif
                                     </div>
                                 @else
                                     <div class="alert alert-info alert-sm mt-2 mb-0">
@@ -754,6 +783,112 @@
                 });
             }
         });
+
+        // Document merge functionality
+        function toggleDocumentSelection(checklistId) {
+            const docList = document.getElementById('doc-list-' + checklistId);
+            const checkboxes = docList.querySelectorAll('.doc-checkbox[data-checklist="' + checklistId + '"]');
+            const selectBtn = document.getElementById('select-btn-' + checklistId);
+            const mergeActions = document.getElementById('merge-actions-' + checklistId);
+            
+            checkboxes.forEach(cb => {
+                cb.classList.remove('d-none');
+            });
+            selectBtn.classList.add('d-none');
+            mergeActions.classList.remove('d-none');
+        }
+
+        function cancelDocumentSelection(checklistId) {
+            const docList = document.getElementById('doc-list-' + checklistId);
+            const checkboxes = docList.querySelectorAll('.doc-checkbox[data-checklist="' + checklistId + '"]');
+            const selectBtn = document.getElementById('select-btn-' + checklistId);
+            const mergeActions = document.getElementById('merge-actions-' + checklistId);
+            
+            checkboxes.forEach(cb => {
+                cb.classList.add('d-none');
+                cb.checked = false;
+            });
+            selectBtn.classList.remove('d-none');
+            mergeActions.classList.add('d-none');
+        }
+
+        function mergeSelectedDocuments(checklistId, studentId) {
+            const checkboxes = document.querySelectorAll('.doc-checkbox[data-checklist="' + checklistId + '"]:checked');
+            const documentIds = Array.from(checkboxes).map(cb => cb.value);
+            
+            if (documentIds.length < 2) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Selection Required',
+                    text: 'Please select at least 2 documents to merge.',
+                    confirmButtonColor: '#dc3545'
+                });
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Merge Documents',
+                text: `Merge ${documentIds.length} selected documents into a single PDF?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#28a745',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, Merge',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading
+                    Swal.fire({
+                        title: 'Merging Documents',
+                        text: 'Please wait...',
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    // Make AJAX request to merge documents
+                    fetch(`/students/${studentId}/documents/merge`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ document_ids: documentIds })
+                    })
+                    .then(response => response.blob())
+                    .then(blob => {
+                        // Create download link
+                        const url = window.URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = `merged_documents_${Date.now()}.pdf`;
+                        document.body.appendChild(a);
+                        a.click();
+                        window.URL.revokeObjectURL(url);
+                        document.body.removeChild(a);
+                        
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success',
+                            text: 'Documents merged successfully!',
+                            confirmButtonColor: '#dc3545'
+                        });
+                        
+                        cancelDocumentSelection(checklistId);
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to merge documents. Please try again.',
+                            confirmButtonColor: '#dc3545'
+                        });
+                    });
+                }
+            });
+        }
     </script>
     @endpush
 @endsection

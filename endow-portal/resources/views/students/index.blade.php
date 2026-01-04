@@ -26,6 +26,28 @@
                 </div>
 
                 <div class="col-md-2 col-6">
+                    <select name="university_id" class="form-select form-select-sm">
+                        <option value="">All Universities</option>
+                        @foreach($universities ?? [] as $university)
+                        <option value="{{ $university->id }}" {{ request('university_id') == $university->id ? 'selected' : '' }}>
+                            {{ Str::limit($university->name, 30) }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-2 col-6">
+                    <select name="program_id" class="form-select form-select-sm">
+                        <option value="">All Programs</option>
+                        @foreach($programs ?? [] as $program)
+                        <option value="{{ $program->id }}" {{ request('program_id') == $program->id ? 'selected' : '' }}>
+                            {{ Str::limit($program->name, 30) }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-2 col-6">
                     <select name="status" class="form-select form-select-sm">
                         <option value="">All Status</option>
                         <option value="new" {{ request('status') == 'new' ? 'selected' : '' }}>New</option>
@@ -47,18 +69,15 @@
                 </div>
 
                 @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
-                <div class="col-md-3 col-12">
-                    <select name="assigned_to" class="form-select form-select-sm">
-                        <option value="">All Counselors</option>
-                        @foreach($employees ?? [] as $employee)
-                        <option value="{{ $employee->id }}" {{ request('assigned_to') == $employee->id ? 'selected' : '' }}>
-                            {{ $employee->name }}
-                        </option>
-                        @endforeach
-                    </select>
+                <div class="col-md-1 col-12 d-flex gap-1">
+                    <button type="submit" class="btn btn-danger btn-sm flex-grow-1">
+                        <i class="fas fa-filter"></i>
+                    </button>
+                    <a href="{{ route('students.index') }}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-redo"></i>
+                    </a>
                 </div>
-                @endif
-
+                @else
                 <div class="col-md-2 col-12 d-flex gap-1">
                     <button type="submit" class="btn btn-danger btn-sm flex-grow-1">
                         <i class="fas fa-filter"></i> Filter
@@ -67,8 +86,17 @@
                         <i class="fas fa-redo"></i>
                     </a>
                 </div>
+                @endif
             </form>
         </div>
+    </div>
+
+    <!-- Export Button -->
+    <div class="d-flex justify-content-end mb-2">
+        <a href="{{ route('students.index', array_merge(request()->except('page'), ['export' => 'csv'])) }}" 
+           class="btn btn-success btn-sm">
+            <i class="fas fa-file-csv me-1"></i> Export to CSV
+        </a>
     </div>
 
     <!-- Students Table -->
@@ -80,13 +108,10 @@
                         <th class="text-center" style="width: 50px;">#</th>
                         <th>Name</th>
                         <th class="d-none d-md-table-cell">Contact</th>
-                        <th class="d-none d-lg-table-cell">Country</th>
+                        <th class="d-none d-lg-table-cell">University</th>
                         <th class="d-none d-lg-table-cell">Program</th>
                         <th>Status</th>
                         <th class="d-none d-md-table-cell">Account</th>
-                        @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
-                        <th class="d-none d-xl-table-cell">Assigned</th>
-                        @endif
                         <th class="d-none d-md-table-cell">Progress</th>
                         <th class="text-end">Actions</th>
                     </tr>
@@ -126,8 +151,12 @@
                             <div><i class="fas fa-envelope text-muted me-1"></i>{{ Str::limit($student->email, 25) }}</div>
                             <div><i class="fas fa-phone text-muted me-1"></i>{{ $student->phone }}</div>
                         </td>
-                        <td class="d-none d-lg-table-cell student-country">{{ $student->country }}</td>
-                        <td class="d-none d-lg-table-cell student-program">{{ Str::limit($student->course, 20) }}</td>
+                        <td class="d-none d-lg-table-cell student-university">
+                            {{ $student->targetUniversity->name ?? 'N/A' }}
+                        </td>
+                        <td class="d-none d-lg-table-cell student-program">
+                            {{ Str::limit($student->targetProgram->name ?? 'N/A', 25) }}
+                        </td>
                         <td>
                             @php
                                 $statusColors = [
@@ -169,15 +198,6 @@
                                 {{ ucfirst($student->account_status) }}
                             </span>
                         </td>
-                        @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
-                        <td class="d-none d-xl-table-cell student-assigned">
-                            @if($student->assignedUser)
-                                <span class="text-dark">{{ Str::limit($student->assignedUser->name, 15) }}</span>
-                            @else
-                                <span class="text-muted">Unassigned</span>
-                            @endif
-                        </td>
-                        @endif
                         <td class="d-none d-md-table-cell">
                             @php
                                 $approved = $student->checklist_progress['approved'] ?? 0;

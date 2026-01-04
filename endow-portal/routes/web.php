@@ -170,6 +170,7 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/students/{student}/documents', [DocumentController::class, 'studentDocuments'])->name('students.documents');
+    Route::post('/students/{student}/documents/merge', [DocumentController::class, 'mergeDocuments'])->name('students.documents.merge');
     Route::post('/documents/upload', [DocumentController::class, 'upload'])->name('documents.upload');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');

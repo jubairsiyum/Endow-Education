@@ -33,7 +33,7 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $query = Student::with(['assignedUser', 'creator', 'activeProfilePhoto']);
+        $query = Student::with(['assignedUser', 'creator', 'activeProfilePhoto', 'targetUniversity', 'targetProgram']);
 
         // Filter by status
         if ($request->has('status') && $request->status != '') {
@@ -48,6 +48,16 @@ class StudentController extends Controller
         // Filter by assigned user
         if ($request->has('assigned_to') && $request->assigned_to != '') {
             $query->where('assigned_to', $request->assigned_to);
+        }
+
+        // Filter by university
+        if ($request->has('university_id') && $request->university_id != '') {
+            $query->where('target_university_id', $request->university_id);
+        }
+
+        // Filter by program
+        if ($request->has('program_id') && $request->program_id != '') {
+            $query->where('target_program_id', $request->program_id);
         }
 
         // If employee, show only assigned students
@@ -66,6 +76,11 @@ class StudentController extends Controller
             });
         }
 
+        // Handle CSV export
+        if ($request->has('export') && $request->export == 'csv') {
+            return $this->exportToCSV($query->get());
+        }
+
         // Sort students in ascending order by name
         $students = $query->orderBy('name', 'asc')->paginate(15);
 
@@ -78,7 +93,50 @@ class StudentController extends Controller
                 ->get();
         }
 
-        return view('students.index', compact('students', 'employees'));
+        // Get universities and programs for filters
+        $universities = \App\Models\University::active()->orderBy('name')->get();
+        $programs = \App\Models\Program::active()->orderBy('name')->get();
+
+        return view('students.index', compact('students', 'employees', 'universities', 'programs'));
+    }
+
+    /**
+     * Export students to CSV
+     */
+    private function exportToCSV($students)
+    {
+        $filename = 'students_' . date('Y-m-d_His') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($students) {
+            $file = fopen('php://output', 'w');
+            
+            // Add CSV headers
+            fputcsv($file, ['#', 'Name', 'Email', 'Phone', 'University', 'Program', 'Status', 'Account Status', 'Created Date']);
+            
+            // Add data rows
+            foreach ($students as $index => $student) {
+                fputcsv($file, [
+                    $index + 1,
+                    $student->name,
+                    $student->email,
+                    $student->phone,
+                    $student->targetUniversity->name ?? 'N/A',
+                    $student->targetProgram->name ?? 'N/A',
+                    ucfirst($student->status),
+                    ucfirst($student->account_status),
+                    $student->created_at->format('Y-m-d H:i:s'),
+                ]);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 
     /**
