@@ -60,7 +60,39 @@
             background: var(--dark);
             z-index: 1000;
             overflow-y: auto;
-            transition: transform 0.3s ease;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar.collapsed .sidebar-brand span,
+        .sidebar.collapsed .menu-item span,
+        .sidebar.collapsed .menu-section-title,
+        .sidebar.collapsed .menu-badge {
+            display: none;
+        }
+
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
+        .sidebar.collapsed .sidebar-brand {
+            justify-content: center;
+        }
+
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            width: calc(100% - var(--sidebar-width));
+            transition: all 0.3s ease;
+        }
+
+        .main-content.expanded {
+            margin-left: 70px;
+            width: calc(100% - 70px);
         }
 
         .sidebar::-webkit-scrollbar {
@@ -415,27 +447,39 @@
             font-weight: 600;
             font-size: 14px;
             transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-outline-primary:hover {
             background: var(--primary);
-            color: white;
+            color: white !important;
+            border-color: var(--primary);
+            text-decoration: none;
         }
 
         .btn-outline-secondary {
             border: 1.5px solid var(--gray-300);
-            color: var(--gray-600);
+            color: var(--gray-700);
             background: white;
             padding: 10px 20px;
             border-radius: 10px;
             font-weight: 600;
             font-size: 14px;
             transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-outline-secondary:hover {
-            background: var(--gray-50);
+            background: var(--gray-100);
             border-color: var(--gray-400);
+            color: var(--gray-900) !important;
+            text-decoration: none;
         }
 
         /* ========== TABLES ========== */
@@ -542,29 +586,6 @@
         .alert-danger { background: #FEE2E2; border-color: #FECACA; color: #991B1B; }
         .alert-info { background: #DBEAFE; border-color: #BFDBFE; color: #1E40AF; }
 
-        /* ========== ACTION BUTTONS ========== */
-        .action-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 8px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border: 1px solid;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-size: 14px;
-        }
-
-        .action-btn.view { background: #DBEAFE; color: #1E40AF; border-color: #BFDBFE; }
-        .action-btn.edit { background: #FEF3C7; color: #92400E; border-color: #FDE68A; }
-        .action-btn.delete { background: #FEE2E2; color: #991B1B; border-color: #FECACA; }
-
-        .action-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
         /* ========== PROGRESS BAR ========== */
         .progress {
             background: var(--gray-200);
@@ -625,6 +646,33 @@
             padding: 8px 16px;
             border-radius: 8px;
             cursor: pointer;
+            font-size: 18px;
+        }
+
+        .sidebar-toggle-desktop {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: white;
+            border: 1px solid var(--gray-200);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            margin-right: 16px;
+        }
+
+        .sidebar-toggle-desktop:hover {
+            background: var(--gray-50);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        @media (max-width: 1024px) {
+            .sidebar-toggle-desktop {
+                display: none;
+            }
         }
 
         @media (max-width: 768px) {
@@ -634,6 +682,7 @@
 
             .sidebar.active {
                 transform: translateX(0);
+                box-shadow: 4px 0 20px rgba(0,0,0,0.1);
             }
 
             .main-content {
@@ -649,7 +698,9 @@
             }
 
             .mobile-menu-toggle {
-                display: block;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
             }
 
             .page-title {
@@ -657,7 +708,135 @@
             }
 
             .stat-value {
-                font-size: 28px;
+                font-size: 24px;
+            }
+
+            .stat-card {
+                padding: 16px;
+            }
+
+            .topbar h4 {
+                font-size: 16px;
+            }
+
+            .topbar-breadcrumb {
+                display: none;
+            }
+
+            .card-custom {
+                border-radius: 8px;
+            }
+
+            .card-body-custom {
+                padding: 16px;
+            }
+
+            .table-custom {
+                font-size: 13px;
+            }
+
+            .table-custom thead th,
+            .table-custom tbody td {
+                padding: 12px 8px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .topbar-right .icon-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 14px;
+            }
+
+            .user-menu {
+                padding: 6px;
+            }
+
+            .user-avatar {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+
+            .btn-primary-custom,
+            .btn-outline-primary,
+            .btn-outline-secondary {
+                padding: 8px 12px;
+                font-size: 13px;
+            }
+        }
+
+        /* ========== ENHANCED ACTION BUTTONS ========== */
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            text-decoration: none;
+        }
+
+        .action-btn.view { 
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%); 
+            color: #1E40AF; 
+            border-color: #93C5FD; 
+        }
+        
+        .action-btn.edit { 
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); 
+            color: #92400E; 
+            border-color: #FCD34D; 
+        }
+        
+        .action-btn.delete { 
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); 
+            color: #991B1B; 
+            border-color: #FCA5A5; 
+        }
+
+        .action-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+        }
+
+        .action-btn.view:hover { 
+            background: #1E40AF; 
+            color: white !important; 
+            border-color: #1E40AF;
+        }
+        
+        .action-btn.edit:hover { 
+            background: #F59E0B; 
+            color: white !important; 
+            border-color: #F59E0B;
+        }
+        
+        .action-btn.delete:hover { 
+            background: #DC2626; 
+            color: white !important; 
+            border-color: #DC2626;
+        }
+
+        @media (max-width: 768px) {
+            .action-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 12px;
             }
         }
     </style>
@@ -746,7 +925,7 @@
                 @canany(['view reports'])
                 <div class="menu-section-title">Analytics</div>
 
-                <a href="#" class="menu-item">
+                <a href="{{ route('reports.index') }}" class="menu-item {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                     <i class="fas fa-chart-line"></i>
                     <span>Reports</span>
                 </a>
@@ -773,6 +952,9 @@
             <!-- Topbar -->
             <div class="topbar">
                 <div class="topbar-left">
+                    <button class="sidebar-toggle-desktop" onclick="toggleSidebar()" title="Toggle Sidebar">
+                        <i class="fas fa-bars"></i>
+                    </button>
                     <button class="mobile-menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('active')">
                         <i class="fas fa-bars"></i>
                     </button>
@@ -800,12 +982,12 @@
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{ route('admin.profile.show') }}">
                                     <i class="fas fa-user me-2"></i> Profile
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item" href="#">
+                                <a class="dropdown-item" href="{{ route('admin.profile.edit') }}">
                                     <i class="fas fa-cog me-2"></i> Settings
                                 </a>
                             </li>
@@ -903,6 +1085,43 @@
                 confirmButtonColor: '#F59E0B'
             });
         @endif
+    </script>
+
+    <!-- Sidebar Toggle Script -->
+    <script>
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.querySelector('.main-content');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            // Store preference
+            const isCollapsed = sidebar.classList.contains('collapsed');
+            localStorage.setItem('sidebarCollapsed', isCollapsed);
+        }
+
+        // Restore sidebar state on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
+            if (isCollapsed) {
+                document.getElementById('sidebar').classList.add('collapsed');
+                document.querySelector('.main-content').classList.add('expanded');
+            }
+
+            // Close mobile sidebar when clicking outside
+            document.addEventListener('click', function(event) {
+                const sidebar = document.getElementById('sidebar');
+                const toggleBtn = document.querySelector('.mobile-menu-toggle');
+                
+                if (window.innerWidth <= 768 && 
+                    sidebar.classList.contains('active') && 
+                    !sidebar.contains(event.target) && 
+                    !toggleBtn.contains(event.target)) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
     </script>
     
     @yield('scripts')

@@ -16,6 +16,8 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Auth\StudentRegisterController;
+use App\Http\Controllers\AdminProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -56,6 +58,21 @@ Route::get('/student/registration/success', [StudentRegisterController::class, '
 // Dashboard Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+});
+
+// Admin/Employee Profile Routes
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/profile', [AdminProfileController::class, 'show'])->name('admin.profile.show');
+    Route::get('/profile/edit', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+    Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('admin.profile.password.update');
+    Route::post('/profile/photo', [AdminProfileController::class, 'uploadPhoto'])->name('admin.profile.photo.upload');
+    Route::delete('/profile/photo', [AdminProfileController::class, 'deletePhoto'])->name('admin.profile.photo.delete');
+});
+
+// Reports Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 });
 
 // Student Management Routes

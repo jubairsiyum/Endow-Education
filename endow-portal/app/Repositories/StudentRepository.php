@@ -108,10 +108,11 @@ class StudentRepository
      */
     public function getRecent(?int $userId = null, int $limit = 10): Collection
     {
-        $query = Student::select('id', 'name', 'email', 'status', 'account_status', 'assigned_to', 'created_by', 'created_at')
+        $query = Student::select('id', 'name', 'email', 'phone', 'course', 'country', 'status', 'account_status', 'assigned_to', 'created_by', 'created_at')
             ->with([
                 'assignedUser:id,name,email',
-                'creator:id,name'
+                'creator:id,name',
+                'activeProfilePhoto'
             ]);
 
         if ($userId) {
