@@ -511,7 +511,7 @@
                                         required 
                                         max="{{ date('Y-m-d', strtotime('-15 years')) }}"
                                     >
-                                    <small class="form-helper">You must be at least 15 years old</small>
+                                    {{-- <small class="form-helper">You must be at least 15 years old</small> --}}
                                 </div>
                             </div>
                         </div>
