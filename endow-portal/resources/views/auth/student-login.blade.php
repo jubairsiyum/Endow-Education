@@ -400,6 +400,36 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // Registration Success notification
+        @if(session('registration_success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Registration Successful!',
+                html: `
+                    <div style="text-align: center; padding: 20px;">
+                        <p style="font-size: 1.1rem; margin-bottom: 15px;">{{ session('registration_success') }}</p>
+                        <div style="background: #f0f9ff; border-left: 4px solid #3b82f6; padding: 15px; margin-top: 20px; text-align: left; border-radius: 8px;">
+                            <p style="margin: 0; color: #1e40af; font-size: 0.95rem;">
+                                <i class="fas fa-info-circle" style="margin-right: 8px;"></i>
+                                <strong>What happens next?</strong>
+                            </p>
+                            <ul style="margin: 10px 0 0 25px; color: #475569; font-size: 0.9rem;">
+                                <li>Our team will review your registration</li>
+                                <li>You'll receive an email notification once approved</li>
+                                <li>After approval, you can login with your credentials</li>
+                            </ul>
+                        </div>
+                    </div>
+                `,
+                confirmButtonColor: '#10B981',
+                confirmButtonText: '<i class="fas fa-check"></i> Got it!',
+                width: '600px',
+                showClass: {
+                    popup: 'animate__animated animate__fadeInDown'
+                }
+            });
+        @endif
+
         // SweetAlert notifications
         @if(session('success'))
             Swal.fire({
