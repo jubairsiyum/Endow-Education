@@ -366,72 +366,76 @@
                                             </button>
                                             @endif
                                         </div>
-                                        <div class="list-group list-group-flush mt-2" id="doc-list-{{ $checklist->id }}">
+                                        <div class="list-group mt-2" id="doc-list-{{ $checklist->id }}">
                                             @foreach($checklist->documents as $document)
-                                            <div class="list-group-item px-0 py-2 d-flex justify-content-between align-items-center document-item"
+                                            <div class="list-group-item document-item"
                                                  data-checklist="{{ $checklist->id }}"
                                                  data-document="{{ $document->id }}">
-                                                <div class="d-flex align-items-center flex-grow-1">
-                                                    <input type="checkbox" class="form-check-input me-3 doc-checkbox d-none" 
+                                                <div class="d-flex align-items-start gap-3">
+                                                    <input type="checkbox" class="form-check-input mt-1 doc-checkbox d-none" 
                                                            data-checklist="{{ $checklist->id }}"
                                                            data-document="{{ $document->id }}"
                                                            value="{{ $document->id }}">
-                                                    <div>
-                                                        <i class="fas fa-file-pdf text-danger me-2"></i>
-                                                        <span>{{ $document->original_name ?? $document->file_name }}</span>
-                                                        <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
-                                                    @php
-                                                        $docStatusColors = [
-                                                            'pending' => 'secondary',
-                                                            'submitted' => 'warning',
-                                                            'approved' => 'success',
-                                                            'rejected' => 'danger'
-                                                        ];
-                                                        $docColor = $docStatusColors[$document->status] ?? 'secondary';
-                                                    @endphp
-                                                    <span class="badge bg-{{ $docColor }} ms-2">{{ ucfirst($document->status) }}</span>
-                                                    <br>
-                                                    <small class="text-muted ms-4">
-                                                        Uploaded by {{ $document->uploader->name ?? 'Unknown' }} on
-                                                        {{ $document->created_at->format('M d, Y g:i A') }}
-                                                    </small>
-                                                    @if($document->reviewed_by && $document->reviewed_at)
-                                                    <br>
-                                                    <small class="text-muted ms-4">
-                                                        Reviewed by {{ $document->reviewer->name ?? 'Unknown' }} on
-                                                        {{ $document->reviewed_at->format('M d, Y g:i A') }}
-                                                    </small>
-                                                    @endif
-                                                </div>
-                                                <div class="d-flex gap-2">
-                                                    @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
-                                                        <button type="button"
-                                                                class="btn btn-sm btn-primary"
-                                                                onclick="viewDocument({{ $document->id }}, '{{ addslashes($document->filename ?? 'Document') }}')"
-                                                                title="View Document">
-                                                            <i class="fas fa-eye me-1"></i> View
-                                                        </button>
-                                                        <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
-                                                           class="btn btn-sm btn-outline-secondary"
-                                                           title="Download">
-                                                            <i class="fas fa-download"></i>
-                                                        </a>
-                                                    @else
-                                                        <span class="badge bg-danger">File Missing</span>
-                                                    @endif
-                                                    @can('update', $student)
-                                                        <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
-                                                              method="POST"
-                                                              class="d-inline"
-                                                              id="delete-doc-form-{{ $document->id }}">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
-                                                                    onclick="confirmDeleteDocument({{ $document->id }})">
-                                                                <i class="fas fa-trash"></i>
+                                                    <div class="flex-grow-1">
+                                                        <div class="d-flex align-items-center mb-2">
+                                                            <i class="fas fa-file-pdf text-danger me-2"></i>
+                                                            <strong>{{ $document->original_name ?? $document->file_name }}</strong>
+                                                            <small class="text-muted ms-2">({{ number_format($document->file_size / 1024, 2) }} KB)</small>
+                                                            @php
+                                                                $docStatusColors = [
+                                                                    'pending' => 'secondary',
+                                                                    'submitted' => 'warning',
+                                                                    'approved' => 'success',
+                                                                    'rejected' => 'danger'
+                                                                ];
+                                                                $docColor = $docStatusColors[$document->status] ?? 'secondary';
+                                                            @endphp
+                                                            <span class="badge bg-{{ $docColor }} ms-2">{{ ucfirst($document->status) }}</span>
+                                                        </div>
+                                                        <small class="text-muted d-block">
+                                                            <i class="fas fa-user me-1"></i>
+                                                            Uploaded by {{ $document->uploader->name ?? 'Unknown' }} on
+                                                            {{ $document->created_at->format('M d, Y g:i A') }}
+                                                        </small>
+                                                        @if($document->reviewed_by && $document->reviewed_at)
+                                                        <small class="text-muted d-block">
+                                                            <i class="fas fa-check-circle me-1"></i>
+                                                            Reviewed by {{ $document->reviewer->name ?? 'Unknown' }} on
+                                                            {{ $document->reviewed_at->format('M d, Y g:i A') }}
+                                                        </small>
+                                                        @endif
+                                                    </div>
+                                                    <div class="btn-group btn-group-sm ms-auto">
+                                                        @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
+                                                            <button type="button"
+                                                                    class="btn btn-outline-primary"
+                                                                    onclick="viewDocument({{ $document->id }}, '{{ addslashes($document->filename ?? 'Document') }}')"
+                                                                    title="View">
+                                                                <i class="fas fa-eye"></i>
                                                             </button>
-                                                        </form>
-                                                    @endcan
+                                                            <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
+                                                               class="btn btn-outline-success"
+                                                               title="Download">
+                                                                <i class="fas fa-download"></i>
+                                                            </a>
+                                                        @else
+                                                            <span class="badge bg-danger">File Missing</span>
+                                                        @endif
+                                                        @can('update', $student)
+                                                            <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
+                                                                  method="POST"
+                                                                  class="d-inline">
+                                                                @csrf
+                                                                @method('DELETE')
+                                                                <button type="button" 
+                                                                        class="btn btn-outline-danger" 
+                                                                        title="Delete"
+                                                                        onclick="if(confirm('Are you sure you want to delete this document?')) { document.getElementById('delete-doc-form-{{ $document->id }}').submit(); }">
+                                                                    <i class="fas fa-trash"></i>
+                                                                </button>
+                                                            </form>
+                                                        @endcan
+                                                    </div>
                                                 </div>
                                             </div>
                                             @endforeach

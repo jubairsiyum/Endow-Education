@@ -275,50 +275,30 @@
 
         /* Footer Styles */
         .student-footer {
-            background: var(--secondary);
-            color: rgba(255, 255, 255, 0.8);
-            padding: 30px;
+            background: #ffffff;
+            color: #6c757d;
+            padding: 25px 30px;
             margin-top: auto;
-            border-top: 3px solid var(--primary);
+            border-top: 1px solid #e9ecef;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
         }
 
         .footer-content {
             max-width: 1400px;
             margin: 0 auto;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 20px;
+            text-align: center;
         }
 
         .footer-left p {
             margin: 0;
             font-size: 14px;
+            line-height: 1.6;
+            color: #495057;
         }
 
-        .footer-links {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-
-        .footer-links a {
-            color: rgba(255, 255, 255, 0.8);
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.2s;
-        }
-
-        .footer-links a:hover {
-            color: var(--primary);
-        }
-
-        @media (max-width: 768px) {
-            .footer-content {
-                flex-direction: column;
-                text-align: center;
-            }
+        .footer-left p:first-child {
+            font-weight: 600;
+            margin-bottom: 5px;
         }
 
         /* Cards */
@@ -537,24 +517,51 @@
                 <span class="menu-text">Dashboard</span>
             </a>
 
+            <a href="{{ route('student.profile.edit') }}" class="menu-item {{ request()->routeIs('student.profile*') ? 'active' : '' }}">
+                <i class="fas fa-user"></i>
+                <span class="menu-text">My Profile</span>
+            </a>
+
             <a href="{{ route('student.documents') }}" class="menu-item {{ request()->routeIs('student.documents') ? 'active' : '' }}">
                 <i class="fas fa-file-upload"></i>
                 <span class="menu-text">Submit Documents</span>
             </a>
 
-            <a href="{{ route('student.profile.edit') }}" class="menu-item {{ request()->routeIs('student.profile*') ? 'active' : '' }}">
-                <i class="fas fa-user"></i>
-                <span class="menu-text">Profile</span>
+            <a href="#" class="menu-item">
+                <i class="fas fa-graduation-cap"></i>
+                <span class="menu-text">My Program</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <i class="fas fa-university"></i>
+                <span class="menu-text">University Info</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <i class="fas fa-calendar-check"></i>
+                <span class="menu-text">Appointments</span>
+            </a>
+
+            <a href="#" class="menu-item">
+                <i class="fas fa-comments"></i>
+                <span class="menu-text">Messages</span>
             </a>
 
             <a href="{{ route('student.faq') }}" class="menu-item {{ request()->routeIs('student.faq') ? 'active' : '' }}">
                 <i class="fas fa-question-circle"></i>
-                <span class="menu-text">FAQ</span>
+                <span class="menu-text">Help & FAQ</span>
             </a>
 
             <a href="{{ route('student.emergency-contact') }}" class="menu-item {{ request()->routeIs('student.emergency-contact') ? 'active' : '' }}">
                 <i class="fas fa-phone-alt"></i>
-                <span class="menu-text">Emergency Contact</span>
+                <span class="menu-text">Support</span>
+            </a>
+
+            <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 12px;"></div>
+
+            <a href="#" class="menu-item">
+                <i class="fas fa-cog"></i>
+                <span class="menu-text">Settings</span>
             </a>
 
             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="menu-item">
@@ -637,13 +644,7 @@
             <div class="footer-content">
                 <div class="footer-left">
                     <p>&copy; {{ date('Y') }} <strong>Endow Global Education</strong>. All rights reserved.</p>
-                    <p class="mt-1"><small>Empowering students to achieve their educational dreams worldwide</small></p>
-                </div>
-                <div class="footer-links">
-                    <a href="{{ route('student.faq') }}">Help & FAQ</a>
-                    <a href="{{ route('student.emergency-contact') }}">Contact Support</a>
-                    <a href="#">Privacy Policy</a>
-                    <a href="#">Terms of Service</a>
+                    <p><small>Empowering students to achieve their educational dreams worldwide</small></p>
                 </div>
             </div>
         </footer>

@@ -532,28 +532,23 @@
 
     .upload-area {
         position: relative;
-        border: 3px dashed #dee2e6;
-        border-radius: 15px;
-        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 2px dashed #dee2e6;
+        border-radius: 12px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
         overflow: hidden;
         cursor: pointer;
     }
 
     .upload-area:hover {
         border-color: #DC143C;
-        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
-        transform: translateY(-2px);
-        box-shadow: 0 8px 25px rgba(220, 20, 60, 0.15);
+        background: #fff5f5;
     }
 
     .upload-area.dragging {
         border-color: #DC143C;
-        background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
+        background: #ffe5e5;
         border-style: solid;
-        transform: scale(1.02);
-        box-shadow: 0 12px 30px rgba(220, 20, 60, 0.25);
-    }
     }
 
     .file-input {
@@ -565,27 +560,19 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 40px 20px;
+        padding: 30px 20px;
         cursor: pointer;
         margin: 0;
-        transition: all 0.3s ease;
     }
 
     .upload-icon {
         color: #DC143C;
-        margin-bottom: 15px;
-        transition: all 0.4s ease;
-        animation: bounce 2s ease-in-out infinite;
-    }
-
-    @keyframes bounce {
-        0%, 100% { transform: translateY(0); }
-        50% { transform: translateY(-10px); }
+        margin-bottom: 12px;
+        transition: transform 0.3s ease;
     }
 
     .upload-area:hover .upload-icon {
-        transform: scale(1.1) rotate(5deg);
-        animation: none;
+        transform: translateY(-5px);
     }
 
     .upload-text {
@@ -594,115 +581,72 @@
 
     .upload-main {
         display: block;
-        font-weight: 700;
-        font-size: 16px;
+        font-weight: 600;
+        font-size: 15px;
         color: #1a1a1a;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
 
     .upload-sub {
         display: block;
         font-size: 13px;
         color: #6c757d;
-        font-weight: 500;
     }
 
     .selected-file {
         display: flex;
         align-items: center;
-        gap: 15px;
-        padding: 20px;
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        border: 2px solid #4caf50;
-        border-radius: 12px;
+        gap: 12px;
+        padding: 15px 20px;
+        background: #e8f5e9;
+        border-radius: 8px;
         margin: 10px;
-        animation: slideIn 0.3s ease;
-    }
-
-    @keyframes slideIn {
-        from {
-            opacity: 0;
-            transform: translateY(-10px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
     }
 
     .selected-file i {
-        color: #4caf50;
-        font-size: 28px;
+        color: #28a745;
+        font-size: 24px;
     }
 
     .selected-file .filename {
         flex: 1;
-        font-weight: 700;
-        font-size: 15px;
-        color: #2e7d32;
+        font-weight: 600;
+        color: #155724;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     .clear-file {
-        background: #ffebee;
-        border: 2px solid #ef5350;
-        width: 35px;
-        height: 35px;
+        background: #f8d7da;
+        border: none;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.3s ease;
-        color: #ef5350;
+        transition: all 0.2s;
+        color: #721c24;
     }
 
     .clear-file:hover {
-        background: #ef5350;
+        background: #DC143C;
         color: white;
-        transform: rotate(90deg) scale(1.1);
     }
 
     .btn-upload {
-        font-weight: 700;
-        padding: 14px 24px;
-        border-radius: 10px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        font-size: 15px;
-        letter-spacing: 0.5px;
-        text-transform: uppercase;
-        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.2);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-upload::before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        width: 0;
-        height: 0;
-        background: rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        transform: translate(-50%, -50%);
-        transition: width 0.6s, height 0.6s;
-    }
-
-    .btn-upload:hover::before {
-        width: 300px;
-        height: 300px;
+        font-weight: 600;
+        padding: 12px 24px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        font-size: 14px;
     }
 
     .btn-upload:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 8px 25px rgba(220, 20, 60, 0.35);
-    }
-
-    .btn-upload:active {
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
     }
 
     /* Uploaded Document Display */

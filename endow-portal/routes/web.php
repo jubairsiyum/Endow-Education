@@ -31,8 +31,8 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    // Redirect to admin login by default
-    return redirect()->route('admin.login');
+    // Redirect to student login by default (homepage)
+    return redirect()->route('student.login');
 });
 
 // Admin/Employee Login Routes

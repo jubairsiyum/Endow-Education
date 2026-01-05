@@ -39,7 +39,8 @@ class StudentChecklistController extends Controller
 
         // Calculate checklist progress
         $totalCount = 0;
-        $completedCount = 0;
+        $approvedCount = 0;
+        $submittedCount = 0;
         $pendingCount = 0;
 
         if ($student->target_program_id) {
@@ -56,8 +57,14 @@ class StudentChecklistController extends Controller
                     ->where('checklist_item_id', $item->id)
                     ->first();
 
-                if ($studentChecklist && $studentChecklist->status === 'completed') {
-                    $completedCount++;
+                if ($studentChecklist) {
+                    if (in_array($studentChecklist->status, ['completed', 'approved'])) {
+                        $approvedCount++;
+                    } elseif ($studentChecklist->status === 'submitted') {
+                        $submittedCount++;
+                    } else {
+                        $pendingCount++;
+                    }
                 } else {
                     $pendingCount++;
                 }
@@ -66,9 +73,10 @@ class StudentChecklistController extends Controller
 
         $checklistProgress = [
             'total' => $totalCount,
-            'completed' => $completedCount,
+            'approved' => $approvedCount,
+            'submitted' => $submittedCount,
             'pending' => $pendingCount,
-            'percentage' => $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0,
+            'percentage' => $totalCount > 0 ? round(($approvedCount / $totalCount) * 100) : 0,
         ];
 
         return view('student.dashboard', compact('student', 'checklistProgress'));
@@ -112,7 +120,7 @@ class StudentChecklistController extends Controller
         $totalCount = $checklistItems->count();
         $completedCount = $checklistItems->filter(function($item) use ($student) {
             $studentChecklist = $item->studentChecklists->firstWhere('student_id', $student->id);
-            return $studentChecklist && $studentChecklist->status === 'completed';
+            return $studentChecklist && in_array($studentChecklist->status, ['completed', 'approved']);
         })->count();
 
         return view('student.documents', compact('student', 'checklistItems', 'totalCount', 'completedCount'));
