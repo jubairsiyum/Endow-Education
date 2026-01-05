@@ -261,8 +261,4 @@
         });
     </script>
     @endpush
-            }
-        });
-    </script>
-    @endpush
 @endsection
