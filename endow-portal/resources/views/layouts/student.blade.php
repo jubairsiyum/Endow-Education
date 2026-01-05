@@ -527,24 +527,14 @@
                 <span class="menu-text">Submit Documents</span>
             </a>
 
-            <a href="#" class="menu-item">
+            <a href="{{ route('student.program') }}" class="menu-item {{ request()->routeIs('student.program') ? 'active' : '' }}">
                 <i class="fas fa-graduation-cap"></i>
                 <span class="menu-text">My Program</span>
             </a>
 
-            <a href="#" class="menu-item">
+            <a href="{{ route('student.universities') }}" class="menu-item {{ request()->routeIs('student.universities') ? 'active' : '' }}">
                 <i class="fas fa-university"></i>
                 <span class="menu-text">University Info</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <i class="fas fa-calendar-check"></i>
-                <span class="menu-text">Appointments</span>
-            </a>
-
-            <a href="#" class="menu-item">
-                <i class="fas fa-comments"></i>
-                <span class="menu-text">Messages</span>
             </a>
 
             <a href="{{ route('student.faq') }}" class="menu-item {{ request()->routeIs('student.faq') ? 'active' : '' }}">
@@ -559,7 +549,7 @@
 
             <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 12px;"></div>
 
-            <a href="#" class="menu-item">
+            <a href="{{ route('student.settings') }}" class="menu-item {{ request()->routeIs('student.settings') ? 'active' : '' }}">
                 <i class="fas fa-cog"></i>
                 <span class="menu-text">Settings</span>
             </a>

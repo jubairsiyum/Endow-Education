@@ -164,6 +164,16 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
     // Emergency Contact
     Route::get('/emergency-contact', [StudentChecklistController::class, 'emergencyContact'])->name('student.emergency-contact');
     Route::post('/contact/submit', [StudentChecklistController::class, 'submitContact'])->name('student.contact.submit');
+
+    // My Program
+    Route::get('/program', [StudentChecklistController::class, 'showProgram'])->name('student.program');
+
+    // Universities Info
+    Route::get('/universities', [StudentChecklistController::class, 'showUniversities'])->name('student.universities');
+
+    // Settings
+    Route::get('/settings', [StudentChecklistController::class, 'showSettings'])->name('student.settings');
+    Route::put('/settings', [StudentChecklistController::class, 'updateSettings'])->name('student.settings.update');
 });
 
 // Document Management Routes

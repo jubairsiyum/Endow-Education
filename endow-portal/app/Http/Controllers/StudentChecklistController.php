@@ -631,4 +631,105 @@ class StudentChecklistController extends Controller
 
         return back()->with('success', $successMessage);
     }
+
+    /**
+     * Show student's assigned program.
+     */
+    public function showProgram()
+    {
+        $user = Auth::user();
+        $student = Student::where('user_id', $user->id)
+            ->with(['targetProgram', 'targetUniversity', 'checklists'])
+            ->firstOrFail();
+
+        return view('student.program', compact('student'));
+    }
+
+    /**
+     * Show universities information.
+     */
+    public function showUniversities()
+    {
+        $universities = \App\Models\University::with(['programs'])
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get();
+
+        return view('student.universities', compact('universities'));
+    }
+
+    /**
+     * Show settings page.
+     */
+    public function showSettings()
+    {
+        return view('student.settings');
+    }
+
+    /**
+     * Update student settings.
+     */
+    public function updateSettings(Request $request)
+    {
+        $user = Auth::user();
+        $section = $request->input('section');
+
+        switch ($section) {
+            case 'account':
+                $validator = Validator::make($request->all(), [
+                    'name' => 'required|string|max:255',
+                    'email' => 'required|email|max:255|unique:users,email,' . $user->id,
+                ]);
+
+                if ($validator->fails()) {
+                    return back()->withErrors($validator)->withInput();
+                }
+
+                $user->update([
+                    'name' => $request->name,
+                    'email' => $request->email,
+                ]);
+
+                // Update student record if exists
+                $student = Student::where('user_id', $user->id)->first();
+                if ($student) {
+                    $student->update([
+                        'name' => $request->name,
+                        'email' => $request->email,
+                    ]);
+                }
+
+                // Refresh authenticated user
+                Auth::setUser($user->fresh());
+
+                return back()->with('success', 'Account settings updated successfully!');
+
+            case 'security':
+                $validator = Validator::make($request->all(), [
+                    'current_password' => 'required',
+                    'new_password' => 'required|min:8|confirmed',
+                ]);
+
+                if ($validator->fails()) {
+                    return back()->withErrors($validator)->withInput();
+                }
+
+                if (!\Hash::check($request->current_password, $user->password)) {
+                    return back()->with('error', 'Current password is incorrect.');
+                }
+
+                $user->update([
+                    'password' => \Hash::make($request->new_password),
+                ]);
+
+                return back()->with('success', 'Password updated successfully!');
+
+            case 'notifications':
+                // Store notification preferences (implement based on your needs)
+                return back()->with('success', 'Notification preferences updated successfully!');
+
+            default:
+                return back()->with('error', 'Invalid settings section.');
+        }
+    }
 }

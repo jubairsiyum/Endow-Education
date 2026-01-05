@@ -106,6 +106,16 @@ class StudentProfileController extends Controller
         try {
             $student = $this->profileService->updateStudent($student, $request->validated());
 
+            // Update user model if name or email changed
+            if ($student->user) {
+                $student->user->update([
+                    'name' => $student->name,
+                    'email' => $student->email,
+                ]);
+                // Refresh the authenticated user to update cached data
+                Auth::setUser($student->user->fresh());
+            }
+
             return redirect()
                 ->back()
                 ->with('success', 'Profile updated successfully!');
