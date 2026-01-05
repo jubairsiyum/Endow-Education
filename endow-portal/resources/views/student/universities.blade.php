@@ -250,6 +250,7 @@
 @endpush
 
 @push('scripts')
+<script>
     // Search and Filter functionality
     const searchInput = document.getElementById('searchUniversities');
     const filterCountry = document.getElementById('filterCountry');
@@ -286,4 +287,3 @@
     filterCountry?.addEventListener('change', filterUniversities);
 </script>
 @endpush
-@endsection
