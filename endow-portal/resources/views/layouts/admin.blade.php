@@ -864,9 +864,24 @@
                 @canany(['view students', 'create students', 'edit students', 'delete students'])
                 <div class="menu-section-title">Student Management</div>
 
-                <a href="{{ route('students.index') }}" class="menu-item {{ request()->routeIs('students.*') ? 'active' : '' }}">
+                <!-- My Students - For Employees -->
+                @if(Auth::user()->hasRole(['Employee', 'Admin', 'Super Admin']))
+                <a href="{{ route('students.my-students') }}" class="menu-item {{ request()->routeIs('students.my-students') ? 'active' : '' }}">
+                    <i class="fas fa-user-friends"></i>
+                    <span>My Students</span>
+                    @php
+                        $myStudentsCount = \App\Models\Student::where('assigned_to', Auth::id())->where('account_status', 'pending')->count();
+                    @endphp
+                    @if($myStudentsCount > 0)
+                        <span class="menu-badge">{{ $myStudentsCount }}</span>
+                    @endif
+                </a>
+                @endif
+
+                <!-- All Students - For All Staff -->
+                <a href="{{ route('students.index') }}" class="menu-item {{ request()->routeIs('students.*') && !request()->routeIs('students.my-students') ? 'active' : '' }}">
                     <i class="fas fa-user-graduate"></i>
-                    <span>Students</span>
+                    <span>All Students</span>
                     @if(isset($pendingCount) && $pendingCount > 0)
                         <span class="menu-badge">{{ $pendingCount }}</span>
                     @endif

@@ -108,6 +108,69 @@ class StudentController extends Controller
     }
 
     /**
+     * Display assigned students for the logged-in employee.
+     */
+    public function myStudents(Request $request)
+    {
+        $this->authorize('viewAny', Student::class);
+
+        // Get only students assigned to the logged-in user
+        $query = Student::with(['assignedUser', 'creator', 'activeProfilePhoto', 'targetUniversity', 'targetProgram'])
+            ->where('assigned_to', Auth::id());
+
+        // Filter by status
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        // Filter by account status
+        if ($request->has('account_status') && $request->account_status != '') {
+            $query->where('account_status', $request->account_status);
+        }
+
+        // Filter by university
+        if ($request->has('university_id') && $request->university_id != '') {
+            $query->where('target_university_id', $request->university_id);
+        }
+
+        // Filter by program
+        if ($request->has('program_id') && $request->program_id != '') {
+            $query->where('target_program_id', $request->program_id);
+        }
+
+        // Search
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%")
+                  ->orWhere('country', 'like', "%{$search}%");
+            });
+        }
+
+        // Handle CSV export
+        if ($request->has('export') && $request->export == 'csv') {
+            return $this->exportToCSV($query->get());
+        }
+
+        // Get per_page value from request, default to 25
+        $perPage = $request->input('per_page', 25);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 25;
+        }
+
+        // Sort students by creation date (latest first)
+        $students = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends(request()->except('page'));
+
+        // Get universities and programs for filters
+        $universities = \App\Models\University::active()->orderBy('name')->get();
+        $programs = \App\Models\Program::active()->orderBy('name')->get();
+
+        return view('students.my-students', compact('students', 'universities', 'programs'));
+    }
+
+    /**
      * Export students to CSV
      */
     private function exportToCSV($students)
