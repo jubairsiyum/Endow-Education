@@ -68,6 +68,15 @@
                     </select>
                 </div>
 
+                <div class="col-md-1 col-6">
+                    <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="10" {{ request('per_page', 25) == 10 ? 'selected' : '' }}>10</option>
+                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ request('per_page', 25) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page', 25) == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </div>
+
                 @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
                 <div class="col-md-1 col-12 d-flex gap-1">
                     <button type="submit" class="btn btn-danger btn-sm flex-grow-1">
@@ -259,8 +268,13 @@
         </div>
 
         @if($students->hasPages())
-        <div class="card-body p-3 border-top bg-light">
-            {{ $students->links() }}
+        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top bg-white">
+            <div class="text-muted small">
+                Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} students
+            </div>
+            <div>
+                {{ $students->links() }}
+            </div>
         </div>
         @endif
     </div>

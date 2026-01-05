@@ -82,8 +82,14 @@ class StudentController extends Controller
             return $this->exportToCSV($query->get());
         }
 
+        // Get per_page value from request, default to 25
+        $perPage = $request->input('per_page', 25);
+        if (!in_array($perPage, [10, 25, 50, 100])) {
+            $perPage = 25;
+        }
+
         // Sort students by creation date (latest first)
-        $students = $query->orderBy('created_at', 'desc')->paginate(15);
+        $students = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends(request()->except('page'));
 
         // Get employees for filter dropdown (for admins)
         $employees = collect();

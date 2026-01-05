@@ -162,8 +162,13 @@
             </div>
         </div>
         @if($logs->hasPages())
-        <div class="card-body border-top">
-            {{ $logs->links() }}
+        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top bg-white">
+            <div class="text-muted small">
+                Showing {{ $logs->firstItem() }} to {{ $logs->lastItem() }} of {{ $logs->total() }} records
+            </div>
+            <div>
+                {{ $logs->links() }}
+            </div>
         </div>
         @endif
     </div>
