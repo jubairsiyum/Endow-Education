@@ -4,7 +4,7 @@
 @section('breadcrumb', 'Home / Users')
 
 @section('content')
-<div class="container-fluid">
+<div class="container-fluid px-4">
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -78,8 +78,8 @@
     </div>
 
     <!-- Filters -->
-    <div class="card-custom mb-4">
-        <div class="card-body-custom">
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body p-3">
             <form method="GET" action="{{ route('users.index') }}" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Search</label>
@@ -121,13 +121,10 @@
     </div>
 
     <!-- Users Table -->
-    <div class="card-custom">
-        <div class="card-header-custom">
-            <h5 class="mb-0"><i class="fas fa-list me-2"></i>Users List</h5>
-        </div>
-        <div class="card-body-custom p-0">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table-custom">
+                <table class="table table-hover mb-0">
                     <thead>
                         <tr>
                             <th>User</th>
@@ -251,7 +248,7 @@
             </div>
         </div>
         @if($users->hasPages())
-        <div class="card-footer-custom">
+        <div class="card-body border-top">
             {{ $users->links() }}
         </div>
         @endif

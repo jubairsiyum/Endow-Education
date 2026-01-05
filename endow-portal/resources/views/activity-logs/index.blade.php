@@ -4,21 +4,16 @@
 @section('breadcrumb', 'Home / Activity Logs')
 
 @section('content')
-    <div class="page-header mb-4">
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <h1 class="page-title"><i class="fas fa-history me-2"></i>Activity Logs</h1>
-                <p class="page-subtitle">Monitor all system activities and student actions</p>
-            </div>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-history text-danger"></i> Activity Logs</h4>
+            <small class="text-muted">Monitor all system activities and student actions</small>
         </div>
     </div>
 
     <!-- Filters -->
-    <div class="card-custom mb-4">
-        <div class="card-header-custom">
-            <h5><i class="fas fa-filter me-2"></i>Filter Logs</h5>
-        </div>
-        <div class="card-body-custom">
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-body p-3">
             <form method="GET" action="{{ route('activity-logs.index') }}">
                 <div class="row g-3">
                     <div class="col-md-3">
@@ -83,11 +78,8 @@
     </div>
 
     <!-- Activity Logs Table -->
-    <div class="card-custom">
-        <div class="card-header-custom">
-            <h5><i class="fas fa-list me-2"></i>Activity History ({{ $logs->total() }} records)</h5>
-        </div>
-        <div class="card-body-custom p-0">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead>
@@ -119,7 +111,7 @@
                                     ];
                                     $color = $typeColors[$log->log_name] ?? 'secondary';
                                 @endphp
-                                <span class="badge-custom badge-{{ $color }}-custom">
+                                <span class="badge bg-{{ $color }}">
                                     {{ ucfirst($log->log_name) }}
                                 </span>
                             </td>
@@ -170,7 +162,7 @@
             </div>
         </div>
         @if($logs->hasPages())
-        <div class="card-footer-custom">
+        <div class="card-body border-top">
             {{ $logs->links() }}
         </div>
         @endif

@@ -82,8 +82,8 @@ class StudentController extends Controller
             return $this->exportToCSV($query->get());
         }
 
-        // Sort students in ascending order by name
-        $students = $query->orderBy('name', 'asc')->paginate(15);
+        // Sort students by creation date (latest first)
+        $students = $query->orderBy('created_at', 'desc')->paginate(15);
 
         // Get employees for filter dropdown (for admins)
         $employees = collect();
