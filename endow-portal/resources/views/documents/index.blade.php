@@ -47,9 +47,13 @@
                             @foreach($documents as $document)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('students.show', $document->student) }}" class="text-decoration-none">
-                                            {{ $document->student->user->name ?? 'N/A' }}
-                                        </a>
+                                        @if($document->student)
+                                            <a href="{{ route('students.show', $document->student) }}" class="text-decoration-none">
+                                                {{ $document->student->user->name ?? 'N/A' }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($document->checklistItem)
