@@ -5,8 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\Student;
 use App\Models\User;
 use App\Http\Requests\StoreStudentRequest;
-use App\Http\Requests\UpdateStudentRequest;use App\Notifications\StudentApprovedNotification;
-use App\Notifications\StudentRejectedNotification;use App\Services\ActivityLogService;
+use App\Http\Requests\UpdateStudentRequest;
+use App\Notifications\StudentApprovedNotification;
+use App\Notifications\StudentRejectedNotification;
+use App\Notifications\NewStudentRegisteredNotification;
+use App\Notifications\StudentAssignedNotification;
+use App\Services\ActivityLogService;
 use App\Services\ChecklistService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -254,6 +258,16 @@ class StudentController extends Controller
             // Log activity
             $this->activityLog->logStudentCreated($student);
 
+            // Send notification to all admins about new student registration
+            try {
+                $admins = User::role(['Super Admin', 'Admin'])->where('status', 'active')->get();
+                foreach ($admins as $admin) {
+                    $admin->notify(new NewStudentRegisteredNotification($student));
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send new student notification to admins: ' . $e->getMessage());
+            }
+
             DB::commit();
 
             return redirect()
@@ -340,6 +354,16 @@ class StudentController extends Controller
 
                 if ($oldAssignedTo != $request->assigned_to) {
                     $this->activityLog->logStudentAssigned($student, $oldAssignedTo, $request->assigned_to);
+                    
+                    // Send notification to newly assigned counselor
+                    try {
+                        $newCounselor = User::find($request->assigned_to);
+                        if ($newCounselor) {
+                            $newCounselor->notify(new StudentAssignedNotification($student, Auth::user()));
+                        }
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send assignment notification: ' . $e->getMessage());
+                    }
                 }
             }
 
@@ -470,6 +494,22 @@ class StudentController extends Controller
 
             $this->activityLog->logStudentApproved($student);
 
+            // Send notifications
+            try {
+                // 1. Notify the student about approval
+                if ($student->user) {
+                    $student->user->notify(new StudentApprovedNotification($student));
+                }
+
+                // 2. Notify the assigned counselor
+                $assignedCounselor = User::find($request->assigned_to);
+                if ($assignedCounselor) {
+                    $assignedCounselor->notify(new StudentAssignedNotification($student, Auth::user()));
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send approval notifications: ' . $e->getMessage());
+            }
+
             DB::commit();
 
             // Fetch related models for success message
@@ -513,11 +553,15 @@ class StudentController extends Controller
         $this->activityLog->logStudentRejected($student, $request->reason ?? '');
 
         // Send rejection notification to student
-        if ($student->user) {
-            $student->user->notify(new StudentRejectedNotification($student, $request->reason ?? ''));
+        try {
+            if ($student->user) {
+                $student->user->notify(new StudentRejectedNotification($student, $request->reason ?? ''));
+            }
+        } catch (\Exception $e) {
+            Log::warning('Failed to send rejection notification: ' . $e->getMessage());
         }
 
-        return back()->with('success', 'Student account rejected.');
+        return back()->with('success', 'Student account rejected and notification email sent.');
     }
 
     /**

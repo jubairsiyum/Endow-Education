@@ -122,6 +122,15 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('users')->group(function
     Route::patch('/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
+// Email Settings Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/email-settings')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'index'])->name('admin.email-settings.index');
+    Route::put('/update', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'update'])->name('admin.email-settings.update');
+    Route::get('/test', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'testForm'])->name('admin.email-settings.test-form');
+    Route::post('/test', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'sendTest'])->name('admin.email-settings.send-test');
+    Route::post('/test-connection', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'testConnection'])->name('admin.email-settings.test-connection');
+});
+
 // University Management Routes (Admin/Employee only)
 Route::middleware(['auth'])->group(function () {
     Route::resource('universities', UniversityController::class);

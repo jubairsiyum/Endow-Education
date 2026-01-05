@@ -929,6 +929,11 @@
                     <i class="fas fa-users-cog"></i>
                     <span>User Management</span>
                 </a>
+
+                <a href="{{ route('admin.email-settings.index') }}" class="menu-item {{ request()->routeIs('admin.email-settings.*') ? 'active' : '' }}">
+                    <i class="fas fa-envelope-open-text"></i>
+                    <span>Email Settings</span>
+                </a>
                 @endhasrole
 
                 <a href="{{ route('activity-logs.index') }}" class="menu-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
