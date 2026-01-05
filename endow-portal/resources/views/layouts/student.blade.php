@@ -62,8 +62,8 @@
             display: none;
         }
 
-        .sidebar.collapsed .brand-icon {
-            margin: 0 auto;
+        .sidebar.collapsed .sidebar-brand span {
+            display: none;
         }
 
         .sidebar.collapsed .menu-item {
@@ -81,9 +81,9 @@
         }
 
         .sidebar-header {
-            padding: 20px;
-            background: #000;
-            border-bottom: 2px solid var(--primary);
+            padding: 24px 20px;
+            background: var(--primary);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .sidebar-brand {
@@ -91,34 +91,15 @@
             align-items: center;
             gap: 12px;
             text-decoration: none;
-            color: #fff;
-        }
-
-        .brand-icon {
-            width: 40px;
-            height: 40px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            color: white;
             font-size: 20px;
             font-weight: 700;
+            letter-spacing: -0.02em;
         }
 
-        .brand-text h4 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 700;
-            color: #fff;
-        }
-
-        .brand-text p {
-            margin: 0;
-            font-size: 11px;
-            color: rgba(255, 255, 255, 0.6);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
+        .sidebar-brand i {
+            font-size: 28px;
+            color: white;
         }
 
         .sidebar-menu {
@@ -502,12 +483,9 @@
     <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
-            <a href="{{ route('dashboard') }}" class="sidebar-brand">
-                <div class="brand-icon">E</div>
-                <div class="brand-text">
-                    <h4>Endow Connect</h4>
-                    <p>Student Portal</p>
-                </div>
+            <a href="{{ route('student.dashboard') }}" class="sidebar-brand">
+                <i class="fas fa-graduation-cap" style="font-size: 28px;"></i>
+                <span>Endow Connect</span>
             </a>
         </div>
 

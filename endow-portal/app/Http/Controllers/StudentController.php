@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class StudentController extends Controller
@@ -308,20 +309,28 @@ class StudentController extends Controller
     }
 
     /**
-     * Show approve form with program selection
+     * Show approve form with university, program, and counselor assignment
      */
     public function showApproveForm(Student $student)
     {
         $this->authorize('approve', $student);
         
+        // Get all active universities and programs
         $universities = \App\Models\University::active()->ordered()->get();
         $programs = \App\Models\Program::active()->get();
         
-        return view('students.approve', compact('student', 'universities', 'programs'));
+        // Get all employees (Super Admin, Admin, Employee)
+        $counselors = \App\Models\User::whereHas('roles', function($query) {
+            $query->whereIn('name', ['Super Admin', 'Admin', 'Employee']);
+        })->where('status', 'active')
+          ->orderBy('name')
+          ->get();
+        
+        return view('students.approve', compact('student', 'universities', 'programs', 'counselors'));
     }
 
     /**
-     * Approve student account with program enrollment.
+     * Approve student account with university, program, and counselor assignment.
      */
     public function approve(Request $request, Student $student)
     {
@@ -330,47 +339,58 @@ class StudentController extends Controller
         $request->validate([
             'target_university_id' => 'required|exists:universities,id',
             'target_program_id' => 'required|exists:programs,id',
-            'applying_program' => 'nullable|string|max:255',
-            'course' => 'nullable|string|max:255',
-            'highest_education' => 'nullable|string|max:100',
+            'assigned_to' => 'required|exists:users,id',
         ]);
 
         DB::beginTransaction();
 
         try {
-            // Update student with program information
+            // Assign university, program, and counselor
             $student->target_university_id = $request->target_university_id;
             $student->target_program_id = $request->target_program_id;
-            
-            if ($request->applying_program) {
-                $student->applying_program = $request->applying_program;
-            }
-            if ($request->course) {
-                $student->course = $request->course;
-            }
-            if ($request->highest_education) {
-                $student->highest_education = $request->highest_education;
-            }
+            $student->assigned_to = $request->assigned_to;
             
             // Create user account if not exists
             if (!$student->user_id) {
-                $user = User::create([
-                    'name' => $student->name,
-                    'email' => $student->email,
-                    'phone' => $student->phone,
-                    'password' => $student->password, // Use password from student registration
-                    'status' => 'active',
-                    'email_verified_at' => now(),
-                ]);
+                // Check if a user with this email already exists
+                $existingUser = User::where('email', $student->email)->first();
+                
+                if ($existingUser) {
+                    // Link to existing user if they're a student
+                    if ($existingUser->hasRole('Student')) {
+                        $student->user_id = $existingUser->id;
+                    } else {
+                        DB::rollBack();
+                        return back()->withInput()->with('error', 'A user account with this email already exists. Please use a different email address for the student.');
+                    }
+                } else {
+                    // Generate a password if student doesn't have one
+                    $password = $student->password ?? Hash::make(Str::random(16));
+                    
+                    // Create new user account
+                    $user = User::create([
+                        'name' => $student->name,
+                        'email' => $student->email,
+                        'phone' => $student->phone,
+                        'password' => $password, // Use existing hashed password or generate new one
+                        'status' => 'active',
+                        'email_verified_at' => now(),
+                    ]);
 
-                // Assign Student role
-                $user->assignRole('Student');
+                    // Assign Student role
+                    $user->assignRole('Student');
 
-                // Link user to student record
-                $student->user_id = $user->id;
+                    // Link user to student record
+                    $student->user_id = $user->id;
 
-                // Send welcome email notification
-                $user->notify(new StudentApprovedNotification($student));
+                    // Send welcome email notification
+                    try {
+                        $user->notify(new StudentApprovedNotification($student));
+                    } catch (\Exception $e) {
+                        // Log notification error but don't fail the approval
+                        Log::error('Failed to send approval notification: ' . $e->getMessage());
+                    }
+                }
             }
 
             $student->account_status = 'approved';
@@ -383,11 +403,31 @@ class StudentController extends Controller
 
             DB::commit();
 
+            // Fetch related models for success message
+            $counselor = User::find($request->assigned_to);
+            $university = \App\Models\University::find($request->target_university_id);
+            $program = \App\Models\Program::find($request->target_program_id);
+            
+            if (!$counselor || !$university || !$program) {
+                Log::warning('Missing related models after approval', [
+                    'counselor' => $counselor ? 'found' : 'missing',
+                    'university' => $university ? 'found' : 'missing',
+                    'program' => $program ? 'found' : 'missing',
+                ]);
+                return redirect()->route('students.show', $student)
+                    ->with('success', 'Student account approved successfully! A welcome email has been sent.');
+            }
+            
             return redirect()->route('students.show', $student)
-                ->with('success', 'Student account approved and enrolled in program successfully! A welcome email has been sent.');
+                ->with('success', "Student account approved successfully! Enrolled in {$program->name} at {$university->name} and assigned to {$counselor->name}. A welcome email has been sent.");
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->with('error', 'Failed to approve student: ' . $e->getMessage());
+            Log::error('Student approval failed', [
+                'student_id' => $student->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->withInput()->with('error', 'Failed to approve student: ' . $e->getMessage());
         }
     }
 
