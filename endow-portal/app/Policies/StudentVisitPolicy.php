@@ -33,8 +33,8 @@ class StudentVisitPolicy
      */
     public function create(User $user): bool
     {
-        // All employees and admins can create visits
-        return $user->isAdmin() || $user->isEmployee();
+        // Only admins can create visits (employees read-only)
+        return $user->isAdmin();
     }
 
     /**
@@ -42,8 +42,8 @@ class StudentVisitPolicy
      */
     public function update(User $user, StudentVisit $studentVisit): bool
     {
-        // Admins can update all, employees can only update their own
-        return $user->isAdmin() || $studentVisit->employee_id === $user->id;
+        // Only admins can update visits (employees read-only)
+        return $user->isAdmin();
     }
 
     /**
@@ -51,8 +51,8 @@ class StudentVisitPolicy
      */
     public function delete(User $user, StudentVisit $studentVisit): bool
     {
-        // Admins can delete all, employees can only delete their own
-        return $user->isAdmin() || $studentVisit->employee_id === $user->id;
+        // Only admins can delete visits (employees read-only)
+        return $user->isAdmin();
     }
 
     /**

@@ -143,15 +143,15 @@
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-hover mb-0">
-                <thead style="background: #f8f9fa; position: sticky; top: 0; z-index: 10;">
+                <thead style="background: #1e293b; position: sticky; top: 0; z-index: 10;">
                     <tr>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">#</th>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">Student</th>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">Contact</th>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">Program</th>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">Status</th>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">Account</th>
-                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">Actions</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">#</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">Student</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">Contact</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">Program</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">Status</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">Account</th>
+                        <th style="padding: 12px; font-size: 13px; font-weight: 600; color: #ffffff;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>

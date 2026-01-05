@@ -10,9 +10,11 @@
             <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-graduation-cap text-danger"></i> Programs Management</h4>
             <small class="text-muted">Manage academic programs and associated checklists</small>
         </div>
+        @can('create users')
         <a href="{{ route('programs.create') }}" class="btn btn-danger">
             <i class="fas fa-plus me-1"></i> Add Program
         </a>
+        @endcan
     </div>
 
     @if(session('success'))
@@ -131,9 +133,12 @@
                                 <a href="{{ route('programs.show', $program) }}" class="btn btn-outline-info" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
+                                @can('edit users')
                                 <a href="{{ route('programs.edit', $program) }}" class="btn btn-outline-primary" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('delete users')
                                 <form action="{{ route('programs.destroy', $program) }}" method="POST" class="d-inline" id="delete-program-form-{{ $program->id }}">
                                     @csrf
                                     @method('DELETE')
@@ -142,6 +147,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
+                                @endcan
                             </div>
                         </td>
                     </tr>
