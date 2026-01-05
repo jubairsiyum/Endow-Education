@@ -1,15 +1,15 @@
 @extends('layouts.student')
 
-@section('title', 'My Program')
+@section('page-title', 'My Program')
+@section('breadcrumb', 'Home / My Program')
 
 @section('content')
-<div class="container-fluid py-4">
     @if($student->targetProgram && $student->targetUniversity)
     <div class="row">
         <!-- Program Overview Card -->
         <div class="col-lg-8">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
+            <div class="card-custom">
+                <div class="card-body-custom">
                     <div class="d-flex align-items-start gap-3 mb-4">
                         @if($student->targetUniversity->logo)
                         <img src="{{ asset('storage/' . $student->targetUniversity->logo) }}" 
@@ -120,8 +120,8 @@
             </div>
 
             <!-- University Information -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
+            <div class="card-custom">
+                <div class="card-body-custom">
                     <h5 class="fw-bold mb-3">About {{ $student->targetUniversity->name }}</h5>
                     
                     @if($student->targetUniversity->description)
@@ -132,7 +132,7 @@
                         @if($student->targetUniversity->website)
                         <a href="{{ $student->targetUniversity->website }}" 
                            target="_blank" 
-                           class="btn btn-outline-primary">
+                           class="btn btn-primary-custom">
                             <i class="fas fa-globe me-2"></i>Visit Website
                         </a>
                         @endif
@@ -147,8 +147,8 @@
 
         <!-- Application Progress Sidebar -->
         <div class="col-lg-4">
-            <div class="card border-0 shadow-sm mb-4">
-                <div class="card-body p-4">
+            <div class="card-custom">
+                <div class="card-body-custom">
                     <h5 class="fw-bold mb-3">Application Progress</h5>
                     
                     @php
@@ -183,15 +183,15 @@
                         </div>
                     </div>
 
-                    <a href="{{ route('student.documents') }}" class="btn btn-primary w-100">
+                    <a href="{{ route('student.documents') }}" class="btn btn-primary-custom w-100">
                         <i class="fas fa-file-upload me-2"></i>Submit Documents
                     </a>
                 </div>
             </div>
 
             <!-- Quick Actions -->
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-4">
+            <div class="card-custom">
+                <div class="card-body-custom">
                     <h6 class="fw-bold mb-3">Quick Actions</h6>
                     
                     <div class="d-grid gap-2">
@@ -213,7 +213,7 @@
     <!-- No Program Assigned -->
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
+            <div class="card-custom">
                 <div class="card-body text-center py-5">
                     <div class="mb-4">
                         <i class="fas fa-graduation-cap text-muted" style="font-size: 64px;"></i>
@@ -223,7 +223,7 @@
                         You don't have a program assigned to your account yet. Please contact your counselor or admissions office for assistance.
                     </p>
                     <div class="d-flex gap-2 justify-content-center">
-                        <a href="{{ route('student.universities') }}" class="btn btn-primary">
+                        <a href="{{ route('student.universities') }}" class="btn btn-primary-custom">
                             <i class="fas fa-university me-2"></i>Browse Universities
                         </a>
                         <a href="{{ route('student.emergency-contact') }}" class="btn btn-outline-secondary">
@@ -235,15 +235,27 @@
         </div>
     </div>
     @endif
-</div>
+</div>@endsection
 
+@push('styles')
 <style>
-    .card {
-        transition: transform 0.2s;
+    .badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 12px;
     }
 
-    .card:hover {
-        transform: translateY(-2px);
+    .bg-primary {
+        background-color: var(--primary) !important;
+    }
+
+    .text-primary {
+        color: var(--primary) !important;
+    }
+
+    .progress-bar {
+        background-color: var(--primary);
     }
 </style>
-@endsection
+@endpush

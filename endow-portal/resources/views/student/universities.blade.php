@@ -1,24 +1,28 @@
 @extends('layouts.student')
 
-@section('title', 'University Information')
+@section('page-title', 'University Information')
+@section('breadcrumb', 'Home / University Information')
 
 @section('content')
-<div class="container-fluid py-4">
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
-                    <h3 class="fw-bold mb-2">University Information</h3>
-                    <p class="text-muted mb-0">Explore our partner universities and their programs</p>
-                </div>
-                <div class="d-flex gap-2 align-items-center">
-                    <input type="text" class="form-control" id="searchUniversities" placeholder="Search universities..." style="width: 300px;">
-                    <select class="form-select" id="filterCountry" style="width: 200px;">
-                        <option value="">All Countries</option>
-                        @foreach($universities->pluck('country')->unique()->sort() as $country)
-                        <option value="{{ $country }}">{{ $country }}</option>
-                        @endforeach
-                    </select>
+            <div class="card-custom">
+                <div class="card-body-custom">
+                    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                        <div>
+                            <h4 class="fw-bold mb-2">University Information</h4>
+                            <p class="text-muted mb-0">Explore our partner universities and their programs</p>
+                        </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <input type="text" class="form-control" id="searchUniversities" placeholder="Search universities..." style="max-width: 250px;">
+                            <select class="form-select" id="filterCountry" style="max-width: 180px;">
+                                <option value="">All Countries</option>
+                                @foreach($universities->pluck('country')->unique()->sort() as $country)
+                                <option value="{{ $country }}">{{ $country }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -27,8 +31,8 @@
     <div class="row g-4" id="universitiesContainer">
         @forelse($universities as $university)
         <div class="col-md-6 col-lg-4 university-card" data-country="{{ $university->country }}" data-name="{{ strtolower($university->name) }}">
-            <div class="card border-0 shadow-sm h-100">
-                <div class="card-body p-4">
+            <div class="card-custom h-100">
+                <div class="card-body-custom">
                     <div class="d-flex align-items-start gap-3 mb-3">
                         @if($university->logo)
                         <img src="{{ asset('storage/' . $university->logo) }}" 
@@ -80,12 +84,12 @@
                         @if($university->website)
                         <a href="{{ $university->website }}" 
                            target="_blank" 
-                           class="btn btn-sm btn-outline-primary flex-grow-1">
+                           class="btn btn-sm btn-outline-secondary flex-grow-1">
                             <i class="fas fa-globe me-1"></i>Website
                         </a>
                         @endif
                         <button type="button" 
-                                class="btn btn-sm btn-primary flex-grow-1"
+                                class="btn btn-sm btn-primary-custom flex-grow-1"
                                 data-bs-toggle="modal" 
                                 data-bs-target="#universityModal{{ $university->id }}">
                             <i class="fas fa-info-circle me-1"></i>Details
@@ -173,7 +177,7 @@
                         @if($university->website)
                         <a href="{{ $university->website }}" 
                            target="_blank" 
-                           class="btn btn-primary">
+                           class="btn btn-primary-custom">
                             <i class="fas fa-external-link-alt me-2"></i>Visit University Website
                         </a>
                         @endif
@@ -184,7 +188,7 @@
         </div>
         @empty
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
+            <div class="card-custom">
                 <div class="card-body text-center py-5">
                     <i class="fas fa-university text-muted mb-3" style="font-size: 48px;"></i>
                     <h5 class="fw-bold mb-2">No Universities Available</h5>
@@ -204,8 +208,9 @@
         </div>
     </div>
     @endif
-</div>
+</div>@endsection
 
+@push('styles')
 <style>
     .university-card {
         transition: transform 0.2s;
@@ -215,20 +220,36 @@
         transform: translateY(-5px);
     }
 
-    .card {
-        transition: box-shadow 0.2s;
-    }
-
-    .card:hover {
-        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    .card-custom:hover {
+        box-shadow: 0 0.5rem 1rem rgba(220, 20, 60, 0.15) !important;
     }
 
     .modal-body {
         max-height: 70vh;
     }
-</style>
 
-<script>
+    .badge {
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 500;
+        font-size: 12px;
+    }
+
+    .bg-primary {
+        background-color: var(--primary) !important;
+    }
+
+    .text-primary {
+        color: var(--primary) !important;
+    }
+
+    .text-success {
+        color: #28a745 !important;
+    }
+</style>
+@endpush
+
+@push('scripts')
     // Search and Filter functionality
     const searchInput = document.getElementById('searchUniversities');
     const filterCountry = document.getElementById('filterCountry');
@@ -264,4 +285,5 @@
     searchInput?.addEventListener('input', filterUniversities);
     filterCountry?.addEventListener('change', filterUniversities);
 </script>
+@endpush
 @endsection

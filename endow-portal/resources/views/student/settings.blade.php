@@ -1,15 +1,13 @@
 @extends('layouts.student')
 
-@section('title', 'Settings')
+@section('page-title', 'Settings')
+@section('breadcrumb', 'Home / Settings')
 
 @section('content')
-<div class="container-fluid py-4">
     <div class="row">
         <div class="col-12">
-            <div class="card border-0 shadow-sm">
-                <div class="card-body p-0">
-                    <!-- Settings Header -->
-                    <div class="p-4 border-bottom">
+            <div class="card-custom">
+                <div class="card-header-custom">
                         <h4 class="mb-1 fw-bold text-dark">
                             <i class="fas fa-cog text-primary me-2"></i>Settings
                         </h4>
@@ -31,10 +29,11 @@
                         </div>
                     @endif
 
+                <div class="card-body-custom p-0">
                     <div class="row g-0">
                         <!-- Settings Navigation -->
                         <div class="col-md-3 border-end">
-                            <div class="p-3">
+                            <div class="p-4">
                                 <div class="list-group list-group-flush">
                                     <a href="#account" class="list-group-item list-group-item-action border-0 rounded settings-tab active" data-bs-toggle="list">
                                         <i class="fas fa-user-circle me-2"></i>Account Settings
@@ -104,7 +103,7 @@
                                         </div>
 
                                         <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-primary-custom">
                                                 <i class="fas fa-save me-2"></i>Save Changes
                                             </button>
                                             <button type="reset" class="btn btn-outline-secondary">Cancel</button>
@@ -149,7 +148,7 @@
                                         </div>
 
                                         <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-primary-custom">
                                                 <i class="fas fa-lock me-2"></i>Update Password
                                             </button>
                                             <button type="reset" class="btn btn-outline-secondary">Cancel</button>
@@ -237,7 +236,7 @@
                                         </div>
 
                                         <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary">
+                                            <button type="submit" class="btn btn-primary-custom">
                                                 <i class="fas fa-save me-2"></i>Save Preferences
                                             </button>
                                             <button type="reset" class="btn btn-outline-secondary">Reset</button>
@@ -313,7 +312,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary">Request Data Download</button>
+                <button type="button" class="btn btn-primary-custom">Request Data Download</button>
             </div>
         </div>
     </div>
@@ -351,14 +350,16 @@
             </div>
         </div>
     </div>
-</div>
+</div>@endsection
 
+@push('styles')
 <style>
     .settings-tab {
         padding: 12px 16px;
         margin-bottom: 8px;
         cursor: pointer;
         transition: all 0.2s;
+        border-radius: 8px;
     }
 
     .settings-tab:hover {
@@ -381,11 +382,36 @@
 
     .form-check-input:focus {
         border-color: var(--primary);
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        box-shadow: 0 0 0 0.25rem rgba(220, 20, 60, 0.25);
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-outline-danger {
+        color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-outline-danger:hover {
+        background-color: #dc3545;
+        border-color: #dc3545;
+        color: white;
+    }
+
+    .bg-danger {
+        background-color: #dc3545 !important;
+    }
+
+    .text-danger {
+        color: #dc3545 !important;
     }
 </style>
+@endpush
 
-<script>
+@push('scripts')
     // Delete account confirmation
     document.getElementById('deleteConfirmation')?.addEventListener('input', function(e) {
         const confirmBtn = document.getElementById('confirmDeleteBtn');
@@ -403,4 +429,5 @@
         });
     });
 </script>
+@endpush
 @endsection
