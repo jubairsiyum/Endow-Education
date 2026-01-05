@@ -166,9 +166,9 @@
             <div class="text-muted small">
                 Showing {{ $logs->firstItem() }} to {{ $logs->lastItem() }} of {{ $logs->total() }} records
             </div>
-            <div>
-                {{ $logs->links() }}
-            </div>
+            <nav>
+                {{ $logs->onEachSide(1)->links('pagination::bootstrap-5') }}
+            </nav>
         </div>
         @endif
     </div>

@@ -68,15 +68,6 @@
                     </select>
                 </div>
 
-                <div class="col-md-1 col-6">
-                    <select name="per_page" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="10" {{ request('per_page', 25) == 10 ? 'selected' : '' }}>10</option>
-                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
-                        <option value="50" {{ request('per_page', 25) == 50 ? 'selected' : '' }}>50</option>
-                        <option value="100" {{ request('per_page', 25) == 100 ? 'selected' : '' }}>100</option>
-                    </select>
-                </div>
-
                 @if(Auth::user()->hasRole(['Super Admin', 'Admin']))
                 <div class="col-md-1 col-12 d-flex gap-1">
                     <button type="submit" class="btn btn-danger btn-sm flex-grow-1">
@@ -269,8 +260,22 @@
 
         @if($students->hasPages())
         <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top bg-white">
-            <div class="text-muted small">
-                Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} students
+            <div class="d-flex align-items-center gap-3">
+                <span class="text-muted small">
+                    Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} students
+                </span>
+                <form method="GET" action="{{ route('students.index') }}" class="d-flex align-items-center gap-2">
+                    @foreach(request()->except(['page', 'per_page']) as $key => $value)
+                        <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                    @endforeach
+                    <label class="text-muted small mb-0">Per page:</label>
+                    <select name="per_page" class="form-select form-select-sm" style="width: auto;" onchange="this.form.submit()">
+                        <option value="10" {{ request('per_page', 25) == 10 ? 'selected' : '' }}>10</option>
+                        <option value="25" {{ request('per_page', 25) == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ request('per_page', 25) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page', 25) == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </form>
             </div>
             <div>
                 {{ $students->links() }}
