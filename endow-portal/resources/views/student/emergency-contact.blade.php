@@ -27,9 +27,9 @@
                                 <i class="fas fa-phone-volume fa-2x"></i>
                             </div>
                             <h4 class="fw-bold text-danger mb-2">Emergency Hotline</h4>
-                            <h2 class="fw-bold mb-3">+1 (800) 555-0100</h2>
+                            <h2 class="fw-bold mb-3">+880 1901-463200</h2>
                             <p class="text-muted mb-3">Available 24/7 for urgent matters</p>
-                            <a href="tel:+18005550100" class="btn btn-danger btn-lg">
+                            <a href="tel:+8801901463200" class="btn btn-danger btn-lg">
                                 <i class="fas fa-phone-alt me-2"></i>Call Now
                             </a>
                         </div>
