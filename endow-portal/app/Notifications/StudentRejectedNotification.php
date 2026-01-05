@@ -41,6 +41,7 @@ class StudentRejectedNotification extends Notification implements ShouldQueue
     {
         $message = (new MailMessage)
             ->subject('Application Status Update - Endow Connect')
+            ->theme('endow')
             ->greeting('Dear ' . $this->student->name . ',')
             ->line('Thank you for your interest in Endow Connect and for taking the time to submit your application.')
             ->line('')
@@ -48,7 +49,7 @@ class StudentRejectedNotification extends Notification implements ShouldQueue
             ->line('');
 
         if ($this->reason) {
-            $message->line('**Reason for Rejection:**')
+            $message->line('**Reason:**')
                 ->line($this->reason)
                 ->line('');
         }

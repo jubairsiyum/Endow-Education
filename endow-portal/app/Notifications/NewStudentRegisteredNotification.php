@@ -38,20 +38,22 @@ class NewStudentRegisteredNotification extends Notification implements ShouldQue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Student Registration - Action Required')
+            ->subject('🔔 New Student Registration - Action Required')
+            ->theme('endow')
             ->greeting('Hello ' . $notifiable->name . '!')
             ->line('A new student has registered on the Endow Connect platform and requires your review.')
             ->line('')
             ->line('**Student Details:**')
-            ->line('Name: ' . $this->student->name)
-            ->line('Email: ' . $this->student->email)
-            ->line('Phone: ' . $this->student->phone)
-            ->line('Country: ' . $this->student->country)
-            ->line('University: ' . ($this->student->targetUniversity->name ?? 'Not selected'))
-            ->line('Program: ' . ($this->student->targetProgram->name ?? 'Not selected'))
+            ->line('👤 **Name:** ' . $this->student->name)
+            ->line('📧 **Email:** ' . $this->student->email)
+            ->line('📱 **Phone:** ' . $this->student->phone)
+            ->line('🌍 **Country:** ' . $this->student->country)
+            ->line('🎓 **University:** ' . ($this->student->targetUniversity->name ?? 'Not selected'))
+            ->line('📚 **Program:** ' . ($this->student->targetProgram->name ?? 'Not selected'))
             ->line('')
             ->line('Please review the student\'s application and approve or reject their account.')
             ->action('Review Student Application', route('students.show', $this->student->id))
+            ->line('')
             ->line('Thank you for your prompt attention to this matter!');
     }
 

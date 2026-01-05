@@ -41,6 +41,7 @@ class StudentApprovedNotification extends Notification implements ShouldQueue
     {
         $message = (new MailMessage)
             ->subject('🎉 Welcome to Endow Connect - Account Approved!')
+            ->theme('endow')
             ->greeting('Hello ' . $this->student->name . '!')
             ->line('**Congratulations!** Your student account has been approved and is now active.')
             ->line('')
@@ -49,36 +50,29 @@ class StudentApprovedNotification extends Notification implements ShouldQueue
             ->line('• Upload required documents')
             ->line('• View your checklist items')
             ->line('• Communicate with your assigned counselor')
-            ->line('');
-
-        if ($this->tempPassword) {
-            $message->line('**Your Login Credentials:**')
-                ->line('📧 Email: **' . $this->student->email . '**')
-                ->line('🔑 Temporary Password: **' . $this->tempPassword . '**')
-                ->line('')
-                ->line('⚠️ **Important:** Please change your password immediately after your first login for security purposes.');
-        }
-
-        $message->line('')
+            ->line('')
+            ->line('**Your Login Email:**')
+            ->line('📧 ' . $this->student->email)
+            ->line('')
             ->action('Access Student Portal', url('/login'))
             ->line('');
 
         if ($this->student->assignedUser) {
             $message->line('**Your Assigned Counselor:**')
-                ->line('Name: ' . $this->student->assignedUser->name)
-                ->line('Email: ' . $this->student->assignedUser->email)
+                ->line('👤 Name: ' . $this->student->assignedUser->name)
+                ->line('📧 Email: ' . $this->student->assignedUser->email)
                 ->line('');
         }
 
         if ($this->student->targetUniversity) {
             $message->line('**Your Target University:**')
-                ->line($this->student->targetUniversity->name . ' (' . $this->student->targetUniversity->country . ')')
+                ->line('🎓 ' . $this->student->targetUniversity->name . ' (' . $this->student->targetUniversity->country . ')')
                 ->line('');
         }
 
         if ($this->student->targetProgram) {
             $message->line('**Your Target Program:**')
-                ->line($this->student->targetProgram->name . ' (' . $this->student->targetProgram->level . ')')
+                ->line('📚 ' . $this->student->targetProgram->name . ' (' . $this->student->targetProgram->level . ')')
                 ->line('');
         }
 

@@ -41,23 +41,25 @@ class StudentAssignedNotification extends Notification implements ShouldQueue
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Student Assigned to You - Endow Connect')
+            ->subject('👥 New Student Assigned to You - Endow Connect')
+            ->theme('endow')
             ->greeting('Hello ' . $notifiable->name . '!')
-            ->line('You have been assigned a new student by ' . $this->assignedBy->name . '.')
+            ->line('You have been assigned a new student by **' . $this->assignedBy->name . '**.')
             ->line('')
             ->line('**Student Details:**')
-            ->line('Name: ' . $this->student->name)
-            ->line('Email: ' . $this->student->email)
-            ->line('Phone: ' . $this->student->phone)
-            ->line('Country: ' . $this->student->country)
-            ->line('University: ' . ($this->student->targetUniversity->name ?? 'Not selected'))
-            ->line('Program: ' . ($this->student->targetProgram->name ?? 'Not selected'))
-            ->line('Application Status: ' . ucfirst($this->student->status))
-            ->line('Account Status: ' . ucfirst($this->student->account_status))
+            ->line('👤 **Name:** ' . $this->student->name)
+            ->line('📧 **Email:** ' . $this->student->email)
+            ->line('📱 **Phone:** ' . $this->student->phone)
+            ->line('🌍 **Country:** ' . $this->student->country)
+            ->line('🎓 **University:** ' . ($this->student->targetUniversity->name ?? 'Not selected'))
+            ->line('📚 **Program:** ' . ($this->student->targetProgram->name ?? 'Not selected'))
+            ->line('📋 **Application Status:** ' . ucfirst($this->student->status))
+            ->line('✅ **Account Status:** ' . ucfirst($this->student->account_status))
             ->line('')
             ->line('Please review the student\'s profile and take appropriate action.')
             ->action('View Student Profile', route('students.show', $this->student->id))
-            ->line('You can manage all your assigned students from the "My Students" section.');
+            ->line('')
+            ->line('💡 **Tip:** You can manage all your assigned students from the "My Students" section.');
     }
 
     /**
