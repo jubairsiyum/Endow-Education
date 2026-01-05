@@ -390,7 +390,7 @@
             </div>
             
             <div class="footer-text">
-                <p>&copy; 2025 Endow Global Education. All rights reserved.<br>
+                <p>&copy; {{ date('Y') }} Endow Global Education. All rights reserved.<br>
                 <a href="https://endowglobaledu.com">Visit our website</a></p>
             </div>
         </div>

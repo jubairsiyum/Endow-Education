@@ -272,18 +272,37 @@
                 <div class="card-body-custom text-center">
                     <div class="mb-4">
                         <div class="position-relative d-inline-block">
+                            @php
+                                $progressPercentage = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;
+                                $circumference = 2 * 3.14159 * 65;
+                                $dashOffset = $circumference * (1 - ($completedCount / max($totalCount, 1)));
+                            @endphp
                             <svg width="150" height="150">
                                 <circle cx="75" cy="75" r="65" fill="none" stroke="#f0f0f0" stroke-width="15"/>
                                 <circle cx="75" cy="75" r="65" fill="none" stroke="#DC143C" stroke-width="15"
-                                        stroke-dasharray="{{ 2 * 3.14159 * 65 }}"
-                                        stroke-dashoffset="{{ 2 * 3.14159 * 65 * (1 - ($completedCount / max($totalCount, 1))) }}"
+                                        stroke-dasharray="{{ $circumference }}"
+                                        stroke-dashoffset="{{ $dashOffset }}"
                                         transform="rotate(-90 75 75)"
+                                        style="transition: stroke-dashoffset 1s ease;"
                                         stroke-linecap="round"/>
                             </svg>
                             <div class="position-absolute top-50 start-50 translate-middle">
-                                <div class="fs-2 fw-bold text-danger">{{ $completedCount }}</div>
-                                <small class="text-muted">of {{ $totalCount }}</small>
+                                <div class="fs-2 fw-bold text-danger" id="completedCount">{{ $completedCount }}</div>
+                                <small class="text-muted">of <span id="totalCount">{{ $totalCount }}</span></small>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="fw-bold mb-1" id="progressPercentage">{{ $progressPercentage }}%</h3>
+                        <p class="text-muted mb-0">Complete</p>
+                        <div class="progress mt-3" style="height: 8px;">
+                            <div class="progress-bar bg-danger" role="progressbar" 
+                                 style="width: {{ $progressPercentage }}%; transition: width 1s ease;" 
+                                 id="progressBar"
+                                 aria-valuenow="{{ $progressPercentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
                         </div>
                     </div>
 
@@ -513,22 +532,28 @@
 
     .upload-area {
         position: relative;
-        border: 2px dashed #dee2e6;
-        border-radius: 12px;
-        background: #f8f9fa;
-        transition: all 0.3s ease;
+        border: 3px dashed #dee2e6;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         overflow: hidden;
+        cursor: pointer;
     }
 
     .upload-area:hover {
         border-color: #DC143C;
-        background: #fff5f5;
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(220, 20, 60, 0.15);
     }
 
     .upload-area.dragging {
         border-color: #DC143C;
-        background: #ffe5e5;
+        background: linear-gradient(135deg, #ffe5e5 0%, #ffcccc 100%);
         border-style: solid;
+        transform: scale(1.02);
+        box-shadow: 0 12px 30px rgba(220, 20, 60, 0.25);
+    }
     }
 
     .file-input {
@@ -540,19 +565,27 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding: 30px 20px;
+        padding: 40px 20px;
         cursor: pointer;
         margin: 0;
+        transition: all 0.3s ease;
     }
 
     .upload-icon {
         color: #DC143C;
-        margin-bottom: 10px;
-        transition: transform 0.3s ease;
+        margin-bottom: 15px;
+        transition: all 0.4s ease;
+        animation: bounce 2s ease-in-out infinite;
+    }
+
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
     }
 
     .upload-area:hover .upload-icon {
-        transform: translateY(-5px);
+        transform: scale(1.1) rotate(5deg);
+        animation: none;
     }
 
     .upload-text {
@@ -561,69 +594,115 @@
 
     .upload-main {
         display: block;
-        font-weight: 600;
+        font-weight: 700;
+        font-size: 16px;
         color: #1a1a1a;
-        margin-bottom: 5px;
+        margin-bottom: 8px;
     }
 
     .upload-sub {
         display: block;
-        font-size: 12px;
+        font-size: 13px;
         color: #6c757d;
+        font-weight: 500;
     }
 
     .selected-file {
         display: flex;
         align-items: center;
-        gap: 10px;
-        padding: 15px 20px;
-        background: white;
-        border-radius: 8px;
+        gap: 15px;
+        padding: 20px;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border: 2px solid #4caf50;
+        border-radius: 12px;
         margin: 10px;
+        animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     .selected-file i {
-        color: #DC143C;
-        font-size: 20px;
+        color: #4caf50;
+        font-size: 28px;
     }
 
     .selected-file .filename {
         flex: 1;
-        font-weight: 600;
-        color: #1a1a1a;
+        font-weight: 700;
+        font-size: 15px;
+        color: #2e7d32;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     .clear-file {
-        background: #f8d7da;
-        border: none;
-        width: 30px;
-        height: 30px;
+        background: #ffebee;
+        border: 2px solid #ef5350;
+        width: 35px;
+        height: 35px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.3s ease;
+        color: #ef5350;
     }
 
     .clear-file:hover {
-        background: #DC143C;
+        background: #ef5350;
         color: white;
+        transform: rotate(90deg) scale(1.1);
     }
 
     .btn-upload {
-        font-weight: 600;
-        padding: 12px;
-        border-radius: 8px;
-        transition: all 0.3s ease;
+        font-weight: 700;
+        padding: 14px 24px;
+        border-radius: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-size: 15px;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.2);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn-upload::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 0;
+        height: 0;
+        background: rgba(255, 255, 255, 0.3);
+        border-radius: 50%;
+        transform: translate(-50%, -50%);
+        transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-upload:hover::before {
+        width: 300px;
+        height: 300px;
     }
 
     .btn-upload:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(220, 20, 60, 0.35);
+    }
+
+    .btn-upload:active {
+        transform: translateY(-1px);
     }
 
     /* Uploaded Document Display */

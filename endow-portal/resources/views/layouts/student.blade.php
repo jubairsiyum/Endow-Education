@@ -52,6 +52,25 @@
             transition: all 0.3s ease;
         }
 
+        .sidebar.collapsed {
+            width: 70px;
+        }
+
+        .sidebar.collapsed .brand-text,
+        .sidebar.collapsed .menu-text,
+        .sidebar.collapsed .menu-label {
+            display: none;
+        }
+
+        .sidebar.collapsed .brand-icon {
+            margin: 0 auto;
+        }
+
+        .sidebar.collapsed .menu-item {
+            justify-content: center;
+            padding: 12px;
+        }
+
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
@@ -143,6 +162,12 @@
             margin-left: var(--sidebar-width);
             min-height: 100vh;
             transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-wrapper.sidebar-collapsed {
+            margin-left: 70px;
         }
 
         /* Topbar */
@@ -157,6 +182,26 @@
             position: sticky;
             top: 0;
             z-index: 999;
+        }
+
+        .sidebar-toggle {
+            background: var(--primary);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 15px;
+        }
+
+        .sidebar-toggle:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05);
         }
 
         .page-info h5 {
@@ -225,6 +270,55 @@
         /* Content Area */
         .content-area {
             padding: 30px;
+            flex: 1;
+        }
+
+        /* Footer Styles */
+        .student-footer {
+            background: var(--secondary);
+            color: rgba(255, 255, 255, 0.8);
+            padding: 30px;
+            margin-top: auto;
+            border-top: 3px solid var(--primary);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-left p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
         }
 
         /* Cards */
@@ -296,6 +390,40 @@
         .badge-success-custom {
             background: #28a745;
             color: white;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+
+            .main-wrapper {
+                margin-left: 0;
+            }
+
+            .sidebar-overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 999;
+            }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+            .content-area {
+                padding: 15px;
+            }
         }
 
         .badge-warning-custom {
@@ -388,8 +516,11 @@
     @stack('styles')
 </head>
 <body>
+    <!-- Sidebar Overlay for Mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Sidebar -->
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <a href="{{ route('dashboard') }}" class="sidebar-brand">
                 <div class="brand-icon">E</div>
@@ -403,32 +534,32 @@
         <div class="sidebar-menu">
             <a href="{{ route('student.dashboard') }}" class="menu-item {{ request()->routeIs('student.dashboard') ? 'active' : '' }}">
                 <i class="fas fa-home"></i>
-                <span>Dashboard</span>
+                <span class="menu-text">Dashboard</span>
             </a>
 
             <a href="{{ route('student.documents') }}" class="menu-item {{ request()->routeIs('student.documents') ? 'active' : '' }}">
                 <i class="fas fa-file-upload"></i>
-                <span>Submit Documents</span>
+                <span class="menu-text">Submit Documents</span>
             </a>
 
             <a href="{{ route('student.profile.edit') }}" class="menu-item {{ request()->routeIs('student.profile*') ? 'active' : '' }}">
                 <i class="fas fa-user"></i>
-                <span>Profile</span>
+                <span class="menu-text">Profile</span>
             </a>
 
             <a href="{{ route('student.faq') }}" class="menu-item {{ request()->routeIs('student.faq') ? 'active' : '' }}">
                 <i class="fas fa-question-circle"></i>
-                <span>FAQ</span>
+                <span class="menu-text">FAQ</span>
             </a>
 
             <a href="{{ route('student.emergency-contact') }}" class="menu-item {{ request()->routeIs('student.emergency-contact') ? 'active' : '' }}">
                 <i class="fas fa-phone-alt"></i>
-                <span>Emergency Contact</span>
+                <span class="menu-text">Emergency Contact</span>
             </a>
 
             <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();" class="menu-item">
                 <i class="fas fa-sign-out-alt"></i>
-                <span>Logout</span>
+                <span class="menu-text">Logout</span>
             </a>
 
             <form id="logout-form" action="{{ route('student.logout') }}" method="POST" class="d-none">
@@ -438,12 +569,17 @@
     </div>
 
     <!-- Main Content -->
-    <div class="main-wrapper">
+    <div class="main-wrapper" id="mainWrapper">
         <!-- Topbar -->
         <div class="topbar">
-            <div class="page-info">
-                <h5>@yield('page-title', 'Dashboard')</h5>
-                <p class="breadcrumb-text">@yield('breadcrumb', 'Home')</p>
+            <div class="d-flex align-items-center">
+                <button class="sidebar-toggle" id="sidebarToggle" type="button">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="page-info">
+                    <h5>@yield('page-title', 'Dashboard')</h5>
+                    <p class="breadcrumb-text">@yield('breadcrumb', 'Home')</p>
+                </div>
             </div>
 
             <div class="topbar-actions">
@@ -495,6 +631,22 @@
 
             @yield('content')
         </div>
+
+        <!-- Footer -->
+        <footer class="student-footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <p>&copy; {{ date('Y') }} <strong>Endow Global Education</strong>. All rights reserved.</p>
+                    <p class="mt-1"><small>Empowering students to achieve their educational dreams worldwide</small></p>
+                </div>
+                <div class="footer-links">
+                    <a href="{{ route('student.faq') }}">Help & FAQ</a>
+                    <a href="{{ route('student.emergency-contact') }}">Contact Support</a>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                </div>
+            </div>
+        </footer>
     </div>
 
     <!-- Bootstrap JS -->
@@ -502,6 +654,54 @@
     
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // Sidebar Toggle Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebar = document.getElementById('sidebar');
+            const mainWrapper = document.getElementById('mainWrapper');
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+            
+            // Load saved sidebar state from localStorage
+            const sidebarCollapsed = localStorage.getItem('studentSidebarCollapsed') === 'true';
+            if (sidebarCollapsed && window.innerWidth > 768) {
+                sidebar.classList.add('collapsed');
+                mainWrapper.classList.add('sidebar-collapsed');
+            }
+            
+            // Toggle sidebar
+            sidebarToggle.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    // Mobile: slide sidebar in/out
+                    sidebar.classList.toggle('mobile-open');
+                    sidebarOverlay.classList.toggle('active');
+                } else {
+                    // Desktop: collapse/expand
+                    sidebar.classList.toggle('collapsed');
+                    mainWrapper.classList.toggle('sidebar-collapsed');
+                    localStorage.setItem('studentSidebarCollapsed', sidebar.classList.contains('collapsed'));
+                }
+            });
+            
+            // Close sidebar when clicking overlay (mobile)
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('mobile-open');
+                sidebarOverlay.classList.remove('active');
+            });
+            
+            // Close mobile sidebar when clicking a menu item
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    if (window.innerWidth <= 768) {
+                        sidebar.classList.remove('mobile-open');
+                        sidebarOverlay.classList.remove('active');
+                    }
+                });
+            });
+        });
+    </script>
 
     @stack('scripts')
 </body>
