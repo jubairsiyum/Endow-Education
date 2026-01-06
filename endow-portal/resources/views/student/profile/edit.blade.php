@@ -103,15 +103,19 @@
                                            name="photo" 
                                            id="photoInput"
                                            accept="image/jpeg,image/jpg,image/png"
-                                           onchange="previewPhoto(event)">
+                                           onchange="autoUploadPhoto(event)">
                                     <small class="text-muted d-block mt-2">
                                         JPG, JPEG, or PNG. Max 2MB.<br>
-                                        Minimum 200x200 pixels.
+                                        Minimum 200x200 pixels.<br>
+                                        <span class="text-primary"><i class="fas fa-info-circle"></i> Photo will upload automatically when selected</span>
                                     </small>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100 mb-2">
-                                    <i class="fas fa-upload me-2"></i>Upload Photo
-                                </button>
+                                <div id="uploadProgress" style="display: none;" class="mb-2">
+                                    <div class="text-center mb-2">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>
+                                        <span>Uploading photo...</span>
+                                    </div>
+                                </div>
                             </form>
 
                             @php
@@ -599,7 +603,7 @@
 </style>
 
 <script>
-    function previewPhoto(event) {
+    function autoUploadPhoto(event) {
         const file = event.target.files[0];
         if (!file) return;
 
@@ -624,6 +628,65 @@
             updatePhotoPreview(e.target.result);
         }
         reader.readAsDataURL(file);
+
+        // Auto-upload the photo
+        uploadPhotoNow();
+    }
+
+    function uploadPhotoNow() {
+        const uploadForm = document.getElementById('photoUploadForm');
+        const fileInput = document.getElementById('photoInput');
+        const uploadProgress = document.getElementById('uploadProgress');
+        
+        if (!fileInput.files.length) {
+            showError('Please select a photo to upload');
+            return;
+        }
+
+        // Show loading indicator
+        uploadProgress.style.display = 'block';
+        fileInput.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData(uploadForm);
+
+        // Send AJAX request
+        fetch(uploadForm.action, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update the photo preview with the new image
+                updatePhotoPreview(data.photo.url);
+                showSuccess(data.message);
+                
+                // Clear the file input
+                fileInput.value = '';
+                
+                // Reload page after 1 second to show the delete button
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showError(data.message || 'Failed to upload photo');
+                fileInput.value = '';
+            }
+        })
+        .catch(error => {
+            console.error('Upload error:', error);
+            showError('An error occurred while uploading the photo. Please try again.');
+            fileInput.value = '';
+        })
+        .finally(() => {
+            uploadProgress.style.display = 'none';
+            fileInput.disabled = false;
+        });
     }
 
     function updatePhotoPreview(imageSrc) {
@@ -667,68 +730,8 @@
         }, 5000);
     }
 
-    // Handle form submission with AJAX
+    // Auto-dismiss alerts after 5 seconds
     document.addEventListener('DOMContentLoaded', function() {
-        const uploadForm = document.getElementById('photoUploadForm');
-        if (uploadForm) {
-            uploadForm.addEventListener('submit', function(e) {
-                e.preventDefault(); // Prevent default form submission
-                
-                const fileInput = document.getElementById('photoInput');
-                if (!fileInput.files.length) {
-                    showError('Please select a photo to upload');
-                    return false;
-                }
-
-                // Show loading indicator
-                const submitBtn = uploadForm.querySelector('button[type="submit"]');
-                const originalText = submitBtn.innerHTML;
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
-
-                // Prepare form data
-                const formData = new FormData(uploadForm);
-
-                // Send AJAX request
-                fetch(uploadForm.action, {
-                    method: 'POST',
-                    headers: {
-                        'X-Requested-With': 'XMLHttpRequest',
-                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                    },
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        // Update the photo preview with the new image
-                        updatePhotoPreview(data.photo.url);
-                        showSuccess(data.message);
-                        
-                        // Clear the file input
-                        fileInput.value = '';
-                        
-                        // Reload page after 1 second to show the delete button
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1000);
-                    } else {
-                        showError(data.message || 'Failed to upload photo');
-                    }
-                })
-                .catch(error => {
-                    console.error('Upload error:', error);
-                    showError('An error occurred while uploading the photo. Please try again.');
-                })
-                .finally(() => {
-                    // Re-enable button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                });
-            });
-        }
-
-        // Auto-dismiss alerts after 5 seconds
         setTimeout(function() {
             var alerts = document.querySelectorAll('.alert');
             alerts.forEach(function(alert) {

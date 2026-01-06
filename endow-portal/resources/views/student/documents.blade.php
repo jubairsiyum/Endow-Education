@@ -194,7 +194,7 @@
                                                    class="file-input"
                                                    accept=".pdf,.jpg,.jpeg,.png"
                                                    required
-                                                   onchange="handleFileSelect({{ $item->id }}, this, true)">
+                                                   onchange="handleFileSelectAndUpload({{ $item->id }}, this, true)">
                                             <label for="resubmit-input-{{ $item->id }}" class="upload-label">
                                                 <div class="upload-icon">
                                                     <i class="fas fa-redo-alt fa-2x"></i>
@@ -202,20 +202,14 @@
                                                 <div class="upload-text">
                                                     <span class="upload-main">Resubmit Corrected Document</span>
                                                     <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
+                                                    <span class="upload-sub text-warning mt-1"><i class="fas fa-info-circle"></i> Document will upload automatically when selected</span>
                                                 </div>
                                             </label>
                                             <div class="selected-file" id="resubmit-selected-{{ $item->id }}" style="display: none;">
-                                                <i class="fas fa-file-alt"></i>
+                                                <i class="fas fa-spinner fa-spin"></i>
                                                 <span class="filename"></span>
-                                                <button type="button" class="clear-file" onclick="clearResubmitSelection({{ $item->id }})">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-warning btn-upload w-100 mt-2">
-                                            <i class="fas fa-redo me-2"></i>
-                                            Resubmit Document
-                                        </button>
                                     </form>
                                 @elseif($canEdit && !($studentChecklist && $studentChecklist->document_path))
                                     <!-- Initial Upload Form -->
@@ -232,7 +226,7 @@
                                                    class="file-input"
                                                    accept=".pdf,.jpg,.jpeg,.png"
                                                    required
-                                                   onchange="handleFileSelect({{ $item->id }}, this)">
+                                                   onchange="handleFileSelectAndUpload({{ $item->id }}, this)">
                                             <label for="file-input-{{ $item->id }}" class="upload-label">
                                                 <div class="upload-icon">
                                                     <i class="fas fa-cloud-upload-alt fa-2x"></i>
@@ -240,20 +234,14 @@
                                                 <div class="upload-text">
                                                     <span class="upload-main">{{ $studentChecklist && $studentChecklist->document_path ? 'Replace Document' : 'Choose File or Drag & Drop' }}</span>
                                                     <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
+                                                    <span class="upload-sub text-primary mt-1"><i class="fas fa-info-circle"></i> Document will upload automatically when selected</span>
                                                 </div>
                                             </label>
                                             <div class="selected-file" id="selected-file-{{ $item->id }}" style="display: none;">
-                                                <i class="fas fa-file-alt"></i>
+                                                <i class="fas fa-spinner fa-spin"></i>
                                                 <span class="filename"></span>
-                                                <button type="button" class="clear-file" onclick="clearFileSelection({{ $item->id }})">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-danger btn-upload w-100 mt-2">
-                                            <i class="fas fa-upload me-2"></i>
-                                            Upload Document
-                                        </button>
                                     </form>
                                 @endif
                             </div>
@@ -791,53 +779,64 @@
         modal.show();
     }
 
-    function handleFileSelect(itemId, input, isResubmit = false) {
+    function handleFileSelectAndUpload(itemId, input, isResubmit = false) {
         const file = input.files[0];
-        if (file) {
-            const prefix = isResubmit ? 'resubmit' : 'upload';
-            const uploadArea = document.getElementById(`${prefix}-area-${itemId}`);
-            const selectedFileDiv = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-selected' : 'selected-file'}-${itemId}`);
-            const label = uploadArea.querySelector('.upload-label');
+        if (!file) return;
 
-            // Show selected file
-            selectedFileDiv.style.display = 'flex';
-            selectedFileDiv.querySelector('.filename').textContent = file.name;
-            label.style.display = 'none';
+        const prefix = isResubmit ? 'resubmit' : 'upload';
+        const uploadArea = document.getElementById(`${prefix}-area-${itemId}`);
+        const selectedFileDiv = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-selected' : 'selected-file'}-${itemId}`);
+        const label = uploadArea.querySelector('.upload-label');
 
-            // Validate file size
-            if (file.size > 10 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'File Too Large',
-                    text: 'File size exceeds 10MB limit. Please choose a smaller file.',
-                    confirmButtonColor: '#DC143C'
-                });
-                if (isResubmit) {
-                    clearResubmitSelection(itemId);
-                } else {
-                    clearFileSelection(itemId);
-                }
-                return;
-            }
-
-            // Validate file type
-            const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
-            const fileExt = '.' + file.name.split('.').pop().toLowerCase();
-            if (!allowedTypes.includes(fileExt)) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Invalid File Type',
-                    text: 'Please upload PDF, JPG, or PNG files only.',
-                    confirmButtonColor: '#DC143C'
-                });
-                if (isResubmit) {
-                    clearResubmitSelection(itemId);
-                } else {
-                    clearFileSelection(itemId);
-                }
-                return;
-            }
+        // Validate file size
+        if (file.size > 10 * 1024 * 1024) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Too Large',
+                text: 'File size exceeds 10MB limit. Please choose a smaller file.',
+                confirmButtonColor: '#DC143C'
+            });
+            input.value = '';
+            return;
         }
+
+        // Validate file type
+        const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+        const fileExt = '.' + file.name.split('.').pop().toLowerCase();
+        if (!allowedTypes.includes(fileExt)) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File Type',
+                text: 'Please upload PDF, JPG, or PNG files only.',
+                confirmButtonColor: '#DC143C'
+            });
+            input.value = '';
+            return;
+        }
+
+        // Show uploading state
+        selectedFileDiv.style.display = 'flex';
+        selectedFileDiv.querySelector('.filename').textContent = 'Uploading ' + file.name + '...';
+        label.style.display = 'none';
+        input.disabled = true;
+
+        // Get the form and submit it
+        const form = isResubmit ? document.getElementById(`resubmit-form-${itemId}`) : document.getElementById(`upload-form-${itemId}`);
+        
+        // Show loading toast
+        Swal.fire({
+            icon: 'info',
+            title: 'Uploading Document',
+            text: 'Please wait while your document is being uploaded...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        // Submit the form
+        form.submit();
     }
 
     function clearFileSelection(itemId) {
@@ -862,27 +861,7 @@
         label.style.display = 'flex';
     }
 
-    // Form submission with loading state
-    document.querySelectorAll('.modern-upload-form').forEach(form => {
-        form.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('.btn-upload');
-            const fileInput = this.querySelector('.file-input');
-
-            if (!fileInput.files.length) {
-                e.preventDefault();
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'No File Selected',
-                    text: 'Please select a file to upload.',
-                    confirmButtonColor: '#DC143C'
-                });
-                return;
-            }
-
-            submitBtn.classList.add('loading');
-            submitBtn.disabled = true;
-        });
-    });
+    // Forms now auto-submit on file selection - no manual submission needed
 
     // Drag and drop functionality
     document.querySelectorAll('.upload-area').forEach(uploadArea => {
