@@ -68,7 +68,7 @@ class AdminProfileController extends Controller
 
         $user->update($validated);
 
-        $this->activityLog->logGeneric('profile', 'Profile updated', $user);
+        $this->activityLog->log('profile', 'Profile updated', $user);
 
         return redirect()->route('admin.profile.show')
             ->with('success', 'Profile updated successfully.');
@@ -90,7 +90,7 @@ class AdminProfileController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $this->activityLog->logGeneric('security', 'Password changed', $user);
+        $this->activityLog->log('security', 'Password changed', $user);
 
         return redirect()->route('admin.profile.show')
             ->with('success', 'Password updated successfully.');
@@ -119,7 +119,7 @@ class AdminProfileController extends Controller
             'photo_path' => $path,
         ]);
 
-        $this->activityLog->logGeneric('profile', 'Profile photo uploaded', $user);
+        $this->activityLog->log('profile', 'Profile photo uploaded', $user);
 
         return redirect()->route('admin.profile.show')
             ->with('success', 'Profile photo uploaded successfully.');
@@ -140,7 +140,7 @@ class AdminProfileController extends Controller
             'photo_path' => null,
         ]);
 
-        $this->activityLog->logGeneric('profile', 'Profile photo deleted', $user);
+        $this->activityLog->log('profile', 'Profile photo deleted', $user);
 
         return redirect()->route('admin.profile.show')
             ->with('success', 'Profile photo deleted successfully.');
