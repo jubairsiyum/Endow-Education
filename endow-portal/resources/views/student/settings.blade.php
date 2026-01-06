@@ -123,18 +123,18 @@
 
                                         <div class="mb-4">
                                             <label class="form-label fw-semibold">Current Password</label>
-                                            <input type="password" class="form-control" name="current_password" required>
+                                            <input type="password" class="form-control" name="current_password" autocomplete="current-password" required>
                                         </div>
 
                                         <div class="mb-4">
                                             <label class="form-label fw-semibold">New Password</label>
-                                            <input type="password" class="form-control" name="new_password" required>
+                                            <input type="password" class="form-control" name="new_password" autocomplete="new-password" required>
                                             <small class="text-muted">Minimum 8 characters, include uppercase, lowercase, and numbers</small>
                                         </div>
 
                                         <div class="mb-4">
                                             <label class="form-label fw-semibold">Confirm New Password</label>
-                                            <input type="password" class="form-control" name="new_password_confirmation" required>
+                                            <input type="password" class="form-control" name="new_password_confirmation" autocomplete="new-password" required>
                                         </div>
 
                                         <div class="alert alert-info" role="alert">
@@ -181,7 +181,7 @@
 
                                         <div class="mb-4">
                                             <h6 class="fw-semibold mb-3">Email Notifications</h6>
-                                            
+
                                             <div class="form-check form-switch mb-3">
                                                 <input class="form-check-input" type="checkbox" name="notify_document_status" id="notifyDocStatus" checked>
                                                 <label class="form-check-label" for="notifyDocStatus">
@@ -217,7 +217,7 @@
 
                                         <div class="mb-4">
                                             <h6 class="fw-semibold mb-3">Marketing Communications</h6>
-                                            
+
                                             <div class="form-check form-switch mb-3">
                                                 <input class="form-check-input" type="checkbox" name="notify_newsletter" id="notifyNewsletter">
                                                 <label class="form-check-label" for="notifyNewsletter">
@@ -251,7 +251,7 @@
 
                                     <div class="mb-4">
                                         <h6 class="fw-semibold mb-3">Data Visibility</h6>
-                                        
+
                                         <div class="form-check form-switch mb-3">
                                             <input class="form-check-input" type="checkbox" id="profileVisibility" checked disabled>
                                             <label class="form-check-label" for="profileVisibility">
@@ -273,7 +273,7 @@
 
                                     <div class="mb-4">
                                         <h6 class="fw-semibold mb-3 text-danger">Danger Zone</h6>
-                                        
+
                                         <div class="alert alert-warning" role="alert">
                                             <i class="fas fa-exclamation-triangle me-2"></i>
                                             <strong>Account Actions</strong>
@@ -283,7 +283,7 @@
                                         <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#downloadDataModal">
                                             <i class="fas fa-download me-2"></i>Download My Data
                                         </button>
-                                        
+
                                         <button type="button" class="btn btn-danger ms-2" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
                                             <i class="fas fa-trash me-2"></i>Delete Account
                                         </button>

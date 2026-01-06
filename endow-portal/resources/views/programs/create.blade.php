@@ -102,6 +102,7 @@
                         <div class="input-group">
                             <select name="currency" class="form-select @error('currency') is-invalid @enderror" style="max-width: 100px;">
                                 <option value="USD" {{ old('currency', 'USD') == 'USD' ? 'selected' : '' }}>USD</option>
+                                <option value="KRW" {{ old('currency') == 'KRW' ? 'selected' : '' }}>KRW</option>
                                 <option value="EUR" {{ old('currency') == 'EUR' ? 'selected' : '' }}>EUR</option>
                                 <option value="GBP" {{ old('currency') == 'GBP' ? 'selected' : '' }}>GBP</option>
                                 <option value="AUD" {{ old('currency') == 'AUD' ? 'selected' : '' }}>AUD</option>

@@ -11,7 +11,7 @@
                 <div class="card-body-custom text-center">
                     <div class="mb-4">
                         @if($user->photo_path)
-                            <img src="{{ asset('storage/' . $user->photo_path) }}" 
+                            <img src="{{ asset('storage/' . $user->photo_path) }}"
                                  alt="{{ $user->name }}"
                                  class="rounded-circle"
                                  style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--primary);">
@@ -120,7 +120,7 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <label for="current_password" class="form-label">Current Password</label>
-                                <input type="password" name="current_password" id="current_password" class="form-control" required>
+                                <input type="password" name="current_password" id="current_password" class="form-control" autocomplete="current-password" required>
                                 @error('current_password')
                                     <div class="text-danger mt-1" style="font-size: 0.875rem;">{{ $message }}</div>
                                 @enderror
@@ -128,7 +128,7 @@
 
                             <div class="col-md-6">
                                 <label for="password" class="form-label">New Password</label>
-                                <input type="password" name="password" id="password" class="form-control" required>
+                                <input type="password" name="password" id="password" class="form-control" autocomplete="new-password" required>
                                 @error('password')
                                     <div class="text-danger mt-1" style="font-size: 0.875rem;">{{ $message }}</div>
                                 @enderror
@@ -136,7 +136,7 @@
 
                             <div class="col-md-6">
                                 <label for="password_confirmation" class="form-label">Confirm New Password</label>
-                                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" required>
+                                <input type="password" name="password_confirmation" id="password_confirmation" class="form-control" autocomplete="new-password" required>
                             </div>
 
                             <div class="col-12">
