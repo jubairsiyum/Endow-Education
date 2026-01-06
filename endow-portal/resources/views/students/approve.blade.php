@@ -49,7 +49,29 @@
     <!-- Approval Form -->
     <div class="row">
         <div class="col-12">
-            <form action="{{ route('students.approve', $student) }}" method="POST">
+            <!-- Display Errors -->
+            @if($errors->any())
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Error:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            @endif
+
+            @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                {{ session('error') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            @endif
+
+            <form action="{{ route('students.approve', $student) }}" method="POST" id="approvalForm">
                 @csrf
 
                 <div class="card border-0 shadow-sm">
@@ -59,24 +81,23 @@
                     <div class="card-body">
                         <div class="alert alert-info">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Important:</strong> Please select the university and program for this student. 
-                            The student will see checklist items specific to the selected program.
+                            <strong>Important:</strong> Select the university and program the student will be enrolled in, and assign a counselor to manage their application.
                         </div>
 
-                        <!-- Program Selection -->
+                        <!-- University and Program Selection -->
                         <div class="row mb-4">
                             <div class="col-md-6 mb-3">
                                 <label for="target_university_id" class="form-label">
-                                    Target University <span class="text-danger">*</span>
+                                    <i class="fas fa-university me-2"></i>Target University <span class="text-danger">*</span>
                                 </label>
                                 <select name="target_university_id" id="target_university_id" 
                                         class="form-select @error('target_university_id') is-invalid @enderror" 
-                                        required onchange="loadPrograms(this.value)">
+                                        required>
                                     <option value="">-- Select University --</option>
                                     @foreach($universities as $university)
                                         <option value="{{ $university->id }}" 
                                                 {{ old('target_university_id', $student->target_university_id) == $university->id ? 'selected' : '' }}>
-                                            {{ $university->name }}
+                                            {{ $university->name }} ({{ $university->country }})
                                         </option>
                                     @endforeach
                                 </select>
@@ -87,7 +108,7 @@
 
                             <div class="col-md-6 mb-3">
                                 <label for="target_program_id" class="form-label">
-                                    Program <span class="text-danger">*</span>
+                                    <i class="fas fa-book me-2"></i>Target Program <span class="text-danger">*</span>
                                 </label>
                                 <select name="target_program_id" id="target_program_id" 
                                         class="form-select @error('target_program_id') is-invalid @enderror" 
@@ -95,70 +116,49 @@
                                     <option value="">-- Select Program --</option>
                                     @foreach($programs as $program)
                                         <option value="{{ $program->id }}" 
-                                                data-university="{{ $program->university_id }}"
-                                                {{ old('target_program_id', $student->target_program_id) == $program->id ? 'selected' : '' }}>
-                                            {{ $program->name }} - {{ $program->level }}
+                                                data-university-id="{{ $program->university_id }}"
+                                                {{ old('target_program_id', $student->target_program_id) == $program->id ? 'selected' : '' }}
+                                                style="display: none;">
+                                            {{ $program->name }} ({{ $program->level }})
                                         </option>
                                     @endforeach
                                 </select>
                                 @error('target_program_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <small class="text-muted">Checklist items will be assigned based on this program</small>
                             </div>
                         </div>
 
-                        <!-- Academic Information (Optional) -->
-                        <div class="border-top pt-4">
-                            <h6 class="mb-3">Additional Academic Information (Optional)</h6>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label for="applying_program" class="form-label">Applying Program</label>
-                                    <input type="text" name="applying_program" id="applying_program" 
-                                           class="form-control @error('applying_program') is-invalid @enderror"
-                                           value="{{ old('applying_program', $student->applying_program) }}"
-                                           placeholder="e.g., Bachelor of Science">
-                                    @error('applying_program')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="course" class="form-label">Course/Field of Study</label>
-                                    <input type="text" name="course" id="course" 
-                                           class="form-control @error('course') is-invalid @enderror"
-                                           value="{{ old('course', $student->course) }}"
-                                           placeholder="e.g., Computer Science">
-                                    @error('course')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label for="highest_education" class="form-label">Highest Education Level</label>
-                                    <select name="highest_education" id="highest_education" 
-                                            class="form-select @error('highest_education') is-invalid @enderror">
-                                        <option value="">-- Select Education Level --</option>
-                                        <option value="High School" {{ old('highest_education', $student->highest_education) == 'High School' ? 'selected' : '' }}>
-                                            High School
+                        <!-- Counselor Selection -->
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                <label for="assigned_to" class="form-label">
+                                    <i class="fas fa-user-tie me-2"></i>Assign Counselor <span class="text-danger">*</span>
+                                </label>
+                                <select name="assigned_to" id="assigned_to" 
+                                        class="form-select @error('assigned_to') is-invalid @enderror" 
+                                        required>
+                                    <option value="">-- Select Counselor --</option>
+                                    @foreach($counselors as $counselor)
+                                        <option value="{{ $counselor->id }}" 
+                                                {{ old('assigned_to', $student->assigned_to ?? Auth::id()) == $counselor->id ? 'selected' : '' }}>
+                                            {{ $counselor->name }} 
+                                            @if($counselor->roles->first())
+                                                ({{ $counselor->roles->first()->name }})
+                                            @endif
+                                            @if($counselor->id == Auth::id())
+                                                - You
+                                            @endif
                                         </option>
-                                        <option value="Associate Degree" {{ old('highest_education', $student->highest_education) == 'Associate Degree' ? 'selected' : '' }}>
-                                            Associate Degree
-                                        </option>
-                                        <option value="Bachelor's Degree" {{ old('highest_education', $student->highest_education) == "Bachelor's Degree" ? 'selected' : '' }}>
-                                            Bachelor's Degree
-                                        </option>
-                                        <option value="Master's Degree" {{ old('highest_education', $student->highest_education) == "Master's Degree" ? 'selected' : '' }}>
-                                            Master's Degree
-                                        </option>
-                                        <option value="Doctorate" {{ old('highest_education', $student->highest_education) == 'Doctorate' ? 'selected' : '' }}>
-                                            Doctorate
-                                        </option>
-                                    </select>
-                                    @error('highest_education')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                                    @endforeach
+                                </select>
+                                @error('assigned_to')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    The selected counselor will manage this student's application process.
+                                </small>
                             </div>
                         </div>
                     </div>
@@ -180,42 +180,65 @@
 
 @push('scripts')
 <script>
-    function loadPrograms(universityId) {
+    // Load programs based on selected university
+    function loadPrograms() {
+        const universitySelect = document.getElementById('target_university_id');
         const programSelect = document.getElementById('target_program_id');
-        const options = programSelect.querySelectorAll('option[data-university]');
+        const selectedUniversityId = universitySelect.value;
         
-        // Show all programs if no university selected
-        if (!universityId) {
-            options.forEach(option => option.style.display = 'block');
-            return;
-        }
+        // Reset program dropdown
+        programSelect.value = '';
         
-        // Filter programs by university
-        options.forEach(option => {
-            if (option.dataset.university == universityId) {
-                option.style.display = 'block';
-            } else {
-                option.style.display = 'none';
-                if (option.selected) {
-                    option.selected = false;
-                }
-            }
+        // Hide all programs first
+        const allOptions = programSelect.querySelectorAll('option:not([value=""])');
+        allOptions.forEach(option => {
+            option.style.display = 'none';
         });
         
-        // Reset program selection
-        programSelect.value = '';
+        if (selectedUniversityId) {
+            // Show only programs for selected university
+            const matchingOptions = programSelect.querySelectorAll(`option[data-university-id="${selectedUniversityId}"]`);
+            matchingOptions.forEach(option => {
+                option.style.display = '';
+            });
+            
+            // Auto-select if there's a previously selected program
+            const previouslySelected = "{{ old('target_program_id', $student->target_program_id) }}";
+            if (previouslySelected) {
+                const previousOption = programSelect.querySelector(`option[value="${previouslySelected}"]`);
+                if (previousOption && previousOption.getAttribute('data-university-id') === selectedUniversityId) {
+                    programSelect.value = previouslySelected;
+                }
+            }
+        }
     }
     
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        const universitySelect = document.getElementById('target_university_id');
+        universitySelect.addEventListener('change', loadPrograms);
+        
+        // Load programs if university is pre-selected
+        if (universitySelect.value) {
+            loadPrograms();
+        }
+    });
+
     function confirmApproval() {
         // Validate form first
-        const form = document.querySelector('form');
+        const form = document.getElementById('approvalForm');
         if (!form.checkValidity()) {
             form.reportValidity();
             return;
         }
         
-        const universityName = document.getElementById('target_university_id').selectedOptions[0]?.text || 'N/A';
-        const programName = document.getElementById('target_program_id').selectedOptions[0]?.text || 'N/A';
+        const universitySelect = document.getElementById('target_university_id');
+        const programSelect = document.getElementById('target_program_id');
+        const counselorSelect = document.getElementById('assigned_to');
+        
+        const universityName = universitySelect.selectedOptions[0]?.text || 'N/A';
+        const programName = programSelect.selectedOptions[0]?.text || 'N/A';
+        const counselorName = counselorSelect.selectedOptions[0]?.text || 'N/A';
         
         Swal.fire({
             title: 'Approve Student?',
@@ -224,12 +247,15 @@
                     <p><strong>Student:</strong> {{ $student->name }}</p>
                     <p><strong>University:</strong> ${universityName}</p>
                     <p><strong>Program:</strong> ${programName}</p>
+                    <p><strong>Assigned Counselor:</strong> ${counselorName}</p>
                     <hr>
                     <p class="text-muted">This will:</p>
                     <ul class="text-muted">
                         <li>Approve the student's account</li>
-                        <li>Send a welcome email</li>
-                        <li>Assign program-specific checklists</li>
+                        <li>Enroll the student in the selected program</li>
+                        <li>Assign the student to the selected counselor</li>
+                        <li>Initialize program-specific checklists</li>
+                        <li>Send a welcome email to the student</li>
                     </ul>
                 </div>
             `,
@@ -241,18 +267,13 @@
             cancelButtonText: '<i class="fas fa-times"></i> Cancel'
         }).then((result) => {
             if (result.isConfirmed) {
+                console.log('Form submission confirmed');
+                console.log('Form action:', form.action);
+                console.log('Form method:', form.method);
                 form.submit();
             }
         });
     }
-    
-    // Initialize on page load
-    document.addEventListener('DOMContentLoaded', function() {
-        const universityId = document.getElementById('target_university_id').value;
-        if (universityId) {
-            loadPrograms(universityId);
-        }
-    });
 </script>
 @endpush
 

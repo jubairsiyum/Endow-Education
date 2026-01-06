@@ -73,7 +73,12 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <p class="text-muted mb-1 small">Documents Progress</p>
-                            <h3 class="mb-0 fw-bold">{{ $checklistProgress['percentage'] ?? 0 }}%</h3>
+                            @php
+                                $approved = $checklistProgress['approved'] ?? 0;
+                                $total = $checklistProgress['total'] ?? 0;
+                            @endphp
+                            <h3 class="mb-0 fw-bold">{{ $approved }}/{{ $total }}</h3>
+                            <small class="text-muted">submitted</small>
                         </div>
                         <div class="bg-success bg-opacity-10 p-3 rounded">
                             <i class="fas fa-file-alt fa-2x text-success"></i>
@@ -181,18 +186,24 @@
             <div class="card-custom bg-danger bg-opacity-10 border-0">
                 <div class="card-body-custom">
                     <div class="text-center mb-3">
+                        @php
+                            $approved = $checklistProgress['approved'] ?? 0;
+                            $total = $checklistProgress['total'] ?? 0;
+                            $percentage = $total > 0 ? (int)(($approved / $total) * 100) : 0;
+                        @endphp
                         <div class="bg-danger text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 32px; font-weight: 600;">
-                            {{ $checklistProgress['percentage'] ?? 0 }}%
+                            {{ $approved }}
                         </div>
+                        <div class="text-muted mt-2 small">of {{ $total }}</div>
                     </div>
                     <h5 class="text-center fw-bold mb-3">Document Submission Progress</h5>
                     <div class="progress mb-3" style="height: 10px;">
                         <div class="progress-bar bg-danger" role="progressbar"
-                             style="width: {{ $checklistProgress['percentage'] ?? 0 }}%;">
+                             style="width: {{ $percentage }}%;">
                         </div>
                     </div>
                     <div class="d-flex justify-content-between text-sm mb-3">
-                        <span class="text-muted">{{ $checklistProgress['completed'] ?? 0 }} of {{ $checklistProgress['total'] ?? 0 }} completed</span>
+                        <span class="text-muted">{{ $approved }} of {{ $total }} completed</span>
                     </div>
                     <a href="{{ route('student.documents') }}" class="btn btn-primary-custom w-100">
                         <i class="fas fa-file-upload me-2"></i>Submit Documents

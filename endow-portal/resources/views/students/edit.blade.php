@@ -4,9 +4,21 @@
 @section('breadcrumb', 'Home / Students / Edit')
 
 @section('content')
-    <div class="page-header mb-4">
-        <h1 class="page-title">Edit Student</h1>
-        <p class="page-subtitle">Update student information</p>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h4 class="mb-1 fw-bold text-dark">
+                <i class="fas fa-user-edit text-danger"></i> Edit Student
+            </h4>
+            <small class="text-muted">Update student information</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{{ route('students.show', $student) }}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-eye me-1"></i> View Profile
+            </a>
+            <a href="{{ route('students.index') }}" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Back to Students
+            </a>
+        </div>
     </div>
 
     <div class="row">
@@ -15,11 +27,11 @@
                 @csrf
                 @method('PUT')
 
-                <div class="card-custom mb-4">
-                    <div class="card-header-custom">
-                        <h5>Personal Information</h5>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-light border-0">
+                        <h5 class="mb-0 fw-semibold"><i class="fas fa-user text-danger me-2"></i>Personal Information</h5>
                     </div>
-                    <div class="card-body-custom">
+                    <div class="card-body p-4">
                         <div class="row g-3">
                             <div class="col-md-6">
                                 <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
@@ -60,11 +72,11 @@
                     </div>
                 </div>
 
-                <div class="card-custom mb-4">
-                    <div class="card-header-custom">
-                        <h5><i class="fas fa-university me-2"></i>Academic Information</h5>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-light border-0">
+                        <h5 class="mb-0 fw-semibold"><i class="fas fa-university me-2 text-danger"></i>Academic Information</h5>
                     </div>
-                    <div class="card-body-custom">
+                    <div class="card-body p-4">
                         <div class="alert alert-info mb-3">
                             <i class="fas fa-info-circle me-2"></i>
                             <strong>Important:</strong> Changing the program will update the student's required document checklist. Any pending (not submitted) checklist items will be removed and replaced with the new program's requirements.
@@ -159,7 +171,7 @@
                 </div>
 
                 <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary-custom">
+                    <button type="submit" class="btn btn-danger">
                         <i class="fas fa-save me-2"></i> Update Student
                     </button>
                     <a href="{{ route('students.show', $student) }}" class="btn btn-outline-secondary">
@@ -183,11 +195,11 @@
         </div>
 
         <div class="col-lg-4">
-            <div class="card-custom mb-4">
-                <div class="card-header-custom">
-                    <h5><i class="fas fa-info-circle me-2"></i> Student Status</h5>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0 fw-semibold"><i class="fas fa-info-circle me-2 text-info"></i>Student Status</h5>
                 </div>
-                <div class="card-body-custom">
+                <div class="card-body p-4">
                     <div class="mb-3">
                         <small class="text-muted d-block mb-1">Account Status</small>
                         @php
@@ -198,7 +210,7 @@
                             ];
                             $accountColor = $accountColors[$student->account_status] ?? 'secondary';
                         @endphp
-                        <span class="badge-custom badge-{{ $accountColor }}-custom">
+                        <span class="badge bg-{{ $accountColor }}">
                             {{ ucfirst($student->account_status) }}
                         </span>
                     </div>
@@ -227,11 +239,11 @@
                 </div>
             </div>
 
-            <div class="card-custom">
-                <div class="card-header-custom">
-                    <h5><i class="fas fa-question-circle me-2 text-info"></i>Quick Tips</h5>
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0 fw-semibold"><i class="fas fa-lightbulb me-2 text-warning"></i>Quick Tips</h5>
                 </div>
-                <div class="card-body-custom">
+                <div class="card-body p-4">
                     <ul class="list-unstyled mb-0">
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Select target university first</li>
                         <li class="mb-2"><i class="fas fa-check text-success me-2"></i>Programs will load based on university</li>
@@ -243,11 +255,11 @@
 
             @can('approve', $student)
             @if($student->account_status === 'pending')
-            <div class="card-custom">
-                <div class="card-header-custom">
-                    <h5><i class="fas fa-shield-alt me-2"></i> Account Actions</h5>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0 fw-semibold"><i class="fas fa-shield-alt me-2 text-success"></i>Account Actions</h5>
                 </div>
-                <div class="card-body-custom">
+                <div class="card-body p-4">
                     <form action="{{ route('students.approve', $student) }}" method="POST" class="mb-2">
                         @csrf
                         <button type="submit" class="btn btn-success w-100">

@@ -27,9 +27,9 @@
                                 <i class="fas fa-phone-volume fa-2x"></i>
                             </div>
                             <h4 class="fw-bold text-danger mb-2">Emergency Hotline</h4>
-                            <h2 class="fw-bold mb-3">+1 (800) 555-0100</h2>
+                            <h2 class="fw-bold mb-3">+880 1901-463200</h2>
                             <p class="text-muted mb-3">Available 24/7 for urgent matters</p>
-                            <a href="tel:+18005550100" class="btn btn-danger btn-lg">
+                            <a href="tel:+8801901463200" class="btn btn-danger btn-lg">
                                 <i class="fas fa-phone-alt me-2"></i>Call Now
                             </a>
                         </div>
@@ -44,9 +44,9 @@
                                 <i class="fas fa-envelope fa-2x"></i>
                             </div>
                             <h4 class="fw-bold text-primary mb-2">Email Support</h4>
-                            <h5 class="fw-bold mb-3">support@endowconnect.com</h5>
+                            <h5 class="fw-bold mb-3">support@endowglobaledu.com</h5>
                             <p class="text-muted mb-3">Response within 24 hours</p>
-                            <a href="mailto:support@endowconnect.com" class="btn btn-primary btn-lg">
+                            <a href="mailto:support@endowglobaledu.com" class="btn btn-primary btn-lg">
                                 <i class="fas fa-paper-plane me-2"></i>Send Email
                             </a>
                         </div>
@@ -109,10 +109,9 @@
                                 <i class="fas fa-clock fa-2x text-success"></i>
                             </div>
                             <h6 class="fw-bold mb-2">Office Hours</h6>
-                            <p class="mb-1 small"><strong>Monday - Friday</strong></p>
+                            <p class="mb-1 small"><strong>Saturday - Thursday</strong></p>
                             <p class="text-muted mb-1 small">9:00 AM - 6:00 PM</p>
-                            <p class="mb-1 small"><strong>Saturday</strong></p>
-                            <p class="text-muted mb-0 small">10:00 AM - 2:00 PM</p>
+                            
                         </div>
                     </div>
                 </div>
@@ -126,10 +125,8 @@
                             </div>
                             <h6 class="fw-bold mb-2">Office Location</h6>
                             <p class="text-muted mb-0 small">
-                                Endow Connect<br>
-                                123 Education Street<br>
-                                Suite 456<br>
-                                City, State 12345
+                                Endow Global Education<br>
+                                3rd floor, House -17, Road - 01, Mohammadia Housing Society, Main Road, Mohammadpur, Adabor, Dhaka-1207<br>
                             </p>
                         </div>
                     </div>
@@ -144,11 +141,11 @@
                             </div>
                             <h6 class="fw-bold mb-2">Main Office</h6>
                             <p class="mb-1 small">
-                                <a href="tel:+18005550123">+1 (800) 555-0123</a>
+                                <a href="tel:+8801901463204">+880 1901-463204</a>
                             </p>
                             <p class="text-muted mb-1 small">General Inquiries</p>
                             <p class="mb-0 small">
-                                <a href="tel:+18005550124">+1 (800) 555-0124</a>
+                                <a href="tel:+8801898828354">+880 1898-828354</a>
                             </p>
                             <p class="text-muted mb-0 small">Document Support</p>
                         </div>

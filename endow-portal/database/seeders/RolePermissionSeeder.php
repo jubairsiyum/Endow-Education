@@ -106,22 +106,14 @@ class RolePermissionSeeder extends Seeder
             'export reports',
         ]);
 
-        // Employee - Student management, follow-ups, documents
+        // Employee - Read-only access with approve/reject students capability
         $employee = Role::create(['name' => 'Employee']);
         $employee->givePermissionTo([
             'view students',
-            'create students',
-            'edit students',
             'approve students',
             'view follow-ups',
-            'create follow-ups',
-            'edit follow-ups',
-            'delete follow-ups',
             'view checklists',
             'view documents',
-            'upload documents',
-            'approve documents',
-            'reject documents',
             'view employee dashboard',
         ]);
 

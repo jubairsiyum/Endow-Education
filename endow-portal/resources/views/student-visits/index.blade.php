@@ -9,9 +9,11 @@
             <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-clipboard-list text-danger"></i> Student Visits Management</h4>
             <small class="text-muted">Track and manage student visit records</small>
         </div>
+        @can('create users')
         <a href="{{ route('student-visits.create') }}" class="btn btn-danger">
             <i class="fas fa-plus me-1"></i> New Visit Record
         </a>
+        @endcan
     </div>
 
     @if(session('success'))
@@ -130,11 +132,13 @@
                                    class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                @if(Auth::user()->isAdmin() || $visit->employee_id == Auth::id())
+                                @can('update', $visit)
                                 <a href="{{ route('student-visits.edit', $visit) }}" 
                                    class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
+                                @endcan
+                                @can('delete', $visit)
                                 <form action="{{ route('student-visits.destroy', $visit) }}" 
                                       method="POST" 
                                       class="d-inline"
@@ -146,7 +150,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
-                                @endif
+                                @endcan
                             </div>
                         </td>
                     </tr>

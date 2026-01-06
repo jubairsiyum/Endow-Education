@@ -12,9 +12,12 @@ use App\Http\Controllers\ProgramController;
 use App\Http\Controllers\StudentChecklistController;
 use App\Http\Controllers\ActivityLogController;
 use App\Http\Controllers\StudentVisitController;
+use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Auth\StudentRegisterController;
+use App\Http\Controllers\AdminProfileController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -28,8 +31,8 @@ Route::get('/', function () {
     if (Auth::check()) {
         return redirect()->route('dashboard');
     }
-    // Redirect to admin login by default
-    return redirect()->route('admin.login');
+    // Redirect to student login by default (homepage)
+    return redirect()->route('student.login');
 });
 
 // Admin/Employee Login Routes
@@ -57,8 +60,24 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
+// Admin/Employee Profile Routes
+Route::middleware(['auth'])->prefix('admin')->group(function () {
+    Route::get('/profile', [AdminProfileController::class, 'show'])->name('admin.profile.show');
+    Route::get('/profile/edit', [AdminProfileController::class, 'edit'])->name('admin.profile.edit');
+    Route::put('/profile', [AdminProfileController::class, 'update'])->name('admin.profile.update');
+    Route::put('/profile/password', [AdminProfileController::class, 'updatePassword'])->name('admin.profile.password.update');
+    Route::post('/profile/photo', [AdminProfileController::class, 'uploadPhoto'])->name('admin.profile.photo.upload');
+    Route::delete('/profile/photo', [AdminProfileController::class, 'deletePhoto'])->name('admin.profile.photo.delete');
+});
+
+// Reports Routes
+Route::middleware(['auth'])->group(function () {
+    Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+});
+
 // Student Management Routes
 Route::middleware(['auth'])->group(function () {
+    Route::get('/my-students', [StudentController::class, 'myStudents'])->name('students.my-students');
     Route::resource('students', StudentController::class);
     Route::get('/students/{student}/approve', [StudentController::class, 'showApproveForm'])->name('students.approve.form');
     Route::post('/students/{student}/approve', [StudentController::class, 'approve'])->name('students.approve');
@@ -89,6 +108,27 @@ Route::middleware(['auth'])->group(function () {
 // Checklist Item Routes (Admin/Employee only)
 Route::middleware(['auth', 'can:create checklists'])->group(function () {
     Route::resource('checklist-items', ChecklistItemController::class);
+});
+
+// User Management Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('users')->group(function () {
+    Route::get('/', [UserManagementController::class, 'index'])->name('users.index');
+    Route::get('/create', [UserManagementController::class, 'create'])->name('users.create');
+    Route::post('/', [UserManagementController::class, 'store'])->name('users.store');
+    Route::get('/{user}', [UserManagementController::class, 'show'])->name('users.show');
+    Route::get('/{user}/edit', [UserManagementController::class, 'edit'])->name('users.edit');
+    Route::put('/{user}', [UserManagementController::class, 'update'])->name('users.update');
+    Route::delete('/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
+    Route::patch('/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
+});
+
+// Email Settings Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/email-settings')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'index'])->name('admin.email-settings.index');
+    Route::put('/update', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'update'])->name('admin.email-settings.update');
+    Route::get('/test', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'testForm'])->name('admin.email-settings.test-form');
+    Route::post('/test', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'sendTest'])->name('admin.email-settings.send-test');
+    Route::post('/test-connection', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'testConnection'])->name('admin.email-settings.test-connection');
 });
 
 // University Management Routes (Admin/Employee only)
@@ -134,12 +174,23 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
     // Emergency Contact
     Route::get('/emergency-contact', [StudentChecklistController::class, 'emergencyContact'])->name('student.emergency-contact');
     Route::post('/contact/submit', [StudentChecklistController::class, 'submitContact'])->name('student.contact.submit');
+
+    // My Program
+    Route::get('/program', [StudentChecklistController::class, 'showProgram'])->name('student.program');
+
+    // Universities Info
+    Route::get('/universities', [StudentChecklistController::class, 'showUniversities'])->name('student.universities');
+
+    // Settings
+    Route::get('/settings', [StudentChecklistController::class, 'showSettings'])->name('student.settings');
+    Route::put('/settings', [StudentChecklistController::class, 'updateSettings'])->name('student.settings.update');
 });
 
 // Document Management Routes
 Route::middleware(['auth'])->group(function () {
     Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
     Route::get('/students/{student}/documents', [DocumentController::class, 'studentDocuments'])->name('students.documents');
+    Route::post('/students/{student}/documents/merge', [DocumentController::class, 'mergeDocuments'])->name('students.documents.merge');
     Route::post('/documents/upload', [DocumentController::class, 'upload'])->name('documents.upload');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');

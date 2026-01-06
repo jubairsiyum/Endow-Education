@@ -100,16 +100,24 @@
                     <div class="d-flex justify-content-between align-items-start mb-3">
                         <div>
                             <div class="text-muted small mb-1">Checklist Progress</div>
-                            <div class="h2 fw-bold text-danger mb-0">{{ $student->checklist_progress['percentage'] ?? 0 }}%</div>
+                            @php
+                                $approved = $student->checklist_progress['approved'] ?? 0;
+                                $total = $student->checklist_progress['total'] ?? 0;
+                            @endphp
+                            <div class="h2 fw-bold text-danger mb-0">{{ $approved }} of {{ $total }}</div>
+                            <small class="text-muted">submitted</small>
                         </div>
                         <div class="bg-danger bg-opacity-10 p-3 rounded">
                             <i class="fas fa-tasks fa-2x text-danger"></i>
                         </div>
                     </div>
+                    @php
+                        $percentage = $total > 0 ? (int)(($approved / $total) * 100) : 0;
+                    @endphp
                     <div class="progress mb-3" style="height: 8px;">
                         <div class="progress-bar bg-danger" role="progressbar"
-                             style="width: {{ $student->checklist_progress['percentage'] ?? 0 }}%;"
-                             aria-valuenow="{{ $student->checklist_progress['percentage'] ?? 0 }}"
+                             style="width: {{ $percentage }}%;"
+                             aria-valuenow="{{ $percentage }}"
                              aria-valuemin="0" aria-valuemax="100">
                         </div>
                     </div>

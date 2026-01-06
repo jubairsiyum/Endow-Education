@@ -272,18 +272,37 @@
                 <div class="card-body-custom text-center">
                     <div class="mb-4">
                         <div class="position-relative d-inline-block">
+                            @php
+                                $progressPercentage = $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0;
+                                $circumference = 2 * 3.14159 * 65;
+                                $dashOffset = $circumference * (1 - ($completedCount / max($totalCount, 1)));
+                            @endphp
                             <svg width="150" height="150">
                                 <circle cx="75" cy="75" r="65" fill="none" stroke="#f0f0f0" stroke-width="15"/>
                                 <circle cx="75" cy="75" r="65" fill="none" stroke="#DC143C" stroke-width="15"
-                                        stroke-dasharray="{{ 2 * 3.14159 * 65 }}"
-                                        stroke-dashoffset="{{ 2 * 3.14159 * 65 * (1 - ($completedCount / max($totalCount, 1))) }}"
+                                        stroke-dasharray="{{ $circumference }}"
+                                        stroke-dashoffset="{{ $dashOffset }}"
                                         transform="rotate(-90 75 75)"
+                                        style="transition: stroke-dashoffset 1s ease;"
                                         stroke-linecap="round"/>
                             </svg>
                             <div class="position-absolute top-50 start-50 translate-middle">
-                                <div class="fs-2 fw-bold text-danger">{{ $totalCount > 0 ? round(($completedCount / $totalCount) * 100) : 0 }}%</div>
-                                <small class="text-muted">Complete</small>
+                                <div class="fs-2 fw-bold text-danger" id="completedCount">{{ $completedCount }}</div>
+                                <small class="text-muted">of <span id="totalCount">{{ $totalCount }}</span></small>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <h3 class="fw-bold mb-1" id="progressPercentage">{{ $progressPercentage }}%</h3>
+                        <p class="text-muted mb-0">Complete</p>
+                        <div class="progress mt-3" style="height: 8px;">
+                            <div class="progress-bar bg-danger" role="progressbar" 
+                                 style="width: {{ $progressPercentage }}%; transition: width 1s ease;" 
+                                 id="progressBar"
+                                 aria-valuenow="{{ $progressPercentage }}" 
+                                 aria-valuemin="0" 
+                                 aria-valuemax="100"></div>
                         </div>
                     </div>
 
@@ -518,6 +537,7 @@
         background: #f8f9fa;
         transition: all 0.3s ease;
         overflow: hidden;
+        cursor: pointer;
     }
 
     .upload-area:hover {
@@ -547,7 +567,7 @@
 
     .upload-icon {
         color: #DC143C;
-        margin-bottom: 10px;
+        margin-bottom: 12px;
         transition: transform 0.3s ease;
     }
 
@@ -562,35 +582,36 @@
     .upload-main {
         display: block;
         font-weight: 600;
+        font-size: 15px;
         color: #1a1a1a;
-        margin-bottom: 5px;
+        margin-bottom: 6px;
     }
 
     .upload-sub {
         display: block;
-        font-size: 12px;
+        font-size: 13px;
         color: #6c757d;
     }
 
     .selected-file {
         display: flex;
         align-items: center;
-        gap: 10px;
+        gap: 12px;
         padding: 15px 20px;
-        background: white;
+        background: #e8f5e9;
         border-radius: 8px;
         margin: 10px;
     }
 
     .selected-file i {
-        color: #DC143C;
-        font-size: 20px;
+        color: #28a745;
+        font-size: 24px;
     }
 
     .selected-file .filename {
         flex: 1;
         font-weight: 600;
-        color: #1a1a1a;
+        color: #155724;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -599,14 +620,15 @@
     .clear-file {
         background: #f8d7da;
         border: none;
-        width: 30px;
-        height: 30px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         transition: all 0.2s;
+        color: #721c24;
     }
 
     .clear-file:hover {
@@ -616,9 +638,10 @@
 
     .btn-upload {
         font-weight: 600;
-        padding: 12px;
+        padding: 12px 24px;
         border-radius: 8px;
         transition: all 0.3s ease;
+        font-size: 14px;
     }
 
     .btn-upload:hover {

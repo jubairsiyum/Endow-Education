@@ -62,9 +62,9 @@ class StudentPolicy
             return true;
         }
 
-        // Employees can update assigned students
+        // Employees cannot update students (read-only access)
         if ($user->isEmployee()) {
-            return $student->assigned_to === $user->id && $user->can('edit students');
+            return false;
         }
 
         // Students can update their own profile

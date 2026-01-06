@@ -120,25 +120,33 @@
                 </div>
                 <div class="table-responsive">
                     <table class="table table-custom">
-                        <thead>
+                        <thead style="background: #1a1a1a;">
                             <tr>
-                                <th>Student</th>
-                                <th>Contact</th>
-                                <th>Country</th>
-                                <th>Status</th>
-                                <th>Account</th>
-                                <th>Progress</th>
-                                <th>Actions</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">#</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Student</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Contact</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Country</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Status</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Account</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Progress</th>
+                                <th style="color: white; font-weight: 600; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($recentStudents ?? [] as $student)
-                            <tr>
+                            @forelse($recentStudents ?? [] as $index => $student)
+                            <tr style="transition: all 0.2s ease;" onmouseover="this.style.background='rgba(220, 20, 60, 0.03)'" onmouseout="this.style.background='transparent'">
+                                <td style="font-weight: 700; color: #64748B; text-align: center;">{{ $index + 1 }}</td>
                                 <td>
                                     <div class="d-flex align-items-center gap-3">
-                                        <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">
-                                            {{ strtoupper(substr($student->name, 0, 2)) }}
-                                        </div>
+                                        @if($student->activeProfilePhoto)
+                                            <img src="{{ $student->activeProfilePhoto->photo_url }}" 
+                                                 alt="{{ $student->name }}"
+                                                 style="width: 40px; height: 40px; border-radius: 10px; object-fit: cover; border: 2px solid #e9ecef;">
+                                        @else
+                                            <div style="width: 40px; height: 40px; border-radius: 10px; background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 0.875rem;">
+                                                {{ strtoupper(substr($student->name, 0, 2)) }}
+                                            </div>
+                                        @endif
                                         <div>
                                             <strong style="display: block; color: var(--text-primary);">{{ $student->name }}</strong>
                                             <small class="text-muted">{{ $student->course }}</small>
@@ -188,7 +196,9 @@
                                 </td>
                                 <td>
                                     @php
-                                        $progress = $student->checklist_progress['percentage'] ?? 0;
+                                        $approved = $student->checklist_progress['approved'] ?? 0;
+                                        $total = $student->checklist_progress['total'] ?? 0;
+                                        $progress = $total > 0 ? (int)(($approved / $total) * 100) : 0;
                                     @endphp
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="progress" style="width: 80px; height: 8px;">
@@ -197,7 +207,7 @@
                                                  aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
                                             </div>
                                         </div>
-                                        <small class="text-muted" style="font-weight: 600;">{{ $progress }}%</small>
+                                        <small class="text-muted" style="font-weight: 600;">{{ $approved }}/{{ $total }}</small>
                                     </div>
                                 </td>
                                 <td>

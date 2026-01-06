@@ -41,16 +41,29 @@ class StudentRejectedNotification extends Notification implements ShouldQueue
     {
         $message = (new MailMessage)
             ->subject('Application Status Update - Endow Connect')
-            ->greeting('Hello ' . $this->student->name . ',')
-            ->line('Thank you for your interest in Endow Connect.')
-            ->line('We regret to inform you that your application has not been approved at this time.');
+            ->theme('endow')
+            ->greeting('Dear ' . $this->student->name . ',')
+            ->line('Thank you for your interest in Endow Connect and for taking the time to submit your application.')
+            ->line('')
+            ->line('After careful review, we regret to inform you that your application has not been approved at this time.')
+            ->line('');
 
         if ($this->reason) {
-            $message->line('Reason: ' . $this->reason);
+            $message->line('**Reason:**')
+                ->line($this->reason)
+                ->line('');
         }
 
-        $message->line('If you believe this is an error or would like to discuss your application, please contact us.')
-            ->line('We wish you the best in your future endeavors.');
+        $message->line('**What\'s Next?**')
+            ->line('• You may reapply in the future if your circumstances change')
+            ->line('• If you believe this decision was made in error, please contact us')
+            ->line('• Feel free to reach out if you need clarification or have questions')
+            ->line('')
+            ->line('**Contact Information:**')
+            ->line('If you would like to discuss your application or need further information, please don\'t hesitate to contact our support team.')
+            ->line('')
+            ->line('We appreciate your understanding and wish you all the best in your educational endeavors.')
+            ->salutation('Best regards, The Endow Connect Team');
 
         return $message;
     }

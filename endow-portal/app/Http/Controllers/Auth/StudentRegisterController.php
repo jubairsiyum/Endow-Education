@@ -51,8 +51,8 @@ class StudentRegisterController extends Controller
                 'account_status' => 'pending',
             ]);
 
-            return redirect()->route('student.registration.success')
-                ->with('success', 'Your registration has been submitted successfully! You will receive an email once your account is verified.');
+            return redirect()->route('student.login')
+                ->with('registration_success', 'Your registration has been submitted successfully! Please wait for account verification. You will receive an email once your account is approved.');
         } catch (\Exception $e) {
             // Log the actual error for debugging
             \Log::error('Student registration failed: ' . $e->getMessage(), [

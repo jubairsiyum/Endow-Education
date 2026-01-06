@@ -4,10 +4,10 @@
 @section('breadcrumb', 'Home / Documents / All Documents')
 
 @section('content')
-    <div class="page-header d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
         <div>
-            <h1 class="page-title">Documents</h1>
-            <p class="page-subtitle">View and manage all student documents</p>
+            <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-file-alt text-danger"></i> Documents Management</h4>
+            <small class="text-muted">View and manage all student documents</small>
         </div>
     </div>
 
@@ -26,8 +26,8 @@
     @endif
 
     <!-- Documents Table -->
-    <div class="card-custom">
-        <div class="card-body-custom">
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
             @if($documents->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover">
@@ -47,9 +47,13 @@
                             @foreach($documents as $document)
                                 <tr>
                                     <td>
-                                        <a href="{{ route('students.show', $document->student) }}" class="text-decoration-none">
-                                            {{ $document->student->user->name ?? 'N/A' }}
-                                        </a>
+                                        @if($document->student)
+                                            <a href="{{ route('students.show', $document->student) }}" class="text-decoration-none">
+                                                {{ $document->student->user->name ?? 'N/A' }}
+                                            </a>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($document->checklistItem)
@@ -164,20 +168,29 @@
                         </tbody>
                     </table>
                 </div>
-
-                <!-- Pagination -->
-                <div class="mt-4">
-                    {{ $documents->links() }}
-                </div>
-            @else
-                <div class="text-center py-5">
-                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
-                    <p class="text-muted">No documents found.</p>
-                </div>
-            @endif
+        @endif
         </div>
-    </div>
 
+        <!-- Pagination -->
+        @if($documents->hasPages())
+        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top bg-white">
+            <div class="text-muted small">
+                Showing {{ $documents->firstItem() }} to {{ $documents->lastItem() }} of {{ $documents->total() }} documents
+            </div>
+            <nav>
+                {{ $documents->links('pagination::bootstrap-5') }}
+            </nav>
+        </div>
+        @endif
+
+        @if($documents->count() == 0)
+        <div class="card-body">
+            <div class="text-center py-5">
+                <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No documents found.</p>
+            </div>
+        </div>
+        @endif
 @push('scripts')
 <script>
     function confirmDeleteDocumentIndex(documentId) {

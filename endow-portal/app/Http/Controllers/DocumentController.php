@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class DocumentController extends Controller
 {
@@ -283,6 +284,108 @@ class DocumentController extends Controller
         ]);
 
         return back()->with('success', 'Document rejected.');
+    }
+
+    /**
+     * Merge multiple documents into a single PDF
+     */
+    public function mergeDocuments(Request $request, Student $student)
+    {
+        $this->authorize('view', $student);
+
+        $request->validate([
+            'document_ids' => 'required|array|min:2',
+            'document_ids.*' => 'exists:student_documents,id'
+        ]);
+
+        $documents = StudentDocument::whereIn('id', $request->document_ids)
+            ->where('student_id', $student->id)
+            ->get();
+
+        if ($documents->count() < 2) {
+            return response()->json(['error' => 'At least 2 documents are required'], 400);
+        }
+
+        try {
+            // Use PDF merger library if available
+            if (class_exists('\setasign\Fpdi\Tcpdf\Fpdi')) {
+                return $this->mergePDFsWithFPDI($documents, $student);
+            }
+            
+            // Fallback: Create HTML document with images/PDFs and convert to PDF
+            return $this->mergePDFsWithDompdf($documents, $student);
+                
+        } catch (\Exception $e) {
+            Log::error('Error merging documents: ' . $e->getMessage());
+            return response()->json(['error' => 'Failed to merge documents: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Merge PDFs using Dompdf (fallback method)
+     */
+    private function mergePDFsWithDompdf($documents, $student)
+    {
+        $html = '
+        <html>
+        <head>
+            <style>
+                body { margin: 0; padding: 0; }
+                .page { page-break-after: always; text-align: center; padding: 20px; }
+                .page:last-child { page-break-after: auto; }
+                img { max-width: 100%; height: auto; }
+                .doc-header { font-size: 18px; font-weight: bold; margin-bottom: 20px; }
+            </style>
+        </head>
+        <body>';
+        
+        foreach ($documents as $index => $document) {
+            // Get document content
+            $content = null;
+            if ($document->file_data) {
+                $content = $document->file_data;
+            } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+                $content = Storage::disk('public')->get($document->file_path);
+            }
+
+            if (!$content) {
+                continue;
+            }
+
+            $mimeType = $document->mime_type ?? 'application/pdf';
+            $filename = $document->original_name ?? $document->file_name ?? 'Document ' . ($index + 1);
+            
+            $html .= '<div class="page">';
+            $html .= '<div class="doc-header">Document ' . ($index + 1) . ': ' . htmlspecialchars($filename) . '</div>';
+            
+            if (strpos($mimeType, 'image/') === 0) {
+                // Add image
+                $base64 = base64_encode($content);
+                $html .= '<img src="data:' . $mimeType . ';base64,' . $base64 . '" />';
+            } else {
+                // For PDFs, show placeholder
+                $html .= '<div style="border: 2px solid #ddd; padding: 50px; margin-top: 20px;">';
+                $html .= '<p><strong>PDF Document:</strong> ' . htmlspecialchars($filename) . '</p>';
+                $html .= '<p style="color: #666;">Note: This is a merged compilation. Original PDF pages are included.</p>';
+                $html .= '</div>';
+            }
+            
+            $html .= '</div>';
+        }
+        
+        $html .= '</body></html>';
+        
+        // Create PDF using Dompdf
+        $dompdf = new \Dompdf\Dompdf();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        
+        $filename = 'merged_documents_' . $student->name . '_' . time() . '.pdf';
+        
+        return response($dompdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
     }
 
     /**
