@@ -4,6 +4,20 @@
 @section('breadcrumb', 'Home / Student Visits / View')
 
 @section('content')
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     <div class="mb-3 d-flex justify-content-between align-items-center">
         <a href="{{ route('student-visits.index') }}" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Visits
@@ -13,8 +27,8 @@
             <a href="{{ route('student-visits.edit', $studentVisit) }}" class="btn btn-sm btn-warning">
                 <i class="fas fa-edit me-1"></i> Edit
             </a>
-            <form action="{{ route('student-visits.destroy', $studentVisit) }}" 
-                  method="POST" 
+            <form action="{{ route('student-visits.destroy', $studentVisit) }}"
+                  method="POST"
                   class="d-inline"
                   id="delete-visit-form">
                 @csrf

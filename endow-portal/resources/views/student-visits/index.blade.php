@@ -16,12 +16,26 @@
         @endcan
     </div>
 
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
     <!-- Filters -->
     <div class="card shadow-sm border-0 mb-3">
         <div class="card-body p-3">
             <form method="GET" action="{{ route('student-visits.index') }}" class="row g-2 align-items-end">
                 <div class="col-md-3">
-                    <input type="text" name="search" class="form-control form-control-sm" 
+                    <input type="text" name="search" class="form-control form-control-sm"
                            placeholder="Search by name, phone, email..."
                            value="{{ request('search') }}">
                 </div>
@@ -40,13 +54,13 @@
                 @endif
 
                 <div class="col-md-2">
-                    <input type="date" name="date_from" class="form-control form-control-sm" 
+                    <input type="date" name="date_from" class="form-control form-control-sm"
                            placeholder="From Date"
                            value="{{ request('date_from') }}">
                 </div>
 
                 <div class="col-md-2">
-                    <input type="date" name="date_to" class="form-control form-control-sm" 
+                    <input type="date" name="date_to" class="form-control form-control-sm"
                            placeholder="To Date"
                            value="{{ request('date_to') }}">
                 </div>
@@ -121,19 +135,19 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('student-visits.show', $visit) }}" 
+                                <a href="{{ route('student-visits.show', $visit) }}"
                                    class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @can('update', $visit)
-                                <a href="{{ route('student-visits.edit', $visit) }}" 
+                                <a href="{{ route('student-visits.edit', $visit) }}"
                                    class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @endcan
                                 @can('delete', $visit)
-                                <form action="{{ route('student-visits.destroy', $visit) }}" 
-                                      method="POST" 
+                                <form action="{{ route('student-visits.destroy', $visit) }}"
+                                      method="POST"
                                       class="d-inline"
                                       id="delete-visit-form-{{ $visit->id }}">
                                     @csrf
