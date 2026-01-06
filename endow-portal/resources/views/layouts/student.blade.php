@@ -190,18 +190,26 @@
             font-size: 20px;
             font-weight: 700;
             color: var(--secondary);
+            line-height: 1.3;
         }
 
         .breadcrumb-text {
             font-size: 13px;
             color: #666;
             margin: 0;
+            line-height: 1.4;
         }
 
         .topbar-actions {
             display: flex;
             align-items: center;
             gap: 20px;
+        }
+
+        @media (max-width: 576px) {
+            .topbar-actions {
+                gap: 10px;
+            }
         }
 
         .user-menu {
@@ -212,6 +220,13 @@
             padding: 8px 16px;
             border-radius: 8px;
             transition: background 0.2s;
+        }
+
+        @media (max-width: 768px) {
+            .user-menu {
+                padding: 6px 10px;
+                gap: 8px;
+            }
         }
 
         .user-menu:hover {
@@ -303,6 +318,7 @@
             font-size: 16px;
             font-weight: 600;
             color: var(--secondary);
+            line-height: 1.4;
         }
 
         .card-body-custom {
@@ -420,8 +436,204 @@
                 padding: 0 15px;
             }
 
+            .page-info h5 {
+                font-size: 16px;
+                line-height: 1.3;
+            }
+
+            .breadcrumb-text {
+                font-size: 11px;
+            }
+
             .content-area {
+                padding: 15px 12px;
+            }
+
+            .card-custom {
+                margin-bottom: 16px;
+            }
+
+            .card-header-custom {
+                padding: 15px 16px;
+            }
+
+            .card-header-custom h5 {
+                font-size: 14px;
+            }
+
+            .card-body-custom {
+                padding: 16px;
+            }
+
+            .card-footer-custom {
+                padding: 15px 16px;
+            }
+
+            /* Alert headings */
+            .alert h5 {
+                font-size: 15px !important;
+            }
+
+            .alert h4 {
+                font-size: 16px !important;
+            }
+
+            .alert p {
+                font-size: 13px;
+            }
+
+            /* Button adjustments */
+            .btn {
+                font-size: 13px;
+                padding: 8px 14px;
+            }
+
+            .btn-lg {
+                font-size: 14px;
+                padding: 10px 18px;
+            }
+
+            .btn-sm {
+                font-size: 12px;
+                padding: 6px 10px;
+            }
+
+            /* User menu adjustments */
+            .user-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+
+            .user-name {
+                font-size: 13px;
+            }
+
+            .user-role {
+                font-size: 11px;
+            }
+
+            /* Table responsive improvements */
+            .table {
+                font-size: 13px;
+            }
+
+            .table thead th {
+                font-size: 11px;
+                padding: 10px 8px;
+            }
+
+            .table tbody td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+
+            /* Form controls */
+            .form-control, .form-select {
+                font-size: 13px;
+                padding: 8px 12px;
+            }
+
+            .form-label {
+                font-size: 13px;
+            }
+
+            /* Badge adjustments */
+            .badge {
+                font-size: 11px;
+                padding: 4px 8px;
+            }
+
+            /* Hide user info text on very small screens */
+            .user-info {
+                display: none;
+            }
+
+            .sidebar-toggle {
+                padding: 10px;
+            }
+
+            /* Footer adjustments */
+            .student-footer {
                 padding: 20px 15px;
+            }
+
+            .footer-left p {
+                font-size: 12px;
+            }
+        }
+
+        /* Extra small devices (phones in portrait, less than 576px) */
+        @media (max-width: 576px) {
+            .page-info h5 {
+                font-size: 14px;
+            }
+
+            .breadcrumb-text {
+                font-size: 10px;
+            }
+
+            .content-area {
+                padding: 12px 10px;
+            }
+
+            .card-header-custom h5 {
+                font-size: 13px;
+            }
+
+            .alert h5 {
+                font-size: 14px !important;
+            }
+
+            .alert h4 {
+                font-size: 15px !important;
+            }
+
+            .alert p, .alert small {
+                font-size: 12px;
+            }
+
+            .alert .fa-2x {
+                font-size: 1.5em !important;
+            }
+
+            /* Stat cards in dashboard */
+            .stat-card h2, .stat-card h3 {
+                font-size: 1.5rem !important;
+            }
+
+            .stat-card h4 {
+                font-size: 1.1rem !important;
+            }
+
+            .stat-card p, .stat-card small {
+                font-size: 11px;
+            }
+        }
+
+        /* Medium devices (tablets, 768px to 991px) */
+        @media (min-width: 768px) and (max-width: 991px) {
+            .page-info h5 {
+                font-size: 18px;
+            }
+
+            .content-area {
+                padding: 20px;
+            }
+
+            .card-body-custom {
+                padding: 20px;
+            }
+        }
+
+        /* Large devices improvements */
+        @media (min-width: 1200px) {
+            .content-area {
+                padding: 35px;
+            }
+
+            .card-custom {
+                margin-bottom: 28px;
             }
         }
 
@@ -471,6 +683,38 @@
             font-size: 14px;
             color: var(--secondary);
             margin-bottom: 8px;
+        }
+
+        /* Mobile-specific utilities */
+        .mobile-text-sm {
+            font-size: 14px;
+        }
+
+        @media (max-width: 768px) {
+            .mobile-text-sm {
+                font-size: 12px;
+            }
+
+            .mobile-text-xs {
+                font-size: 11px;
+            }
+
+            /* Improve readability on mobile */
+            h1 { font-size: 1.75rem !important; }
+            h2 { font-size: 1.5rem !important; }
+            h3 { font-size: 1.25rem !important; }
+            h4 { font-size: 1.1rem !important; }
+            h5 { font-size: 1rem !important; }
+            h6 { font-size: 0.9rem !important; }
+        }
+
+        @media (max-width: 576px) {
+            h1 { font-size: 1.5rem !important; }
+            h2 { font-size: 1.3rem !important; }
+            h3 { font-size: 1.15rem !important; }
+            h4 { font-size: 1rem !important; }
+            h5 { font-size: 0.95rem !important; }
+            h6 { font-size: 0.85rem !important; }
         }
     </style>
 
@@ -572,8 +816,8 @@
                     @endphp
                     <div class="user-avatar" style="overflow: hidden;">
                         @if($profilePhoto && $profilePhoto->photo_path)
-                            <img src="{{ $profilePhoto->photo_url }}?t={{ time() }}" 
-                                 alt="{{ Auth::user()->name }}" 
+                            <img src="{{ $profilePhoto->photo_url }}?t={{ time() }}"
+                                 alt="{{ Auth::user()->name }}"
                                  style="width: 100%; height: 100%; object-fit: cover;"
                                  onerror="this.style.display='none'; this.parentElement.innerHTML='{{ strtoupper(substr(Auth::user()->name, 0, 1)) }}'">
                         @else
@@ -620,7 +864,7 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
@@ -631,14 +875,14 @@
             const mainWrapper = document.getElementById('mainWrapper');
             const sidebarToggle = document.getElementById('sidebarToggle');
             const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
+
             // Load saved sidebar state from localStorage
             const sidebarCollapsed = localStorage.getItem('studentSidebarCollapsed') === 'true';
             if (sidebarCollapsed && window.innerWidth > 768) {
                 sidebar.classList.add('collapsed');
                 mainWrapper.classList.add('sidebar-collapsed');
             }
-            
+
             // Toggle sidebar
             sidebarToggle.addEventListener('click', function() {
                 if (window.innerWidth <= 768) {
@@ -652,13 +896,13 @@
                     localStorage.setItem('studentSidebarCollapsed', sidebar.classList.contains('collapsed'));
                 }
             });
-            
+
             // Close sidebar when clicking overlay (mobile)
             sidebarOverlay.addEventListener('click', function() {
                 sidebar.classList.remove('mobile-open');
                 sidebarOverlay.classList.remove('active');
             });
-            
+
             // Close mobile sidebar when clicking a menu item
             const menuItems = document.querySelectorAll('.menu-item');
             menuItems.forEach(item => {
