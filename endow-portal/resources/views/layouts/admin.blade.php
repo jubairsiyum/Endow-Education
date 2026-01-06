@@ -919,6 +919,19 @@
                 </a>
                 @endcanany
 
+                <div class="menu-section-title">Communication</div>
+
+                <a href="{{ route('contact-submissions.index') }}" class="menu-item {{ request()->routeIs('contact-submissions.*') ? 'active' : '' }}">
+                    <i class="fas fa-envelope"></i>
+                    <span>Contact Submissions</span>
+                    @php
+                        $newContactCount = \App\Models\ContactSubmission::where('status', 'new')->count();
+                    @endphp
+                    @if($newContactCount > 0)
+                        <span class="badge bg-danger rounded-pill ms-auto">{{ $newContactCount }}</span>
+                    @endif
+                </a>
+
                 @canany(['view documents'])
                 <div class="menu-section-title">Document Management</div>
 

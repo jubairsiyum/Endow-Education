@@ -226,4 +226,12 @@ class Student extends Model
     {
         return $this->hasMany(StudentPayment::class);
     }
+
+    /**
+     * Get the student's contact submissions.
+     */
+    public function contactSubmissions()
+    {
+        return $this->hasMany(ContactSubmission::class);
+    }
 }

@@ -399,12 +399,23 @@ class StudentChecklistController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        // Create contact submission
+        $contactSubmission = \App\Models\ContactSubmission::create([
+            'student_id' => $student->id,
+            'subject' => $request->subject,
+            'priority' => $request->priority,
+            'message' => $request->message,
+            'status' => 'new',
+            'assigned_to' => $student->assigned_to, // Auto-assign to student's counselor
+        ]);
+
         // Log the contact submission
         $this->activityLogService->log(
             'student',
             "Student submitted contact form - Subject: {$request->subject}",
             $student,
             [
+                'contact_submission_id' => $contactSubmission->id,
                 'subject' => $request->subject,
                 'priority' => $request->priority,
                 'message' => $request->message,

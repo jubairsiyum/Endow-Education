@@ -6,6 +6,7 @@ use App\Http\Controllers\StudentProfileController;
 use App\Http\Controllers\StudentPaymentController;
 use App\Http\Controllers\FollowUpController;
 use App\Http\Controllers\ChecklistItemController;
+use App\Http\Controllers\ContactSubmissionController;
 use App\Http\Controllers\DocumentController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\ProgramController;
@@ -108,6 +109,16 @@ Route::middleware(['auth'])->group(function () {
 // Checklist Item Routes (Admin/Employee only)
 Route::middleware(['auth', 'can:create checklists'])->group(function () {
     Route::resource('checklist-items', ChecklistItemController::class);
+});
+
+// Contact Submission Routes (Admin/Employee only)
+Route::middleware(['auth'])->prefix('contact-submissions')->group(function () {
+    Route::get('/', [ContactSubmissionController::class, 'index'])->name('contact-submissions.index');
+    Route::get('/{contactSubmission}', [ContactSubmissionController::class, 'show'])->name('contact-submissions.show');
+    Route::put('/{contactSubmission}/status', [ContactSubmissionController::class, 'updateStatus'])->name('contact-submissions.update-status');
+    Route::post('/{contactSubmission}/assign', [ContactSubmissionController::class, 'assign'])->name('contact-submissions.assign');
+    Route::post('/{contactSubmission}/notes', [ContactSubmissionController::class, 'addNotes'])->name('contact-submissions.add-notes');
+    Route::delete('/{contactSubmission}', [ContactSubmissionController::class, 'destroy'])->name('contact-submissions.destroy');
 });
 
 // User Management Routes (Super Admin only)

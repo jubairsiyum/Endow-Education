@@ -4,6 +4,13 @@
 @section('breadcrumb', 'Home / Emergency Contact')
 
 @section('content')
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <div class="row">
         <div class="col-lg-10 mx-auto">
             <!-- Emergency Alert -->
@@ -335,3 +342,19 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    // Display success messages with SweetAlert
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Message Sent!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#DC143C',
+            timer: 4000,
+            timerProgressBar: true
+        });
+    @endif
+</script>
+@endpush
