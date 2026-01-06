@@ -2,63 +2,64 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\FollowUp;
+use App\Models\Student;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class FollowUpController extends Controller
 {
     /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a newly created follow-up in storage.
      */
     public function store(Request $request)
     {
-        //
+        $validated = $request->validate([
+            'student_id' => 'required|exists:students,id',
+            'note' => 'required|string',
+            'next_follow_up_date' => 'nullable|date|after_or_equal:today',
+        ]);
+
+        $student = Student::findOrFail($validated['student_id']);
+        $this->authorize('update', $student);
+
+        $validated['created_by'] = Auth::id();
+
+        FollowUp::create($validated);
+
+        return redirect()->route('students.show', $student)
+            ->with('success', 'Follow-up note added successfully.');
     }
 
     /**
-     * Display the specified resource.
+     * Update the specified follow-up in storage.
      */
-    public function show(string $id)
+    public function update(Request $request, FollowUp $followUp)
     {
-        //
+        $this->authorize('update', $followUp->student);
+
+        $validated = $request->validate([
+            'note' => 'required|string',
+            'next_follow_up_date' => 'nullable|date|after_or_equal:today',
+        ]);
+
+        $followUp->update($validated);
+
+        return redirect()->route('students.show', $followUp->student)
+            ->with('success', 'Follow-up note updated successfully.');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Remove the specified follow-up from storage.
      */
-    public function edit(string $id)
+    public function destroy(FollowUp $followUp)
     {
-        //
-    }
+        $student = $followUp->student;
+        $this->authorize('update', $student);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
+        $followUp->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return redirect()->route('students.show', $student)
+            ->with('success', 'Follow-up note deleted successfully.');
     }
 }

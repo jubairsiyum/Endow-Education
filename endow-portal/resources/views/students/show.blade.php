@@ -4,6 +4,7 @@
 @section('breadcrumb', 'Home / Students / ' . $student->name)
 
 @push('styles')
+<link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
 <style>
     .nav-tabs-custom .nav-link {
         border: none;
@@ -48,6 +49,64 @@
         align-items: center;
         justify-content: center;
         font-size: 0.75rem;
+    }
+
+    /* Quill Editor Customization */
+    .ql-toolbar.ql-snow {
+        border-top-left-radius: 0.375rem;
+        border-top-right-radius: 0.375rem;
+        border-color: #dee2e6;
+    }
+
+    .ql-container.ql-snow {
+        border-bottom-left-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+        border-color: #dee2e6;
+        font-size: 15px;
+    }
+
+    .ql-editor {
+        min-height: 250px;
+    }
+
+    .ql-snow .ql-stroke {
+        stroke: #495057;
+    }
+
+    .ql-snow .ql-fill {
+        fill: #495057;
+    }
+
+    .ql-snow .ql-picker-label {
+        color: #495057;
+    }
+
+    .ql-toolbar.ql-snow .ql-picker.ql-expanded .ql-picker-label {
+        border-color: #DC143C;
+    }
+
+    /* Follow-up content styling */
+    .followup-content {
+        line-height: 1.6;
+    }
+
+    .followup-content p {
+        margin-bottom: 0.75rem;
+    }
+
+    .followup-content ul, .followup-content ol {
+        padding-left: 1.5rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .followup-content strong {
+        font-weight: 600;
+        color: #1a1a1a;
+    }
+
+    .followup-content a {
+        color: #DC143C;
+        text-decoration: underline;
     }
 </style>
 @endpush
@@ -498,44 +557,194 @@
             <!-- Follow-ups Tab -->
             <div class="tab-pane fade" id="followups" role="tabpanel">
                 <div class="mb-4">
-                    <button class="btn btn-primary-custom" data-bs-toggle="modal" data-bs-target="#followupModal">
-                        <i class="fas fa-plus me-2"></i> Add Follow-up
+                    @can('update', $student)
+                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#followupModal">
+                        <i class="fas fa-plus me-2"></i> Add Follow-up Note
                     </button>
+                    @endcan
                 </div>
 
                 <div class="timeline">
                     @forelse($student->followUps()->orderBy('created_at', 'desc')->get() as $followUp)
-                    <div class="timeline-item">
-                        <div class="timeline-icon">
-                            <i class="fas fa-comment"></i>
-                        </div>
-                        <div>
-                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                <div>
-                                    <strong>{{ $followUp->creator->name ?? 'Unknown' }}</strong>
-                                    <small class="text-muted ms-2">
-                                        {{ $followUp->created_at->format('M d, Y g:i A') }}
-                                    </small>
-                                    @if($followUp->next_follow_up_date)
-                                        <br><small class="text-muted">Next follow-up: {{ $followUp->next_follow_up_date->format('M d, Y') }}</small>
-                                    @endif
+                    <div class="timeline-item mb-4">
+                        <div class="d-flex gap-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-danger text-white rounded-circle d-flex align-items-center justify-content-center"
+                                     style="width: 48px; height: 48px; font-size: 20px;">
+                                    <i class="fas fa-comment"></i>
                                 </div>
                             </div>
-                            <div class="bg-light p-3 rounded">
-                                {!! nl2br(e($followUp->note)) !!}
+                            <div class="flex-grow-1">
+                                <div class="card shadow-sm border-0">
+                                    <div class="card-header bg-light border-0">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong class="text-dark">{{ $followUp->creator->name ?? 'Unknown' }}</strong>
+                                                <small class="text-muted d-block">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    {{ $followUp->created_at->format('M d, Y g:i A') }}
+                                                </small>
+                                                @if($followUp->next_follow_up_date)
+                                                <span class="badge bg-warning text-dark mt-2">
+                                                    <i class="fas fa-calendar-check me-1"></i>
+                                                    Next: {{ $followUp->next_follow_up_date->format('M d, Y') }}
+                                                </span>
+                                                @endif
+                                            </div>
+                                            @can('update', $student)
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button"
+                                                        class="btn btn-outline-primary"
+                                                        data-bs-toggle="modal"
+                                                        data-bs-target="#editFollowupModal{{ $followUp->id }}"
+                                                        title="Edit">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button"
+                                                        class="btn btn-outline-danger"
+                                                        onclick="confirmDeleteFollowUp({{ $followUp->id }})"
+                                                        title="Delete">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                            @endcan
+                                        </div>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="followup-content">
+                                            {!! $followUp->note !!}
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Edit Follow-up Modal -->
+                    @can('update', $student)
+                    <div class="modal fade" id="editFollowupModal{{ $followUp->id }}" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog modal-lg modal-dialog-centered">
+                            <div class="modal-content">
+                                <div class="modal-header bg-danger text-white">
+                                    <h5 class="modal-title">
+                                        <i class="fas fa-edit me-2"></i>Edit Follow-up Note
+                                    </h5>
+                                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                </div>
+                                <form action="{{ route('follow-ups.update', $followUp) }}" method="POST">
+                                    @csrf
+                                    @method('PUT')
+                                    <div class="modal-body">
+                                        <div class="mb-3">
+                                            <label class="form-label fw-semibold">Follow-up Note <span class="text-danger">*</span></label>
+                                            <div id="edit-quill-editor-{{ $followUp->id }}" style="height: 250px;"></div>
+                                            <textarea name="note" id="edit-note-{{ $followUp->id }}" style="display:none;" required>{{ $followUp->note }}</textarea>
+                                            <small class="text-muted">Document student interactions, concerns, and action items</small>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="edit_next_follow_up_date_{{ $followUp->id }}" class="form-label fw-semibold">
+                                                <i class="fas fa-calendar-alt text-danger me-1"></i>Next Follow-up Date
+                                            </label>
+                                            <input type="date"
+                                                   class="form-control"
+                                                   id="edit_next_follow_up_date_{{ $followUp->id }}"
+                                                   name="next_follow_up_date"
+                                                   value="{{ $followUp->next_follow_up_date?->format('Y-m-d') }}"
+                                                   min="{{ date('Y-m-d') }}">
+                                            <small class="text-muted">Optional: Set a reminder for the next follow-up</small>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                            <i class="fas fa-times me-1"></i>Cancel
+                                        </button>
+                                        <button type="submit" class="btn btn-danger">
+                                            <i class="fas fa-save me-1"></i>Update Follow-up
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Delete Form -->
+                    <form id="delete-followup-form-{{ $followUp->id }}"
+                          action="{{ route('follow-ups.destroy', $followUp) }}"
+                          method="POST"
+                          style="display: none;">
+                        @csrf
+                        @method('DELETE')
+                    </form>
+                    @endcan
                     @empty
                     <div class="text-center py-5">
-                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
-                        <p class="text-muted mb-0">No follow-ups yet</p>
+                        <div class="mb-4">
+                            <i class="fas fa-comments fa-4x text-muted"></i>
+                        </div>
+                        <h5 class="text-muted">No Follow-ups Yet</h5>
+                        <p class="text-muted mb-3">Start tracking your interactions with this student</p>
+                        @can('update', $student)
+                        <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#followupModal">
+                            <i class="fas fa-plus me-2"></i> Add First Follow-up
+                        </button>
+                        @endcan
                     </div>
                     @endforelse
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Add Follow-up Modal -->
+    @can('update', $student)
+    <div class="modal fade" id="followupModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle me-2"></i>Add Follow-up Note
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ route('follow-ups.store') }}" method="POST" id="followupForm">
+                    @csrf
+                    <input type="hidden" name="student_id" value="{{ $student->id }}">
+                    <div class="modal-body">
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Track student interactions:</strong> Record calls, meetings, emails, and important updates about {{ $student->user->name }}'s application progress.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Follow-up Note <span class="text-danger">*</span></label>
+                            <div id="quill-followup-editor" style="height: 250px;"></div>
+                            <textarea name="note" id="followup-note" style="display:none;" required></textarea>
+                            <small class="text-muted">Document student interactions, concerns, and action items</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="next_follow_up_date" class="form-label fw-semibold">
+                                <i class="fas fa-calendar-alt text-danger me-1"></i>Next Follow-up Date
+                            </label>
+                            <input type="date"
+                                   class="form-control"
+                                   id="next_follow_up_date"
+                                   name="next_follow_up_date"
+                                   min="{{ date('Y-m-d') }}">
+                            <small class="text-muted">Optional: Set a reminder for the next follow-up</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </button>
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-save me-1"></i>Save Follow-up
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    @endcan
 
     <!-- Reject Modals -->
     @foreach($student->checklists as $checklist)
@@ -605,7 +814,107 @@
     </div>
 
     @push('scripts')
+    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
+        // Initialize Quill Editor for Add Follow-up
+        document.addEventListener('DOMContentLoaded', function() {
+            const followupModal = document.getElementById('followupModal');
+            if (followupModal) {
+                let quillFollowup = null;
+
+                followupModal.addEventListener('shown.bs.modal', function() {
+                    if (!quillFollowup) {
+                        quillFollowup = new Quill('#quill-followup-editor', {
+                            theme: 'snow',
+                            placeholder: 'Document your interaction with the student...',
+                            modules: {
+                                toolbar: [
+                                    [{ 'header': [1, 2, 3, false] }],
+                                    ['bold', 'italic', 'underline', 'strike'],
+                                    [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                    [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                    [{ 'color': [] }, { 'background': [] }],
+                                    ['link'],
+                                    ['clean']
+                                ]
+                            }
+                        });
+
+                        // Sync Quill content with hidden textarea
+                        quillFollowup.on('text-change', function() {
+                            document.getElementById('followup-note').value = quillFollowup.root.innerHTML;
+                        });
+                    }
+                });
+
+                // Reset form on modal hide
+                followupModal.addEventListener('hidden.bs.modal', function() {
+                    if (quillFollowup) {
+                        quillFollowup.setContents([]);
+                        document.getElementById('followup-note').value = '';
+                        document.getElementById('next_follow_up_date').value = '';
+                    }
+                });
+            }
+
+            // Initialize Quill Editors for Edit Follow-up modals
+            @foreach($student->followUps as $followUp)
+            (function() {
+                const editModal{{ $followUp->id }} = document.getElementById('editFollowupModal{{ $followUp->id }}');
+                if (editModal{{ $followUp->id }}) {
+                    let quillEdit{{ $followUp->id }} = null;
+
+                    editModal{{ $followUp->id }}.addEventListener('shown.bs.modal', function() {
+                        if (!quillEdit{{ $followUp->id }}) {
+                            quillEdit{{ $followUp->id }} = new Quill('#edit-quill-editor-{{ $followUp->id }}', {
+                                theme: 'snow',
+                                modules: {
+                                    toolbar: [
+                                        [{ 'header': [1, 2, 3, false] }],
+                                        ['bold', 'italic', 'underline', 'strike'],
+                                        [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                        [{ 'indent': '-1'}, { 'indent': '+1' }],
+                                        [{ 'color': [] }, { 'background': [] }],
+                                        ['link'],
+                                        ['clean']
+                                    ]
+                                }
+                            });
+
+                            // Set initial content
+                            const initialContent = document.getElementById('edit-note-{{ $followUp->id }}').value;
+                            if (initialContent) {
+                                quillEdit{{ $followUp->id }}.root.innerHTML = initialContent;
+                            }
+
+                            // Sync Quill content with hidden textarea
+                            quillEdit{{ $followUp->id }}.on('text-change', function() {
+                                document.getElementById('edit-note-{{ $followUp->id }}').value = quillEdit{{ $followUp->id }}.root.innerHTML;
+                            });
+                        }
+                    });
+                }
+            })();
+            @endforeach
+        });
+
+        function confirmDeleteFollowUp(followUpId) {
+            Swal.fire({
+                title: 'Delete Follow-up?',
+                text: 'Are you sure you want to delete this follow-up note? This action cannot be undone.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#DC143C',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    document.getElementById('delete-followup-form-' + followUpId).submit();
+                }
+            });
+        }
+
         function confirmRejectStudent() {
             Swal.fire({
                 title: 'Reject Student?',
