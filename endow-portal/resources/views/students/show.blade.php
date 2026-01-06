@@ -359,7 +359,7 @@
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <strong class="small">Documents:</strong>
                                             @if($checklist->documents->count() > 1)
-                                            <button type="button" class="btn btn-sm btn-outline-danger" 
+                                            <button type="button" class="btn btn-sm btn-outline-danger"
                                                     onclick="toggleDocumentSelection({{ $checklist->id }})"
                                                     id="select-btn-{{ $checklist->id }}">
                                                 <i class="fas fa-check-square me-1"></i> Select for Merge
@@ -372,7 +372,7 @@
                                                  data-checklist="{{ $checklist->id }}"
                                                  data-document="{{ $document->id }}">
                                                 <div class="d-flex align-items-start gap-3">
-                                                    <input type="checkbox" class="form-check-input mt-1 doc-checkbox d-none" 
+                                                    <input type="checkbox" class="form-check-input mt-1 doc-checkbox d-none"
                                                            data-checklist="{{ $checklist->id }}"
                                                            data-document="{{ $document->id }}"
                                                            value="{{ $document->id }}">
@@ -422,18 +422,21 @@
                                                             <span class="badge bg-danger">File Missing</span>
                                                         @endif
                                                         @can('update', $student)
+                                                            @if($document->status !== 'approved')
                                                             <form action="{{ route('students.documents.destroy', ['student' => $student, 'document' => $document]) }}"
                                                                   method="POST"
+                                                                  id="delete-doc-form-{{ $document->id }}"
                                                                   class="d-inline">
                                                                 @csrf
                                                                 @method('DELETE')
-                                                                <button type="button" 
-                                                                        class="btn btn-outline-danger" 
+                                                                <button type="button"
+                                                                        class="btn btn-outline-danger"
                                                                         title="Delete"
-                                                                        onclick="if(confirm('Are you sure you want to delete this document?')) { document.getElementById('delete-doc-form-{{ $document->id }}').submit(); }">
+                                                                        onclick="confirmDeleteDocument({{ $document->id }})">
                                                                     <i class="fas fa-trash"></i>
                                                                 </button>
                                                             </form>
+                                                            @endif
                                                         @endcan
                                                     </div>
                                                 </div>
@@ -442,11 +445,11 @@
                                         </div>
                                         @if($checklist->documents->count() > 1)
                                         <div class="mt-3 d-none" id="merge-actions-{{ $checklist->id }}">
-                                            <button type="button" class="btn btn-sm btn-success me-2" 
+                                            <button type="button" class="btn btn-sm btn-success me-2"
                                                     onclick="mergeSelectedDocuments({{ $checklist->id }}, {{ $student->id }})">
                                                 <i class="fas fa-file-pdf me-1"></i> Merge Selected PDFs
                                             </button>
-                                            <button type="button" class="btn btn-sm btn-secondary" 
+                                            <button type="button" class="btn btn-sm btn-secondary"
                                                     onclick="cancelDocumentSelection({{ $checklist->id }})">
                                                 Cancel
                                             </button>
@@ -700,7 +703,7 @@
                 const viewer = document.getElementById('documentViewer');
                 viewer.innerHTML = ''; // Clear previous content
                 const timestamp = new Date().getTime(); // Unique timestamp to prevent caching
-                
+
                 if (data.mime_type === 'application/pdf') {
                     // For PDF, use object tag with embed fallback for better compatibility
                     viewer.innerHTML = `
@@ -779,7 +782,7 @@
                     // Clear viewer content when modal is closed
                     const viewer = document.getElementById('documentViewer');
                     viewer.innerHTML = '';
-                    
+
                     // Reset to loading state
                     document.getElementById('documentLoading').style.display = 'block';
                     document.getElementById('documentError').style.display = 'none';
@@ -794,7 +797,7 @@
             const checkboxes = docList.querySelectorAll('.doc-checkbox[data-checklist="' + checklistId + '"]');
             const selectBtn = document.getElementById('select-btn-' + checklistId);
             const mergeActions = document.getElementById('merge-actions-' + checklistId);
-            
+
             checkboxes.forEach(cb => {
                 cb.classList.remove('d-none');
             });
@@ -807,7 +810,7 @@
             const checkboxes = docList.querySelectorAll('.doc-checkbox[data-checklist="' + checklistId + '"]');
             const selectBtn = document.getElementById('select-btn-' + checklistId);
             const mergeActions = document.getElementById('merge-actions-' + checklistId);
-            
+
             checkboxes.forEach(cb => {
                 cb.classList.add('d-none');
                 cb.checked = false;
@@ -819,7 +822,7 @@
         function mergeSelectedDocuments(checklistId, studentId) {
             const checkboxes = document.querySelectorAll('.doc-checkbox[data-checklist="' + checklistId + '"]:checked');
             const documentIds = Array.from(checkboxes).map(cb => cb.value);
-            
+
             if (documentIds.length < 2) {
                 Swal.fire({
                     icon: 'warning',
@@ -829,7 +832,7 @@
                 });
                 return;
             }
-            
+
             Swal.fire({
                 title: 'Merge Documents',
                 text: `Merge ${documentIds.length} selected documents into a single PDF?`,
@@ -850,7 +853,7 @@
                             Swal.showLoading();
                         }
                     });
-                    
+
                     // Make AJAX request to merge documents
                     fetch(`/students/${studentId}/documents/merge`, {
                         method: 'POST',
@@ -871,14 +874,14 @@
                         a.click();
                         window.URL.revokeObjectURL(url);
                         document.body.removeChild(a);
-                        
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Success',
                             text: 'Documents merged successfully!',
                             confirmButtonColor: '#dc3545'
                         });
-                        
+
                         cancelDocumentSelection(checklistId);
                     })
                     .catch(error => {
