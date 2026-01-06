@@ -109,8 +109,8 @@
                                         Minimum 200x200 pixels.
                                     </small>
                                 </div>
-                                <button type="submit" class="btn btn-primary w-100 mb-2">
-                                    <i class="fas fa-upload me-2"></i>Upload Photo
+                                <button type="submit" class="btn btn-primary w-100 mb-2" id="photoUploadBtn" style="display: none;">
+                                    <i class="fas fa-upload me-2"></i>Confirm Upload
                                 </button>
                             </form>
 
@@ -622,6 +622,9 @@
         const reader = new FileReader();
         reader.onload = function(e) {
             updatePhotoPreview(e.target.result);
+            // Show the upload button
+            const uploadBtn = document.getElementById('photoUploadBtn');
+            if (uploadBtn) uploadBtn.style.display = 'block';
         }
         reader.readAsDataURL(file);
     }
