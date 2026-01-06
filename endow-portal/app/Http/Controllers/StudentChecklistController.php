@@ -253,20 +253,35 @@ class StudentChecklistController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        // Capture the status before deletion for logging
+        $previousStatus = $studentChecklist->status;
+        $wasApproved = in_array($previousStatus, ['approved', 'completed']);
+        $documentPath = $studentChecklist->document_path;
+
         // Delete file from storage
-        if ($studentChecklist->document_path) {
-            Storage::disk('public')->delete($studentChecklist->document_path);
+        if ($documentPath) {
+            Storage::disk('public')->delete($documentPath);
         }
 
         // Delete associated document records
         StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
 
-        // Log activity before deletion
+        // Log activity with detailed information including previous status
+        $logMessage = $wasApproved 
+            ? "Removed APPROVED document for: {$studentChecklist->checklistItem->title}"
+            : "Removed document for: {$studentChecklist->checklistItem->title}";
+        
         $this->activityLogService->log(
             'student',
-            "Deleted document for: {$studentChecklist->checklistItem->title}",
+            $logMessage,
             $student,
-            ['checklist_item_id' => $studentChecklist->checklist_item_id]
+            [
+                'checklist_item_id' => $studentChecklist->checklist_item_id,
+                'previous_status' => $previousStatus,
+                'was_approved' => $wasApproved,
+                'document_path' => $documentPath,
+                'action' => 'document_removed'
+            ]
         );
 
         // Reset status to pending and clear document path
@@ -279,7 +294,11 @@ class StudentChecklistController extends Controller
             'reviewed_at' => null,
         ]);
 
-        return back()->with('success', 'Document deleted successfully.');
+        $successMessage = $wasApproved
+            ? 'Approved document has been removed successfully. You can now upload a new document.'
+            : 'Document deleted successfully.';
+
+        return back()->with('success', $successMessage);
     }
 
     /**

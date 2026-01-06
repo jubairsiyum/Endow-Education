@@ -157,13 +157,12 @@
                                                target="_blank">
                                                 <i class="fas fa-eye"></i>
                                             </a>
-                                            @if($canEdit)
-                                                <button type="button"
-                                                        class="btn btn-sm btn-outline-danger"
-                                                        onclick="deleteDocument({{ $studentChecklist->id }})">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            @endif
+                                            <button type="button"
+                                                    class="btn btn-sm btn-outline-danger"
+                                                    onclick="deleteDocument({{ $studentChecklist->id }}, '{{ $status }}')"
+                                                    title="Remove Document">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
                                         </div>
                                     </div>
 
@@ -772,11 +771,39 @@
 
 @push('scripts')
 <script>
-    function deleteDocument(checklistId) {
-        const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
-        const form = document.getElementById('deleteForm');
-        form.action = `/student/checklist/${checklistId}`;
-        modal.show();
+    function deleteDocument(checklistId, status) {
+        const isApproved = status === 'approved' || status === 'completed';
+        
+        Swal.fire({
+            title: isApproved ? 'Remove Approved Document?' : 'Remove Document?',
+            html: isApproved 
+                ? '<p class="text-warning mb-2"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This document has been approved.</p><p>Removing it will reset the status and you will need to resubmit it for approval.</p><p class="mt-3">Are you sure you want to proceed?</p>'
+                : '<p>Are you sure you want to remove this document?</p><p class="text-muted small">You can upload a new document after removal.</p>',
+            icon: isApproved ? 'warning' : 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#DC143C',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, Remove It',
+            cancelButtonText: 'Cancel'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                const form = document.getElementById('deleteForm');
+                form.action = `/student/checklist/${checklistId}`;
+                
+                // Show loading
+                Swal.fire({
+                    title: 'Removing Document',
+                    text: 'Please wait...',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                
+                form.submit();
+            }
+        });
     }
 
     function handleFileSelectAndUpload(itemId, input, isResubmit = false) {
