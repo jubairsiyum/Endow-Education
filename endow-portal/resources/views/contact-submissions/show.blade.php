@@ -44,7 +44,7 @@
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Student Name</label>
                                 <div>
-                                    <a href="{{ route('students.show', $contactSubmission->student) }}" 
+                                    <a href="{{ route('students.show', $contactSubmission->student) }}"
                                        class="text-decoration-none fw-medium">
                                         <i class="fas fa-user-circle me-1"></i>
                                         {{ $contactSubmission->student->user->name ?? 'N/A' }}
@@ -163,7 +163,7 @@
                         <select name="assigned_to" class="form-select @error('assigned_to') is-invalid @enderror" required>
                             <option value="">Select User</option>
                             @foreach($availableUsers as $user)
-                                <option value="{{ $user->id }}" 
+                                <option value="{{ $user->id }}"
                                         {{ $contactSubmission->assigned_to === $user->id ? 'selected' : '' }}>
                                     {{ $user->name }} ({{ $user->roles->pluck('name')->first() }})
                                 </option>
@@ -176,7 +176,7 @@
                             <i class="fas fa-user-plus me-1"></i>Assign
                         </button>
                     </form>
-                    
+
                     @if($contactSubmission->assignedUser)
                         <div class="mt-3 p-2 bg-light rounded">
                             <small class="text-muted">Currently assigned to:</small>
@@ -195,13 +195,13 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted small mb-2">Permanently delete this contact submission.</p>
-                    <form action="{{ route('contact-submissions.destroy', $contactSubmission) }}" 
-                          method="POST" 
+                    <form action="{{ route('contact-submissions.destroy', $contactSubmission) }}"
+                          method="POST"
                           id="delete-form">
                         @csrf
                         @method('DELETE')
-                        <button type="button" 
-                                class="btn btn-danger btn-sm w-100" 
+                        <button type="button"
+                                class="btn btn-danger btn-sm w-100"
                                 onclick="confirmDelete()">
                             <i class="fas fa-trash me-1"></i>Delete Submission
                         </button>

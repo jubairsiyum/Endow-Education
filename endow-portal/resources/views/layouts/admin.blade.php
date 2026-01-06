@@ -798,22 +798,22 @@
             text-decoration: none;
         }
 
-        .action-btn.view { 
-            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%); 
-            color: #1E40AF; 
-            border-color: #93C5FD; 
+        .action-btn.view {
+            background: linear-gradient(135deg, #DBEAFE 0%, #BFDBFE 100%);
+            color: #1E40AF;
+            border-color: #93C5FD;
         }
-        
-        .action-btn.edit { 
-            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%); 
-            color: #92400E; 
-            border-color: #FCD34D; 
+
+        .action-btn.edit {
+            background: linear-gradient(135deg, #FEF3C7 0%, #FDE68A 100%);
+            color: #92400E;
+            border-color: #FCD34D;
         }
-        
-        .action-btn.delete { 
-            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%); 
-            color: #991B1B; 
-            border-color: #FCA5A5; 
+
+        .action-btn.delete {
+            background: linear-gradient(135deg, #FEE2E2 0%, #FECACA 100%);
+            color: #991B1B;
+            border-color: #FCA5A5;
         }
 
         .action-btn:hover {
@@ -821,21 +821,21 @@
             box-shadow: 0 6px 16px rgba(0,0,0,0.15);
         }
 
-        .action-btn.view:hover { 
-            background: #1E40AF; 
-            color: white !important; 
+        .action-btn.view:hover {
+            background: #1E40AF;
+            color: white !important;
             border-color: #1E40AF;
         }
-        
-        .action-btn.edit:hover { 
-            background: #F59E0B; 
-            color: white !important; 
+
+        .action-btn.edit:hover {
+            background: #F59E0B;
+            color: white !important;
             border-color: #F59E0B;
         }
-        
-        .action-btn.delete:hover { 
-            background: #DC2626; 
-            color: white !important; 
+
+        .action-btn.delete:hover {
+            background: #DC2626;
+            color: white !important;
             border-color: #DC2626;
         }
 
@@ -1075,10 +1075,10 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
+
     <!-- Global SweetAlert Messages -->
     <script>
         // Success messages
@@ -1129,10 +1129,10 @@
         function toggleSidebar() {
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.querySelector('.main-content');
-            
+
             sidebar.classList.toggle('collapsed');
             mainContent.classList.toggle('expanded');
-            
+
             // Store preference
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('sidebarCollapsed', isCollapsed);
@@ -1150,17 +1150,17 @@
             document.addEventListener('click', function(event) {
                 const sidebar = document.getElementById('sidebar');
                 const toggleBtn = document.querySelector('.mobile-menu-toggle');
-                
-                if (window.innerWidth <= 768 && 
-                    sidebar.classList.contains('active') && 
-                    !sidebar.contains(event.target) && 
+
+                if (window.innerWidth <= 768 &&
+                    sidebar.classList.contains('active') &&
+                    !sidebar.contains(event.target) &&
                     !toggleBtn.contains(event.target)) {
                     sidebar.classList.remove('active');
                 }
             });
         });
     </script>
-    
+
     @yield('scripts')
     @stack('scripts')
 </body>

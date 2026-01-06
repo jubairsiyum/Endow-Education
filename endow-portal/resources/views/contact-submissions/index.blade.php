@@ -43,7 +43,7 @@
                 </div>
                 <div class="col-md-4">
                     <label for="search" class="form-label small">Search</label>
-                    <input type="text" name="search" id="search" class="form-control form-control-sm" 
+                    <input type="text" name="search" id="search" class="form-control form-control-sm"
                            placeholder="Search by student name or message..." value="{{ request('search') }}">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -80,7 +80,7 @@
                                 <tr>
                                     <td>
                                         <div>
-                                            <a href="{{ route('students.show', $submission->student) }}" 
+                                            <a href="{{ route('students.show', $submission->student) }}"
                                                class="text-decoration-none fw-medium">
                                                 {{ $submission->student->user->name ?? 'N/A' }}
                                             </a>
@@ -119,7 +119,7 @@
                                         <small class="text-muted">{{ $submission->created_at->format('g:i A') }}</small>
                                     </td>
                                     <td class="text-center">
-                                        <a href="{{ route('contact-submissions.show', $submission) }}" 
+                                        <a href="{{ route('contact-submissions.show', $submission) }}"
                                            class="btn btn-sm btn-outline-primary"
                                            title="View Details">
                                             <i class="fas fa-eye"></i>

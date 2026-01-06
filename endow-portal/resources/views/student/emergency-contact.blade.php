@@ -118,7 +118,7 @@
                             <h6 class="fw-bold mb-2">Office Hours</h6>
                             <p class="mb-1 small"><strong>Saturday - Thursday</strong></p>
                             <p class="text-muted mb-1 small">9:00 AM - 6:00 PM</p>
-                            
+
                         </div>
                     </div>
                 </div>

@@ -150,21 +150,21 @@ class StudentChecklistController extends Controller
         }
 
         $file = $request->file('document');
-        
+
         // Check if the file is an image and convert to PDF
         $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
-        
+
         if ($shouldConvert) {
             // Convert image to PDF
             $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
-            
+
             // Use PDF data for storage
             $fileContent = base64_decode($pdfData['content']);
             $fileName = $pdfData['filename'];
             $mimeType = $pdfData['mime_type'];
             $fileSize = $pdfData['size'];
             $base64Content = $pdfData['content'];
-            
+
             // Store PDF file
             $path = 'student-documents/' . $student->id . '/' . $fileName;
             Storage::disk('public')->put($path, $fileContent);
@@ -223,10 +223,10 @@ class StudentChecklistController extends Controller
         StudentDocument::create($documentData);
 
         // Log activity
-        $logMessage = $shouldConvert 
+        $logMessage = $shouldConvert
             ? "Uploaded image document (converted to PDF) for: {$checklistItem->title}"
             : "Uploaded document for: {$checklistItem->title}";
-        
+
         $this->activityLogService->log(
             'student',
             $logMessage,
@@ -234,7 +234,7 @@ class StudentChecklistController extends Controller
             ['checklist_item_id' => $checklistItem->id, 'document_path' => $path]
         );
 
-        $successMessage = $shouldConvert 
+        $successMessage = $shouldConvert
             ? 'Image uploaded and converted to PDF successfully! Your document is now under review.'
             : 'Document uploaded successfully! Your document is now under review.';
 
@@ -500,12 +500,12 @@ class StudentChecklistController extends Controller
             'reviewed_by' => $user->id,
             'reviewed_at' => now(),
         ];
-        
+
         // Only add notes if the column exists
         if (Schema::hasColumn('student_documents', 'notes')) {
             $updateData['notes'] = $request->feedback;
         }
-        
+
         StudentDocument::where('student_checklist_id', $studentChecklist->id)
             ->where('status', 'submitted')
             ->update($updateData);
@@ -555,21 +555,21 @@ class StudentChecklistController extends Controller
         StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
 
         $file = $request->file('document');
-        
+
         // Check if the file is an image and convert to PDF
         $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
-        
+
         if ($shouldConvert) {
             // Convert image to PDF
             $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
-            
+
             // Use PDF data for storage
             $fileContent = base64_decode($pdfData['content']);
             $fileName = $pdfData['filename'];
             $mimeType = $pdfData['mime_type'];
             $fileSize = $pdfData['size'];
             $base64Content = $pdfData['content'];
-            
+
             // Store PDF file
             $path = 'student-documents/' . $student->id . '/' . $fileName;
             Storage::disk('public')->put($path, $fileContent);
@@ -625,10 +625,10 @@ class StudentChecklistController extends Controller
         StudentDocument::create($documentData);
 
         // Log activity
-        $logMessage = $shouldConvert 
+        $logMessage = $shouldConvert
             ? "Resubmitted image document (converted to PDF) for: {$studentChecklist->checklistItem->title}"
             : "Resubmitted document for: {$studentChecklist->checklistItem->title}";
-        
+
         $this->activityLogService->log(
             'student',
             $logMessage,
@@ -636,7 +636,7 @@ class StudentChecklistController extends Controller
             ['checklist_item_id' => $studentChecklist->checklist_item_id, 'document_path' => $path]
         );
 
-        $successMessage = $shouldConvert 
+        $successMessage = $shouldConvert
             ? 'Image resubmitted and converted to PDF successfully! Your document is now under review.'
             : 'Document resubmitted successfully! Your document is now under review.';
 
