@@ -125,7 +125,7 @@
                                             <small class="text-truncate" style="max-width: 200px;">{{ basename($doc->file_path) }}</small>
                                         </div>
                                         <div class="btn-group btn-group-sm">
-                                            <a href="{{ asset('storage/' . $doc->file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm" title="View">
+                                            <a href="{{ storage_url($doc->file_path) }}" target="_blank" class="btn btn-outline-primary btn-sm" title="View">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             <form action="{{ route('student.document.delete', $doc) }}" method="POST" class="d-inline">

@@ -21,12 +21,33 @@ use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Response;
 
 /*
 |--------------------------------------------------------------------------
 | Web Routes
 |--------------------------------------------------------------------------
 */
+
+// Storage file serving route (for shared hosting without symlink)
+Route::get('/storage/{path}', function ($path) {
+    // Security: Prevent directory traversal
+    $path = str_replace(['../', '..\\'], '', $path);
+    
+    if (!Storage::disk('public')->exists($path)) {
+        abort(404);
+    }
+    
+    $file = Storage::disk('public')->get($path);
+    $mimeType = Storage::disk('public')->mimeType($path);
+    
+    return Response::make($file, 200, [
+        'Content-Type' => $mimeType,
+        'Content-Disposition' => 'inline',
+        'Cache-Control' => 'public, max-age=31536000',
+    ]);
+})->where('path', '.*')->name('storage.serve');
 
 Route::get('/', function () {
     if (Auth::check()) {

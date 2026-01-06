@@ -152,7 +152,7 @@
                                             </div>
                                         </div>
                                         <div class="file-actions">
-                                            <a href="{{ asset('storage/' . $studentChecklist->document_path) }}"
+                                            <a href="{{ storage_url($studentChecklist->document_path) }}"
                                                class="btn btn-sm btn-outline-primary"
                                                target="_blank">
                                                 <i class="fas fa-eye"></i>

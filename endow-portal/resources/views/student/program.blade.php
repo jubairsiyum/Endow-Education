@@ -12,7 +12,7 @@
                 <div class="card-body-custom">
                     <div class="d-flex align-items-start gap-3 mb-4">
                         @if($student->targetUniversity->logo)
-                        <img src="{{ asset('storage/' . $student->targetUniversity->logo) }}" 
+                        <img src="{{ storage_url($student->targetUniversity->logo) }}" 
                              alt="{{ $student->targetUniversity->name }}" 
                              class="rounded"
                              style="width: 80px; height: 80px; object-fit: contain;">

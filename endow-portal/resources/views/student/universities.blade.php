@@ -35,7 +35,7 @@
                 <div class="card-body-custom">
                     <div class="d-flex align-items-start gap-3 mb-3">
                         @if($university->logo)
-                        <img src="{{ asset('storage/' . $university->logo) }}" 
+                        <img src="{{ storage_url($university->logo) }}" 
                              alt="{{ $university->name }}" 
                              class="rounded"
                              style="width: 60px; height: 60px; object-fit: contain;">
@@ -106,7 +106,7 @@
                     <div class="modal-header border-0 pb-0">
                         <div class="d-flex align-items-center gap-3">
                             @if($university->logo)
-                            <img src="{{ asset('storage/' . $university->logo) }}" 
+                            <img src="{{ storage_url($university->logo) }}" 
                                  alt="{{ $university->name }}" 
                                  class="rounded"
                                  style="width: 60px; height: 60px; object-fit: contain;">

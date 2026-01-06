@@ -56,7 +56,7 @@
                         <td>
                             <div class="d-flex align-items-center gap-2">
                                 @if($university->logo)
-                                    <img src="{{ asset('storage/' . $university->logo) }}" alt="{{ $university->name }}"
+                                    <img src="{{ storage_url($university->logo) }}" alt="{{ $university->name }}"
                                          class="rounded" style="width: 32px; height: 32px; object-fit: cover;">
                                 @else
                                     <div class="bg-danger bg-opacity-10 rounded d-flex align-items-center justify-content-center"

@@ -11,7 +11,7 @@
                 <div class="card-body-custom text-center">
                     <div class="mb-4">
                         @if($user->photo_path)
-                            <img src="{{ asset('storage/' . $user->photo_path) }}"
+                            <img src="{{ storage_url($user->photo_path) }}"
                                  alt="{{ $user->name }}"
                                  class="rounded-circle"
                                  style="width: 120px; height: 120px; object-fit: cover; border: 4px solid var(--primary);">

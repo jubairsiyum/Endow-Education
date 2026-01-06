@@ -1,0 +1,13 @@
+<IfModule mod_rewrite.c>
+    # ========================================
+    # HOSTINGER REDIRECT TO PUBLIC FOLDER
+    # ========================================
+    # This redirects all traffic to the /public subdirectory
+    # Replace yourdomain.com with your actual domain name
+    
+    RewriteEngine on
+    RewriteCond %{HTTP_HOST} ^yourdomain\.com$ [NC,OR]
+    RewriteCond %{HTTP_HOST} ^www\.yourdomain\.com$
+    RewriteCond %{REQUEST_URI} !public/
+    RewriteRule (.*) /public/$1 [L]
+</IfModule>
