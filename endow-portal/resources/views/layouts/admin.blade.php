@@ -282,6 +282,13 @@
             color: white;
             font-weight: 700;
             font-size: 14px;
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .user-info {
@@ -992,7 +999,11 @@
                     <div class="dropdown">
                         <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar">
-                                {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                @if(Auth::user()->photo_path)
+                                    <img src="{{ asset('storage/' . Auth::user()->photo_path) }}" alt="{{ Auth::user()->name }}">
+                                @else
+                                    {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
+                                @endif
                             </div>
                             <div class="user-info d-none d-md-flex">
                                 <span class="user-name">{{ Auth::user()->name }}</span>
