@@ -1049,13 +1049,6 @@
 
             <!-- Content Area -->
             <div class="content-area">
-                @if (session('success'))
-                    <div class="alert alert-success alert-dismissible fade show" role="alert">
-                        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                    </div>
-                @endif
-
                 @if (session('error'))
                     <div class="alert alert-danger alert-dismissible fade show" role="alert">
                         <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
@@ -1080,7 +1073,7 @@
             Swal.fire({
                 icon: 'success',
                 title: 'Success!',
-                text: '{{ session('success') }}',
+                text: {!! json_encode(session('success')) !!},
                 confirmButtonColor: '#10B981',
                 timer: 3000,
                 timerProgressBar: true
@@ -1092,7 +1085,7 @@
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: '{{ session('error') }}',
+                text: {!! json_encode(session('error')) !!},
                 confirmButtonColor: '#DC143C'
             });
         @endif
@@ -1102,7 +1095,7 @@
             Swal.fire({
                 icon: 'info',
                 title: 'Information',
-                text: '{{ session('info') }}',
+                text: {!! json_encode(session('info')) !!},
                 confirmButtonColor: '#3B82F6'
             });
         @endif

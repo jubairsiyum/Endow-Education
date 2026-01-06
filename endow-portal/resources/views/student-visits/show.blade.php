@@ -184,7 +184,7 @@
     </div>
 @endsection
 
-@section('styles')
+@push('styles')
 <style>
     .notes-content {
         font-size: 15px;
@@ -241,4 +241,3 @@
     }
 </script>
 @endpush
-@endsection
