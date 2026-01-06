@@ -1,112 +1,143 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container py-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg border-0">
-                <div class="card-header text-white py-4" style="background-color: #1a1a1a;">
-                    <h3 class="mb-0 fw-bold"><i class="fas fa-user-shield text-danger"></i> Admin / Employee Login</h3>
-                    <small class="opacity-90">Access your Endow Connect admin account</small>
+<div class="min-vh-100 d-flex align-items-center" style="background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="text-center mb-4">
+                    <div class="mb-4">
+                        <div class="d-inline-block p-3 rounded-circle" style="background: linear-gradient(135deg, #DC143C 0%, #B0102F 100%); box-shadow: 0 8px 32px rgba(220, 20, 60, 0.3);">
+                            <i class="fas fa-shield-alt fa-3x text-white"></i>
+                        </div>
+                    </div>
+                    <h2 class="text-white fw-bold mb-2">Admin Portal</h2>
+                    <p class="text-white-50 mb-0">Endow Connect Management System</p>
                 </div>
 
-                <div class="card-body p-4">
-                    <!-- Demo Credentials -->
-                    <div class="alert alert-light border-danger mb-4">
-                        <h6 class="alert-heading text-danger"><i class="fas fa-info-circle"></i> Demo Credentials</h6>
-                        <p class="mb-3 small"><strong>Click on any credential to auto-fill the login form:</strong></p>
-                        <div class="row g-2">
-                            <div class="col-md-6">
-                                <button type="button" class="btn btn-sm btn-outline-danger w-100 demo-login"
-                                    data-email="superadmin@endowglobal.com"
-                                    data-password="password">
-                                    <i class="fas fa-user-shield"></i> Super Admin
-                                </button>
-                                <small class="text-muted d-block mt-1">superadmin@endowglobal.com</small>
-                            </div>
-                            <div class="col-md-6">
-                                <button type="button" class="btn btn-sm btn-outline-dark w-100 demo-login"
-                                    data-email="admin@endowglobal.com"
-                                    data-password="password">
-                                    <i class="fas fa-user-tie"></i> Admin
-                                </button>
-                                <small class="text-muted d-block mt-1">admin@endowglobal.com</small>
-                            </div>
-                            <div class="col-md-6">
-                                <button type="button" class="btn btn-sm btn-outline-secondary w-100 demo-login"
-                                    data-email="employee@endowglobal.com"
-                                    data-password="password">
-                                    <i class="fas fa-user"></i> Employee
-                                </button>
-                                <small class="text-muted d-block mt-1">employee@endowglobal.com</small>
-                            </div>
+                <div class="card border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <h4 class="fw-semibold mb-2" style="color: #1a1a1a;">Secure Access</h4>
+                            <p class="text-muted small mb-0">Please enter your credentials to continue</p>
                         </div>
-                        <small class="text-muted mt-2 d-block"><i class="fas fa-key"></i> Password for all accounts: <strong>password</strong></small>
-                    </div>
 
-                    <hr class="my-4">
-
-                    <form method="POST" action="{{ route('admin.login.submit') }}" id="loginForm">
+                        <form method="POST" action="{{ route('admin.login.submit') }}" id="loginForm">
                         @csrf
 
-                        <div class="mb-3">
-                            <label for="email" class="form-label fw-semibold"><i class="fas fa-envelope text-danger"></i> Email Address</label>
-                            <input id="email" type="email" class="form-control form-control-lg @error('email') is-invalid @enderror"
-                                name="email" value="{{ old('email') }}" required autocomplete="email" autofocus
-                                placeholder="Enter your email">
+                        @if ($errors->any())
+                            <div class="alert alert-danger border-0 mb-4" style="background-color: #fff5f5; color: #DC143C; border-radius: 12px;">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-exclamation-circle mt-1 me-2"></i>
+                                    <div class="flex-grow-1">
+                                        <strong class="d-block mb-1">Authentication Failed</strong>
+                                        <small>{{ $errors->first() }}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <div class="mb-4">
+                            <label for="email" class="form-label fw-semibold text-dark">
+                                <i class="fas fa-envelope" style="color: #DC143C;"></i> Email Address
+                            </label>
+                            <input id="email"
+                                   type="email"
+                                   class="form-control form-control-lg @error('email') is-invalid @enderror"
+                                   name="email"
+                                   value="{{ old('email') }}"
+                                   required
+                                   autocomplete="email"
+                                   autofocus
+                                   placeholder="admin@example.com"
+                                   style="border-radius: 10px; border: 2px solid #e9ecef; padding: 14px 18px;">
                             @error('email')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
+                                <div class="invalid-feedback">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div class="mb-3">
-                            <label for="password" class="form-label fw-semibold"><i class="fas fa-lock text-danger"></i> Password</label>
-                            <input id="password" type="password" class="form-control form-control-lg @error('password') is-invalid @enderror"
-                                name="password" required autocomplete="current-password"
-                                placeholder="Enter your password">
+                        <div class="mb-4">
+                            <label for="password" class="form-label fw-semibold text-dark">
+                                <i class="fas fa-lock" style="color: #DC143C;"></i> Password
+                            </label>
+                            <div class="position-relative">
+                                <input id="password"
+                                       type="password"
+                                       class="form-control form-control-lg @error('password') is-invalid @enderror"
+                                       name="password"
+                                       required
+                                       autocomplete="current-password"
+                                       placeholder="Enter your secure password"
+                                       style="border-radius: 10px; border: 2px solid #e9ecef; padding: 14px 18px; padding-right: 50px;">
+                                <button type="button"
+                                        class="btn btn-link position-absolute end-0 top-50 translate-middle-y text-muted"
+                                        id="togglePassword"
+                                        style="text-decoration: none; z-index: 10;">
+                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                </button>
+                            </div>
                             @error('password')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <div class="invalid-feedback d-block">
+                                    <i class="fas fa-exclamation-triangle"></i> {{ $message }}
+                                </div>
+                            @enderror
                         </div>
 
-                        <div class="mb-3">
+                        <div class="mb-4">
                             <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
-                                <label class="form-check-label" for="remember">
-                                    {{ __('Remember Me') }}
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       name="remember"
+                                       id="remember"
+                                       {{ old('remember') ? 'checked' : '' }}
+                                       style="border: 2px solid #DC143C;">
+                                <label class="form-check-label text-dark" for="remember">
+                                    Keep me signed in
                                 </label>
                             </div>
                         </div>
 
-                        <div class="d-grid gap-2 mb-3">
-                            <button type="submit" class="btn btn-danger btn-lg">
-                                <i class="fas fa-sign-in-alt"></i> {{ __('Login') }}
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="submit" class="btn btn-lg fw-semibold"
+                                    style="background: linear-gradient(135deg, #DC143C 0%, #B0102F 100%);
+                                           color: white;
+                                           border: none;
+                                           border-radius: 10px;
+                                           padding: 14px;
+                                           box-shadow: 0 4px 16px rgba(220, 20, 60, 0.3);
+                                           transition: all 0.3s ease;">
+                                <i class="fas fa-sign-in-alt me-2"></i> Sign In Securely
                             </button>
                         </div>
 
                         @if (Route::has('password.request'))
-                            <div class="text-center">
-                                <a class="text-muted text-decoration-none" href="{{ route('password.request') }}">
-                                    <i class="fas fa-question-circle"></i> {{ __('Forgot Your Password?') }}
+                            <div class="text-center mb-4">
+                                <a class="text-decoration-none"
+                                   href="{{ route('password.request') }}"
+                                   style="color: #DC143C; font-weight: 500; transition: all 0.2s ease;">
+                                    <i class="fas fa-question-circle"></i> Forgot Your Password?
                                 </a>
                             </div>
                         @endif
 
-                        <!-- Student Login Link -->
-                        <div class="mt-4">
-                            <div class="card bg-light border-danger">
-                                <div class="card-body text-center py-3">
-                                    <i class="fas fa-user-graduate text-danger fa-2x mb-2"></i>
-                                    <p class="mb-2 fw-semibold">Are you a Student?</p>
-                                    <a href="{{ route('student.login') }}" class="btn btn-outline-danger btn-sm me-2">
+                        <div class="pt-3 border-top">
+                            <div class="text-center">
+                                <div class="mb-3">
+                                    <i class="fas fa-user-graduate" style="color: #DC143C; font-size: 2rem;"></i>
+                                </div>
+                                <p class="text-muted mb-3 small">Looking for student portal?</p>
+                                <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                    <a href="{{ route('student.login') }}"
+                                       class="btn btn-outline-dark btn-sm"
+                                       style="border-radius: 8px; border-width: 2px;">
                                         <i class="fas fa-sign-in-alt"></i> Student Login
                                     </a>
-                                    <a href="{{ route('student.register.form') }}" class="btn btn-outline-secondary btn-sm">
-                                        <i class="fas fa-user-plus"></i> Register
+                                    <a href="{{ route('student.register.form') }}"
+                                       class="btn btn-outline-secondary btn-sm"
+                                       style="border-radius: 8px; border-width: 2px;">
+                                        <i class="fas fa-user-plus"></i> New Student
                                     </a>
                                 </div>
                             </div>
@@ -114,32 +145,114 @@
                     </form>
                 </div>
             </div>
+
+            <!-- Security Notice -->
+            <div class="text-center mt-4">
+                <p class="text-white-50 small mb-2">
+                    <i class="fas fa-shield-alt"></i> Secured with industry-standard encryption
+                </p>
+                <p class="text-white-50 small mb-0">
+                    &copy; {{ date('Y') }} Endow Connect. All rights reserved.
+                </p>
+            </div>
         </div>
     </div>
 </div>
+</div>
+
+<style>
+    /* Login Form Enhancements */
+    #loginForm .form-control:focus {
+        border-color: #DC143C;
+        box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.15);
+    }
+
+    #loginForm .form-check-input:checked {
+        background-color: #DC143C;
+        border-color: #DC143C;
+    }
+
+    #loginForm .form-check-input:focus {
+        box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.15);
+    }
+
+    #loginForm button[type="submit"]:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 20, 60, 0.4);
+    }
+
+    #loginForm button[type="submit"]:active {
+        transform: translateY(0);
+    }
+
+    #loginForm a:hover {
+        color: #B0102F !important;
+    }
+
+    /* Card styling */
+    .card {
+        backdrop-filter: blur(10px);
+    }
+
+    /* Password toggle button */
+    #togglePassword {
+        background: none;
+        border: none;
+        padding: 0 15px;
+    }
+
+    #togglePassword:hover {
+        color: #DC143C !important;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+        .card-body {
+            padding: 2rem 1.5rem !important;
+        }
+    }
+</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-fill login form when demo credentials are clicked
-    document.querySelectorAll('.demo-login').forEach(button => {
-        button.addEventListener('click', function() {
-            const email = this.getAttribute('data-email');
-            const password = this.getAttribute('data-password');
+    // Password visibility toggle
+    const togglePassword = document.getElementById('togglePassword');
+    const passwordInput = document.getElementById('password');
+    const toggleIcon = document.getElementById('toggleIcon');
 
-            document.getElementById('email').value = email;
-            document.getElementById('password').value = password;
+    if (togglePassword && passwordInput && toggleIcon) {
+        togglePassword.addEventListener('click', function() {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
 
-            // Remove any existing validation classes
-            document.getElementById('email').classList.remove('is-invalid');
-            document.getElementById('password').classList.remove('is-invalid');
-
-            // Highlight the button briefly
-            this.classList.add('active');
-            setTimeout(() => {
-                this.classList.remove('active');
-            }, 200);
+            // Toggle icon
+            if (type === 'password') {
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            } else {
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            }
         });
-    });
+    }
+
+    // Form validation feedback
+    const form = document.getElementById('loginForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i> Authenticating...';
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
+    // Auto-focus on first input with error
+    const firstError = document.querySelector('.is-invalid');
+    if (firstError) {
+        firstError.focus();
+    }
 });
 </script>
 @endsection
