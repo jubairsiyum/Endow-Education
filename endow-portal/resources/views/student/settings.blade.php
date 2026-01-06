@@ -412,6 +412,7 @@
 @endpush
 
 @push('scripts')
+<script>
     // Delete account confirmation
     document.getElementById('deleteConfirmation')?.addEventListener('input', function(e) {
         const confirmBtn = document.getElementById('confirmDeleteBtn');
@@ -430,4 +431,3 @@
     });
 </script>
 @endpush
-@endsection
