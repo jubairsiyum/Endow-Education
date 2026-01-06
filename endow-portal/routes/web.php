@@ -82,14 +82,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/students/{student}/approve', [StudentController::class, 'showApproveForm'])->name('students.approve.form');
     Route::post('/students/{student}/approve', [StudentController::class, 'approve'])->name('students.approve');
     Route::post('/students/{student}/reject', [StudentController::class, 'reject'])->name('students.reject');
-    
+
     // Student Profile Management (Admin/Staff)
     Route::get('/students/{student}/profile', [StudentProfileController::class, 'show'])->name('students.profile.show');
     Route::get('/students/{student}/profile/edit', [StudentProfileController::class, 'edit'])->name('students.profile.edit');
     Route::put('/students/{student}/profile', [StudentProfileController::class, 'update'])->name('students.profile.update');
     Route::post('/students/{student}/profile/photo', [StudentProfileController::class, 'uploadPhoto'])->name('students.profile.photo.upload');
     Route::delete('/students/{student}/profile/photo', [StudentProfileController::class, 'deletePhoto'])->name('students.profile.photo.delete');
-    
+
     // Student Payment Routes
     Route::get('/students/{student}/payments', [StudentPaymentController::class, 'index'])->name('students.payments.index');
     Route::get('/students/{student}/payments/create', [StudentPaymentController::class, 'create'])->name('students.payments.create');
@@ -194,10 +194,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/documents/upload', [DocumentController::class, 'upload'])->name('documents.upload');
     Route::get('/documents/{document}/download', [DocumentController::class, 'download'])->name('documents.download');
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
-    Route::get('/students/{student}/documents/{document}/download', [DocumentController::class, 'download'])->name('students.documents.download');
-    Route::get('/students/{student}/documents/{document}/view', [DocumentController::class, 'view'])->name('students.documents.view');
+    Route::get('/students/{student}/documents/{document}/download', [DocumentController::class, 'download'])->name('students.documents.download')->scopeBindings();
+    Route::get('/students/{student}/documents/{document}/view', [DocumentController::class, 'view'])->name('students.documents.view')->scopeBindings();
     Route::get('/api/documents/{document}/data', [DocumentController::class, 'getData'])->name('documents.data');
-    Route::delete('/students/{student}/documents/{document}', [DocumentController::class, 'destroy'])->name('students.documents.destroy');
+    Route::delete('/students/{student}/documents/{document}', [DocumentController::class, 'destroy'])->name('students.documents.destroy')->scopeBindings();
     Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
     Route::post('/documents/{document}/reject', [DocumentController::class, 'reject'])->name('documents.reject');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('documents.destroy');

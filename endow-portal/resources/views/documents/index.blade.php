@@ -80,13 +80,13 @@
                                     <td class="text-center">
                                         <div class="btn-group" role="group">
                                             @can('view', $document->student)
-                                                <a href="{{ route('documents.view', $document) }}"
+                                                <a href="{{ route('students.documents.view', ['student' => $document->student, 'document' => $document]) }}"
                                                    class="btn btn-sm btn-info"
                                                    title="View"
                                                    target="_blank">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                                <a href="{{ route('documents.download', $document) }}"
+                                                <a href="{{ route('students.documents.download', ['student' => $document->student, 'document' => $document]) }}"
                                                    class="btn btn-sm btn-primary"
                                                    title="Download">
                                                     <i class="fas fa-download"></i>
@@ -116,7 +116,7 @@
                                             @endcan
 
                                             @can('delete', $document->student)
-                                                <form action="{{ route('documents.destroy', $document) }}"
+                                                <form action="{{ route('students.documents.destroy', ['student' => $document->student, 'document' => $document]) }}"
                                                       method="POST"
                                                       class="d-inline"
                                                       id="delete-document-form-{{ $document->id }}">
@@ -209,6 +209,27 @@
             }
         });
     }
+
+    // Display success/error messages with SweetAlert
+    @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success!',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#DC143C',
+            timer: 3000,
+            timerProgressBar: true
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#DC143C'
+        });
+    @endif
 </script>
 @endpush
 @endsection

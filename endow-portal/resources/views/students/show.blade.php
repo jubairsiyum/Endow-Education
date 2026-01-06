@@ -112,6 +112,20 @@
 @endpush
 
 @section('content')
+    <!-- Success/Error Messages -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-start mb-4">
         <div>
@@ -1080,6 +1094,14 @@
                 document.getElementById('documentLoading').style.display = 'none';
                 document.getElementById('documentError').style.display = 'block';
                 document.getElementById('errorMessage').textContent = error.message || 'Failed to load document. Please try again.';
+
+                // Also show SweetAlert for better visibility
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Document Load Failed',
+                    text: error.message || 'Failed to load document. Please try again.',
+                    confirmButtonColor: '#DC143C'
+                });
             });
         }
 
@@ -1205,6 +1227,27 @@
                 }
             });
         }
+
+        // Display success messages with SweetAlert
+        @if(session('success'))
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: '{{ session('success') }}',
+                confirmButtonColor: '#DC143C',
+                timer: 3000,
+                timerProgressBar: true
+            });
+        @endif
+
+        @if(session('error'))
+            Swal.fire({
+                icon: 'error',
+                title: 'Error!',
+                text: '{{ session('error') }}',
+                confirmButtonColor: '#DC143C'
+            });
+        @endif
     </script>
     @endpush
 @endsection

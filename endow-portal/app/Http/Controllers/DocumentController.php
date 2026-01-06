@@ -78,14 +78,14 @@ class DocumentController extends Controller
         try {
             if ($request->hasFile('document')) {
                 $file = $request->file('document');
-                
+
                 // Check if the file is an image and convert to PDF
                 $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
-                
+
                 if ($shouldConvert) {
                     // Convert image to PDF
                     $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
-                    
+
                     $fileName = $pdfData['filename'];
                     $mimeType = $pdfData['mime_type'];
                     $fileSize = $pdfData['size'];
@@ -141,7 +141,7 @@ class DocumentController extends Controller
 
                 DB::commit();
 
-                $successMessage = $shouldConvert 
+                $successMessage = $shouldConvert
                     ? 'Image uploaded and converted to PDF successfully! Document is pending review.'
                     : 'Document uploaded successfully and is pending review.';
 
@@ -164,7 +164,7 @@ class DocumentController extends Controller
         if ($student) {
             $this->authorize('view', $student);
             if ($document->student_id !== $student->id) {
-                abort(404);
+                abort(404, 'Document not found for this student.');
             }
         } else {
             $this->authorize('view', $document->student);
@@ -175,7 +175,7 @@ class DocumentController extends Controller
         } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
             $fileContent = Storage::disk('public')->get($document->file_path);
         } else {
-            abort(404, 'Document file not found.');
+            return back()->with('error', 'Document file not found. The file may have been deleted or moved.');
         }
 
         return response($fileContent)
@@ -311,10 +311,10 @@ class DocumentController extends Controller
             if (class_exists('\setasign\Fpdi\Tcpdf\Fpdi')) {
                 return $this->mergePDFsWithFPDI($documents, $student);
             }
-            
+
             // Fallback: Create HTML document with images/PDFs and convert to PDF
             return $this->mergePDFsWithDompdf($documents, $student);
-                
+
         } catch (\Exception $e) {
             Log::error('Error merging documents: ' . $e->getMessage());
             return response()->json(['error' => 'Failed to merge documents: ' . $e->getMessage()], 500);
@@ -338,7 +338,7 @@ class DocumentController extends Controller
             </style>
         </head>
         <body>';
-        
+
         foreach ($documents as $index => $document) {
             // Get document content
             $content = null;
@@ -354,10 +354,10 @@ class DocumentController extends Controller
 
             $mimeType = $document->mime_type ?? 'application/pdf';
             $filename = $document->original_name ?? $document->file_name ?? 'Document ' . ($index + 1);
-            
+
             $html .= '<div class="page">';
             $html .= '<div class="doc-header">Document ' . ($index + 1) . ': ' . htmlspecialchars($filename) . '</div>';
-            
+
             if (strpos($mimeType, 'image/') === 0) {
                 // Add image
                 $base64 = base64_encode($content);
@@ -369,20 +369,20 @@ class DocumentController extends Controller
                 $html .= '<p style="color: #666;">Note: This is a merged compilation. Original PDF pages are included.</p>';
                 $html .= '</div>';
             }
-            
+
             $html .= '</div>';
         }
-        
+
         $html .= '</body></html>';
-        
+
         // Create PDF using Dompdf
         $dompdf = new \Dompdf\Dompdf();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        
+
         $filename = 'merged_documents_' . $student->name . '_' . time() . '.pdf';
-        
+
         return response($dompdf->output(), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
@@ -402,8 +402,9 @@ class DocumentController extends Controller
             $this->authorize('delete', $document->student);
         }
 
+        $filename = $document->filename;
         $document->delete();
 
-        return back()->with('success', 'Document deleted successfully.');
+        return back()->with('success', "Document '{$filename}' has been deleted successfully.");
     }
 }

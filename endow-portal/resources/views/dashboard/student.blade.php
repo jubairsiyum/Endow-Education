@@ -199,7 +199,7 @@
                         <td>
                             @if($document && $checklist->status !== 'approved')
                                 <div class="d-flex gap-2">
-                                    <a href="{{ route('documents.download', $document) }}"
+                                    <a href="{{ route('students.documents.download', ['student' => auth()->user()->student, 'document' => $document]) }}"
                                        class="btn btn-sm btn-outline-primary"
                                        title="Download">
                                         <i class="fas fa-download"></i>
@@ -211,7 +211,7 @@
                                         <i class="fas fa-trash"></i>
                                     </button>
                                     <form id="delete-form-{{ $document->id }}"
-                                          action="{{ route('documents.destroy', $document) }}"
+                                          action="{{ route('students.documents.destroy', ['student' => auth()->user()->student, 'document' => $document]) }}"
                                           method="POST"
                                           class="d-none">
                                         @csrf
@@ -325,5 +325,26 @@ function confirmDelete(documentId) {
         }
     });
 }
+
+// Display success/error messages with SweetAlert
+@if(session('success'))
+    Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: '{{ session('success') }}',
+        confirmButtonColor: '#DC143C',
+        timer: 3000,
+        timerProgressBar: true
+    });
+@endif
+
+@if(session('error'))
+    Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: '{{ session('error') }}',
+        confirmButtonColor: '#DC143C'
+    });
+@endif
 </script>
 @endpush
