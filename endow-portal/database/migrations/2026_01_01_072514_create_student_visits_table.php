@@ -16,10 +16,10 @@ return new class extends Migration
             $table->string('student_name');
             $table->string('phone');
             $table->string('email')->nullable();
-            $table->foreignId('employee_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('employee_id')->nullable()->constrained('users')->onDelete('set null');
             $table->longText('notes')->nullable();
             $table->timestamps();
-            
+
             // Indexes for faster queries
             $table->index('employee_id');
             $table->index('created_at');

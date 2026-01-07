@@ -161,7 +161,7 @@
                         </li>
                         <li class="mb-2">
                             <strong>Assigned To:</strong><br>
-                            <span class="text-muted">{{ $studentVisit->employee->name }}</span>
+                            <span class="text-muted">{{ $studentVisit->employee ? $studentVisit->employee->name : 'Not Assigned' }}</span>
                         </li>
                     </ul>
                 </div>
