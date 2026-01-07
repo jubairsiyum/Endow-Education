@@ -10,6 +10,7 @@ use App\Notifications\StudentApprovedNotification;
 use App\Notifications\StudentRejectedNotification;
 use App\Notifications\NewStudentRegisteredNotification;
 use App\Notifications\StudentAssignedNotification;
+use App\Notifications\StudentAccountCreatedNotification;
 use App\Services\ActivityLogService;
 use App\Services\ChecklistService;
 use Illuminate\Http\Request;
@@ -237,6 +238,10 @@ class StudentController extends Controller
         DB::beginTransaction();
 
         try {
+            // Generate a temporary password (8-12 characters, mix of letters and numbers)
+            $temporaryPassword = $this->generateTemporaryPassword();
+
+            // Create student record
             $student = Student::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -250,13 +255,69 @@ class StudentController extends Controller
                 'assigned_to' => Auth::id(),
                 'created_by' => Auth::id(),
                 'notes' => $request->notes,
+                'password' => Hash::make($temporaryPassword), // Store hashed password in student table
             ]);
+
+            // Create user account immediately so student can login
+            $existingUser = User::where('email', $student->email)->first();
+
+            if ($existingUser) {
+                // Check if existing user is a student
+                if ($existingUser->hasRole('Student')) {
+                    $student->user_id = $existingUser->id;
+                    // Update existing user's password
+                    $existingUser->update(['password' => Hash::make($temporaryPassword)]);
+                    $student->save();
+                } else {
+                    DB::rollBack();
+                    return back()
+                        ->withInput()
+                        ->with('error', 'A user account with this email already exists with a different role. Please use a different email address.');
+                }
+            } else {
+                // Create new user account
+                $user = User::create([
+                    'name' => $student->name,
+                    'email' => $student->email,
+                    'phone' => $student->phone,
+                    'password' => Hash::make($temporaryPassword),
+                    'status' => 'active',
+                    'email_verified_at' => now(),
+                ]);
+
+                // Assign Student role
+                $user->assignRole('Student');
+
+                // Link user to student record
+                $student->user_id = $user->id;
+                $student->save();
+            }
 
             // Initialize checklists for the student
             $this->checklistService->initializeChecklistsForStudent($student);
 
             // Log activity
             $this->activityLog->logStudentCreated($student);
+
+            // Send temporary password email to the student
+            try {
+                if ($student->user) {
+                    Log::info('Sending account credentials email', [
+                        'student_id' => $student->id,
+                        'student_email' => $student->email,
+                        'temporary_password' => $temporaryPassword,
+                        'password_length' => strlen($temporaryPassword)
+                    ]);
+                    $student->user->notify(new StudentAccountCreatedNotification($student, $temporaryPassword));
+                    Log::info('Account credentials email sent successfully to: ' . $student->email);
+                }
+            } catch (\Exception $e) {
+                Log::error('Failed to send account credentials email to student', [
+                    'student_email' => $student->email,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
 
             // Send notification to all admins about new student registration
             try {
@@ -272,7 +333,7 @@ class StudentController extends Controller
 
             return redirect()
                 ->route('students.show', $student)
-                ->with('success', 'Student created successfully!');
+                ->with('success', 'Student created successfully! Login credentials have been sent to ' . $student->email);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -587,5 +648,36 @@ class StudentController extends Controller
         return redirect()
             ->route('students.index')
             ->with('success', 'Student deleted successfully!');
+    }
+
+    /**
+     * Generate a secure temporary password for new students.
+     *
+     * @return string
+     */
+    private function generateTemporaryPassword(): string
+    {
+        // Generate password with: uppercase, lowercase, numbers, and special character
+        // Length: 10 characters for good security
+        $uppercase = 'ABCDEFGHJKLMNPQRSTUVWXYZ'; // Exclude I, O to avoid confusion
+        $lowercase = 'abcdefghijkmnpqrstuvwxyz'; // Exclude l, o to avoid confusion
+        $numbers = '23456789'; // Exclude 0, 1 to avoid confusion
+        $special = '@#$%';
+
+        // Ensure at least one of each type
+        $password = '';
+        $password .= $uppercase[random_int(0, strlen($uppercase) - 1)];
+        $password .= $lowercase[random_int(0, strlen($lowercase) - 1)];
+        $password .= $numbers[random_int(0, strlen($numbers) - 1)];
+        $password .= $special[random_int(0, strlen($special) - 1)];
+
+        // Fill remaining characters randomly
+        $allChars = $uppercase . $lowercase . $numbers . $special;
+        for ($i = 4; $i < 10; $i++) {
+            $password .= $allChars[random_int(0, strlen($allChars) - 1)];
+        }
+
+        // Shuffle to randomize position of required characters
+        return str_shuffle($password);
     }
 }
