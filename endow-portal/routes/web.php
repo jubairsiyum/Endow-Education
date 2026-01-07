@@ -17,6 +17,7 @@ use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\Auth\AdminLoginController;
 use App\Http\Controllers\Auth\StudentLoginController;
 use App\Http\Controllers\Auth\StudentRegisterController;
+use App\Http\Controllers\Auth\StudentPasswordResetController;
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
@@ -34,14 +35,14 @@ use Illuminate\Support\Facades\Response;
 Route::get('/storage/{path}', function ($path) {
     // Security: Prevent directory traversal
     $path = str_replace(['../', '..\\'], '', $path);
-    
+
     if (!Storage::disk('public')->exists($path)) {
         abort(404);
     }
-    
+
     $file = Storage::disk('public')->get($path);
     $mimeType = Storage::disk('public')->mimeType($path);
-    
+
     return Response::make($file, 200, [
         'Content-Type' => $mimeType,
         'Content-Disposition' => 'inline',
@@ -71,6 +72,12 @@ Route::get('/login', function () {
 Route::get('/student/login', [StudentLoginController::class, 'showLoginForm'])->name('student.login');
 Route::post('/student/login', [StudentLoginController::class, 'login'])->name('student.login.submit');
 Route::post('/student/logout', [StudentLoginController::class, 'logout'])->name('student.logout');
+
+// Student Password Reset Routes
+Route::get('/student/password/reset', [StudentPasswordResetController::class, 'showLinkRequestForm'])->name('student.password.request');
+Route::post('/student/password/email', [StudentPasswordResetController::class, 'sendResetLinkEmail'])->name('student.password.email');
+Route::get('/student/password/reset/{token}', [StudentPasswordResetController::class, 'showResetForm'])->name('student.password.reset');
+Route::post('/student/password/reset', [StudentPasswordResetController::class, 'reset'])->name('student.password.update');
 
 // Student Registration Routes
 Route::get('/student/register', [StudentRegisterController::class, 'showRegistrationForm'])->name('student.register.form');

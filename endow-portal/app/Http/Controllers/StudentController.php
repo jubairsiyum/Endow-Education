@@ -294,6 +294,8 @@ class StudentController extends Controller
             'user',
             'assignedUser',
             'creator',
+            'targetUniversity',
+            'targetProgram',
             'followUps' => function($query) {
                 $query->orderBy('created_at', 'desc')->with('creator');
             },

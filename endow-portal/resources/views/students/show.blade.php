@@ -312,7 +312,11 @@
                         <table class="table">
                             <tr>
                                 <th width="40%">Course/Program</th>
-                                <td>{{ $student->course }}</td>
+                                <td>{{ $student->course ?: ($student->targetProgram->name ?? 'Not specified') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Target University</th>
+                                <td>{{ $student->targetUniversity->name ?? 'Not selected' }}</td>
                             </tr>
                             <tr>
                                 <th>Assigned Counselor</th>
