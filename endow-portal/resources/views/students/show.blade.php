@@ -579,7 +579,7 @@
                 </div>
 
                 <div class="timeline">
-                    @forelse($student->followUps()->orderBy('created_at', 'desc')->get() as $followUp)
+                    @forelse($student->followUps as $followUp)
                     <div class="timeline-item mb-4">
                         <div class="d-flex gap-3">
                             <div class="flex-shrink-0">
@@ -726,7 +726,7 @@
                     <div class="modal-body">
                         <div class="alert alert-info border-0">
                             <i class="fas fa-info-circle me-2"></i>
-                            <strong>Track student interactions:</strong> Record calls, meetings, emails, and important updates about {{ $student->user->name }}'s application progress.
+                            <strong>Track student interactions:</strong> Record calls, meetings, emails, and important updates about {{ $student->user->name ?? $student->name }}'s application progress.
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-semibold">Follow-up Note <span class="text-danger">*</span></label>

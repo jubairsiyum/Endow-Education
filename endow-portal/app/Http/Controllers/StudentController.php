@@ -180,7 +180,7 @@ class StudentController extends Controller
     private function exportToCSV($students)
     {
         $filename = 'students_' . date('Y-m-d_His') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -188,10 +188,10 @@ class StudentController extends Controller
 
         $callback = function() use ($students) {
             $file = fopen('php://output', 'w');
-            
+
             // Add CSV headers
             fputcsv($file, ['#', 'Name', 'Email', 'Phone', 'University', 'Program', 'Status', 'Account Status', 'Created Date']);
-            
+
             // Add data rows
             foreach ($students as $index => $student) {
                 fputcsv($file, [
@@ -206,7 +206,7 @@ class StudentController extends Controller
                     $student->created_at->format('Y-m-d H:i:s'),
                 ]);
             }
-            
+
             fclose($file);
         };
 
@@ -289,17 +289,26 @@ class StudentController extends Controller
     {
         $this->authorize('view', $student);
 
+        // Optimize eager loading for production - load relationships efficiently
         $student->load([
+            'user',
             'assignedUser',
             'creator',
-            'followUps.creator',
-            'checklists.checklistItem',
-            'checklists.documents.uploader',
-            'checklists.documents.reviewer',
-            'checklists.reviewer',
-            'documents.checklistItem',
-            'documents.uploader',
-            'documents.reviewer'
+            'followUps' => function($query) {
+                $query->orderBy('created_at', 'desc')->with('creator');
+            },
+            'checklists' => function($query) {
+                $query->with([
+                    'checklistItem',
+                    'reviewer',
+                    'documents' => function($docQuery) {
+                        $docQuery->with(['uploader', 'reviewer']);
+                    }
+                ]);
+            },
+            'documents' => function($query) {
+                $query->with(['checklistItem', 'uploader', 'reviewer']);
+            }
         ]);
 
         $checklistProgress = $this->checklistService->getChecklistProgress($student);
@@ -354,7 +363,7 @@ class StudentController extends Controller
 
                 if ($oldAssignedTo != $request->assigned_to) {
                     $this->activityLog->logStudentAssigned($student, $oldAssignedTo, $request->assigned_to);
-                    
+
                     // Send notification to newly assigned counselor
                     try {
                         $newCounselor = User::find($request->assigned_to);
@@ -407,18 +416,18 @@ class StudentController extends Controller
     public function showApproveForm(Student $student)
     {
         $this->authorize('approve', $student);
-        
+
         // Get all active universities and programs
         $universities = \App\Models\University::active()->ordered()->get();
         $programs = \App\Models\Program::active()->get();
-        
+
         // Get all employees (Super Admin, Admin, Employee)
         $counselors = \App\Models\User::whereHas('roles', function($query) {
             $query->whereIn('name', ['Super Admin', 'Admin', 'Employee']);
         })->where('status', 'active')
           ->orderBy('name')
           ->get();
-        
+
         return view('students.approve', compact('student', 'universities', 'programs', 'counselors'));
     }
 
@@ -442,12 +451,12 @@ class StudentController extends Controller
             $student->target_university_id = $request->target_university_id;
             $student->target_program_id = $request->target_program_id;
             $student->assigned_to = $request->assigned_to;
-            
+
             // Create user account if not exists
             if (!$student->user_id) {
                 // Check if a user with this email already exists
                 $existingUser = User::where('email', $student->email)->first();
-                
+
                 if ($existingUser) {
                     // Link to existing user if they're a student
                     if ($existingUser->hasRole('Student')) {
@@ -459,7 +468,7 @@ class StudentController extends Controller
                 } else {
                     // Generate a password if student doesn't have one
                     $password = $student->password ?? Hash::make(Str::random(16));
-                    
+
                     // Create new user account
                     $user = User::create([
                         'name' => $student->name,
@@ -516,7 +525,7 @@ class StudentController extends Controller
             $counselor = User::find($request->assigned_to);
             $university = \App\Models\University::find($request->target_university_id);
             $program = \App\Models\Program::find($request->target_program_id);
-            
+
             if (!$counselor || !$university || !$program) {
                 Log::warning('Missing related models after approval', [
                     'counselor' => $counselor ? 'found' : 'missing',
@@ -526,7 +535,7 @@ class StudentController extends Controller
                 return redirect()->route('students.show', $student)
                     ->with('success', 'Student account approved successfully! A welcome email has been sent.');
             }
-            
+
             return redirect()->route('students.show', $student)
                 ->with('success', "Student account approved successfully! Enrolled in {$program->name} at {$university->name} and assigned to {$counselor->name}. A welcome email has been sent.");
         } catch (\Exception $e) {

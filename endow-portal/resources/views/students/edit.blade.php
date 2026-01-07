@@ -145,10 +145,10 @@
                                 <select class="form-select @error('assigned_to') is-invalid @enderror"
                                         id="assigned_to" name="assigned_to">
                                     <option value="">-- Select Counselor --</option>
-                                    @foreach($employees ?? [] as $employee)
-                                    <option value="{{ $employee->id }}"
-                                            {{ old('assigned_to', $student->assigned_to) == $employee->id ? 'selected' : '' }}>
-                                        {{ $employee->name }}
+                                    @foreach($users ?? [] as $user)
+                                    <option value="{{ $user->id }}"
+                                            {{ old('assigned_to', $student->assigned_to) == $user->id ? 'selected' : '' }}>
+                                        {{ $user->name }}
                                     </option>
                                     @endforeach
                                 </select>
@@ -253,31 +253,26 @@
                 </div>
             </div>
 
-            @can('approve', $student)
             @if($student->account_status === 'pending')
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-light border-0">
-                    <h5 class="mb-0 fw-semibold"><i class="fas fa-shield-alt me-2 text-success"></i>Account Actions</h5>
-                </div>
+            <div class="card shadow-sm border-0 border-start border-warning border-4">
                 <div class="card-body p-4">
-                    <form action="{{ route('students.approve', $student) }}" method="POST" class="mb-2">
-                        @csrf
-                        <button type="submit" class="btn btn-success w-100">
-                            <i class="fas fa-check me-2"></i> Approve Account
-                        </button>
-                    </form>
-
-                    <form action="{{ route('students.reject', $student) }}" method="POST" id="reject-student-form-edit">
-                        @csrf
-                        <button type="button" class="btn btn-danger w-100"
-                                onclick="confirmRejectStudentEdit()">
-                            <i class="fas fa-times me-2"></i> Reject Account
-                        </button>
-                    </form>
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="text-warning">
+                            <i class="fas fa-exclamation-circle fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h6 class="mb-2 fw-semibold">Account Pending Approval</h6>
+                            <p class="text-muted mb-2 small">This student account requires approval before access is granted.</p>
+                            @can('approve', $student)
+                            <a href="{{ route('students.show', $student) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i> View & Approve
+                            </a>
+                            @endcan
+                        </div>
+                    </div>
                 </div>
             </div>
             @endif
-            @endcan
         </div>
     </div>
 
@@ -344,23 +339,6 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('delete-form').submit();
-                }
-            });
-        }
-
-        function confirmRejectStudentEdit() {
-            Swal.fire({
-                title: 'Reject Student?',
-                text: 'Are you sure you want to reject this student?',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#DC143C',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, reject it!',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('reject-student-form-edit').submit();
                 }
             });
         }
