@@ -140,6 +140,7 @@
 
                         <li class="mb-3 pb-3 border-bottom">
                             <div class="small text-muted mb-1">Assigned Employee</div>
+                            @if($studentVisit->employee)
                             <div class="d-flex align-items-center">
                                 <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 32px; height: 32px; font-size: 0.7rem;">
                                     {{ strtoupper(substr($studentVisit->employee->name, 0, 2)) }}
@@ -149,6 +150,9 @@
                                     <div class="text-muted small">{{ $studentVisit->employee->email }}</div>
                                 </div>
                             </div>
+                            @else
+                            <div class="text-muted">Not Assigned</div>
+                            @endif
                         </li>
 
                         <li class="mb-3 pb-3 border-bottom">

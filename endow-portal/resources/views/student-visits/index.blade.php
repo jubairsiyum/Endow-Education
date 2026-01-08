@@ -117,12 +117,16 @@
                             @endif
                         </td>
                         <td>
+                            @if($visit->employee)
                             <div class="d-flex align-items-center">
                                 <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; font-size: 0.7rem;">
                                     {{ strtoupper(substr($visit->employee->name, 0, 2)) }}
                                 </div>
                                 <span class="small">{{ $visit->employee->name }}</span>
                             </div>
+                            @else
+                            <span class="text-muted small">Not Assigned</span>
+                            @endif
                         </td>
                         <td>
                             <div class="small">

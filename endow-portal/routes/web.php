@@ -65,7 +65,7 @@ Route::post('/admin/logout', [AdminLoginController::class, 'logout'])->name('adm
 
 // Fallback 'login' route for legacy compatibility
 Route::get('/login', function () {
-    return redirect()->route('admin.login');
+    return redirect()->route('student.login');
 })->name('login');
 
 // Student Login Routes
