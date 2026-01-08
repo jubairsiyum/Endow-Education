@@ -4,9 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Student;
+use App\Models\User;
+use App\Notifications\AdminNewStudentRegisteredNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class StudentRegisterController extends Controller
 {
@@ -51,11 +54,14 @@ class StudentRegisterController extends Controller
                 'account_status' => 'pending',
             ]);
 
+            // Send notifications to Super Admin, Admin, and Employee roles
+            $this->notifyAdministrators($student);
+
             return redirect()->route('student.login')
                 ->with('registration_success', 'Your registration has been submitted successfully! Please wait for account verification. You will receive an email once your account is approved.');
         } catch (\Exception $e) {
             // Log the actual error for debugging
-            \Log::error('Student registration failed: ' . $e->getMessage(), [
+            Log::error('Student registration failed: ' . $e->getMessage(), [
                 'email' => $request->email,
                 'trace' => $e->getTraceAsString()
             ]);
@@ -72,6 +78,32 @@ class StudentRegisterController extends Controller
     public function success()
     {
         return view('auth.student-register-success');
+    }
+
+    /**
+     * Send notifications to all administrators about new student registration.
+     */
+    private function notifyAdministrators(Student $student)
+    {
+        try {
+            // Get all users with Super Admin, Admin, or Employee roles
+            $administrators = User::whereHas('roles', function ($query) {
+                $query->whereIn('name', ['Super Admin', 'Admin', 'Employee']);
+            })
+            ->where('status', 'active')
+            ->get();
+
+            // Send notification to each administrator
+            foreach ($administrators as $admin) {
+                try {
+                    $admin->notify(new AdminNewStudentRegisteredNotification($student, $admin));
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send new student registration notification to ' . $admin->email . ': ' . $e->getMessage());
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to notify administrators about new student registration: ' . $e->getMessage());
+        }
     }
 }
 
