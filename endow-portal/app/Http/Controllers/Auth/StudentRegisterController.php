@@ -65,7 +65,7 @@ class StudentRegisterController extends Controller
                 'email' => $request->email,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return redirect()->back()
                 ->with('error', 'Registration failed: ' . $e->getMessage())
                 ->withInput();
