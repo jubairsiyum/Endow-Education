@@ -18,7 +18,8 @@ class ChecklistItemController extends Controller
      */
     public function index()
     {
-        $checklistItems = ChecklistItem::orderBy('order')->get();
+        // Always fetch fresh data from database without caching
+        $checklistItems = ChecklistItem::orderBy('order')->get()->fresh();
         return view('checklist-items.index', compact('checklistItems'));
     }
 

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Program;
 use App\Models\University;
 use App\Models\ChecklistItem;
+use App\Models\StudentChecklist;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -146,6 +147,12 @@ class ProgramController extends Controller
         $program->update($validated);
         $program->checklistItems()->sync($checklistItems);
 
+        // Clear the relationship cache to ensure fresh data on next load
+        $program->load('checklistItems');
+
+        // Update student checklists for students enrolled in this program
+        $this->updateStudentChecklistsForProgram($program);
+
         return redirect()->route('programs.index')
             ->with('success', 'Program updated successfully.');
     }
@@ -165,6 +172,46 @@ class ProgramController extends Controller
 
         return redirect()->route('programs.index')
             ->with('success', 'Program deleted successfully.');
+    }
+
+    /**
+     * Update student checklists for all students enrolled in this program
+     * This ensures students see updated checklist items when program requirements change
+     */
+    protected function updateStudentChecklistsForProgram(Program $program)
+    {
+        $students = $program->students;
+
+        foreach ($students as $student) {
+            // Get the new checklist items for this program
+            $newChecklistItemIds = $program->checklistItems()->pluck('checklist_items.id')->toArray();
+
+            // Get existing student checklist items
+            $existingChecklistItemIds = $student->checklists()->pluck('checklist_item_id')->toArray();
+
+            // Add new checklist items that don't exist yet
+            $itemsToAdd = array_diff($newChecklistItemIds, $existingChecklistItemIds);
+            foreach ($itemsToAdd as $itemId) {
+                StudentChecklist::firstOrCreate(
+                    [
+                        'student_id' => $student->id,
+                        'checklist_item_id' => $itemId,
+                    ],
+                    [
+                        'status' => 'pending',
+                    ]
+                );
+            }
+
+            // Remove checklist items that are no longer in the program (only if pending)
+            $itemsToRemove = array_diff($existingChecklistItemIds, $newChecklistItemIds);
+            if (!empty($itemsToRemove)) {
+                StudentChecklist::where('student_id', $student->id)
+                    ->whereIn('checklist_item_id', $itemsToRemove)
+                    ->where('status', 'pending') // Only remove pending items
+                    ->delete();
+            }
+        }
     }
 
     /**
