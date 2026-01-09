@@ -116,12 +116,14 @@ class StudentChecklistController extends Controller
                 ->get();
         }
 
-        // Calculate progress
+        // Calculate progress dynamically from database
         $totalCount = $checklistItems->count();
-        $completedCount = $checklistItems->filter(function($item) use ($student) {
-            $studentChecklist = $item->studentChecklists->firstWhere('student_id', $student->id);
-            return $studentChecklist && in_array($studentChecklist->status, ['completed', 'approved']);
-        })->count();
+
+        // Get completed count directly from database for accuracy
+        $completedCount = StudentChecklist::where('student_id', $student->id)
+            ->whereIn('checklist_item_id', $checklistItems->pluck('id')->toArray())
+            ->whereIn('status', ['completed', 'approved'])
+            ->count();
 
         return view('student.documents', compact('student', 'checklistItems', 'totalCount', 'completedCount'));
     }
@@ -267,10 +269,10 @@ class StudentChecklistController extends Controller
         StudentDocument::where('student_checklist_id', $studentChecklist->id)->delete();
 
         // Log activity with detailed information including previous status
-        $logMessage = $wasApproved 
+        $logMessage = $wasApproved
             ? "Removed APPROVED document for: {$studentChecklist->checklistItem->title}"
             : "Removed document for: {$studentChecklist->checklistItem->title}";
-        
+
         $this->activityLogService->log(
             'student',
             $logMessage,
