@@ -108,6 +108,29 @@
         color: #DC143C;
         text-decoration: underline;
     }
+
+    /* Button hover text color fixes */
+    .btn-primary-custom:hover {
+        color: black !important;
+    }
+    .btn-success:hover {
+        color: black !important;
+    }
+    .btn-danger:hover {
+        color: white !important;
+    }
+    .btn-outline-primary:hover {
+        color: black !important;
+    }
+    .btn-outline-secondary:hover {
+        color: black !important;
+    }
+    .btn-outline-danger:hover {
+        color: white !important;
+    }
+    .action-btn:hover {
+        color: black !important;
+    }
 </style>
 @endpush
 
