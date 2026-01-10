@@ -370,7 +370,40 @@
             <!-- Checklist Tab -->
             <div class="tab-pane fade" id="checklist" role="tabpanel">
                 <div class="mb-4">
-                    <h5 class="text-dark fw-bold">Checklist Progress</h5>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="text-dark fw-bold mb-0">Checklist Progress</h5>
+                        @php
+                            // Calculate document statistics for merge button
+                            $totalDocs = $student->documents()->whereNotNull('student_checklist_id')->count();
+                            $approvedDocs = $student->documents()->whereNotNull('student_checklist_id')->where('status', 'approved')->count();
+                            $allDocsApproved = $totalDocs > 0 && $totalDocs === $approvedDocs;
+                        @endphp
+
+                        @if($allDocsApproved)
+                        <div>
+                            <a href="{{ route('students.documents.mergeAll', $student) }}"
+                               class="btn btn-success btn-sm"
+                               title="Download all approved documents as single PDF">
+                                <i class="fas fa-file-pdf me-2"></i>
+                                Download All Documents (Merged PDF)
+                            </a>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-check-circle text-success me-1"></i>
+                                All {{ $approvedDocs }} documents approved
+                            </small>
+                        </div>
+                        @elseif($totalDocs > 0)
+                        <div class="text-end">
+                            <small class="text-muted d-block">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {{ $approvedDocs }}/{{ $totalDocs }} documents approved
+                            </small>
+                            <small class="text-muted d-block mt-1">
+                                Merge feature available when all documents are approved
+                            </small>
+                        </div>
+                        @endif
+                    </div>
                     @php
                         $total = $student->checklist_progress['total'] ?? 0;
                         $approved = $student->checklist_progress['approved'] ?? 0;

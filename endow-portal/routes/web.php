@@ -235,6 +235,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documents/{document}/view', [DocumentController::class, 'view'])->name('documents.view');
     Route::get('/students/{student}/documents/{document}/download', [DocumentController::class, 'download'])->name('students.documents.download')->scopeBindings();
     Route::get('/students/{student}/documents/{document}/view', [DocumentController::class, 'view'])->name('students.documents.view')->scopeBindings();
+    Route::get('/students/{student}/documents/merge-all', [DocumentController::class, 'mergeAllApprovedDocuments'])->name('students.documents.mergeAll')->scopeBindings();
     Route::get('/api/documents/{document}/data', [DocumentController::class, 'getData'])->name('documents.data');
     Route::delete('/students/{student}/documents/{document}', [DocumentController::class, 'destroy'])->name('students.documents.destroy')->scopeBindings();
     Route::post('/documents/{document}/approve', [DocumentController::class, 'approve'])->name('documents.approve');
