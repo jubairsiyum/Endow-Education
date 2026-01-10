@@ -770,6 +770,11 @@
                 <span class="menu-text">Support</span>
             </a>
 
+            <a href="{{ route('student.consultant-evaluation.index') }}" class="menu-item {{ request()->routeIs('student.consultant-evaluation.*') ? 'active' : '' }}">
+                <i class="fas fa-star"></i>
+                <span class="menu-text">Consultant Evaluation</span>
+            </a>
+
             <div style="border-top: 1px solid rgba(255,255,255,0.1); margin: 15px 12px;"></div>
 
             <a href="{{ route('student.settings') }}" class="menu-item {{ request()->routeIs('student.settings') ? 'active' : '' }}">

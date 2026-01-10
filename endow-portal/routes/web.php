@@ -170,6 +170,24 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/email-settings')-
     Route::post('/test-connection', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'testConnection'])->name('admin.email-settings.test-connection');
 });
 
+// Evaluation Question Management Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/evaluation-questions')->name('admin.evaluation-questions.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'index'])->name('index');
+    Route::get('/create', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'create'])->name('create');
+    Route::post('/', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'store'])->name('store');
+    Route::get('/{evaluationQuestion}/edit', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'edit'])->name('edit');
+    Route::put('/{evaluationQuestion}', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'update'])->name('update');
+    Route::delete('/{evaluationQuestion}', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'destroy'])->name('destroy');
+    Route::patch('/{evaluationQuestion}/toggle-status', [\App\Http\Controllers\Admin\EvaluationQuestionController::class, 'toggleStatus'])->name('toggle-status');
+});
+
+// Consultant Evaluation Management Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/consultant-evaluations')->name('admin.consultant-evaluations.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Admin\ConsultantEvaluationController::class, 'index'])->name('index');
+    Route::get('/export', [\App\Http\Controllers\Admin\ConsultantEvaluationController::class, 'export'])->name('export');
+    Route::get('/{consultant}', [\App\Http\Controllers\Admin\ConsultantEvaluationController::class, 'show'])->name('show');
+});
+
 // University Management Routes (Admin/Employee only)
 Route::middleware(['auth'])->group(function () {
     Route::resource('universities', UniversityController::class);
@@ -223,6 +241,10 @@ Route::middleware(['auth'])->prefix('student')->group(function () {
     // Settings
     Route::get('/settings', [StudentChecklistController::class, 'showSettings'])->name('student.settings');
     Route::put('/settings', [StudentChecklistController::class, 'updateSettings'])->name('student.settings.update');
+
+    // Consultant Evaluation Routes (Student only)
+    Route::get('/consultant-evaluation', [\App\Http\Controllers\Student\ConsultantEvaluationController::class, 'index'])->name('student.consultant-evaluation.index');
+    Route::post('/consultant-evaluation', [\App\Http\Controllers\Student\ConsultantEvaluationController::class, 'store'])->name('student.consultant-evaluation.store');
 });
 
 // Document Management Routes

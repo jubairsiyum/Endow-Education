@@ -1093,6 +1093,16 @@
                     <i class="fas fa-envelope-open-text"></i>
                     <span>Email Settings</span>
                 </a>
+
+                <a href="{{ route('admin.evaluation-questions.index') }}" class="menu-item {{ request()->routeIs('admin.evaluation-questions.*') ? 'active' : '' }}">
+                    <i class="fas fa-question-circle"></i>
+                    <span>Evaluation Questions</span>
+                </a>
+
+                <a href="{{ route('admin.consultant-evaluations.index') }}" class="menu-item {{ request()->routeIs('admin.consultant-evaluations.*') ? 'active' : '' }}">
+                    <i class="fas fa-star"></i>
+                    <span>Consultant Evaluations</span>
+                </a>
                 @endhasrole
 
                 <a href="{{ route('activity-logs.index') }}" class="menu-item {{ request()->routeIs('activity-logs.*') ? 'active' : '' }}">
