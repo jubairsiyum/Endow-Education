@@ -6,6 +6,7 @@ use App\Models\Student;
 use App\Models\StudentDocument;
 use App\Models\StudentChecklist;
 use App\Services\ImageProcessingService;
+use App\Services\PdfMergeService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Auth;
@@ -16,11 +17,13 @@ use Illuminate\Support\Facades\Log;
 class DocumentController extends Controller
 {
     protected $imageProcessingService;
+    protected $pdfMergeService;
 
-    public function __construct(ImageProcessingService $imageProcessingService)
+    public function __construct(ImageProcessingService $imageProcessingService, PdfMergeService $pdfMergeService)
     {
         $this->middleware('auth');
         $this->imageProcessingService = $imageProcessingService;
+        $this->pdfMergeService = $pdfMergeService;
     }
 
     /**
@@ -386,6 +389,52 @@ class DocumentController extends Controller
         return response($dompdf->output(), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+    }
+
+    /**
+     * Merge all approved documents for a student into a single PDF
+     *
+     * @param Student $student
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function mergeAllApprovedDocuments(Student $student)
+    {
+        // Authorization check - only admin, assigned employee, or super admin can download merged documents
+        $this->authorize('view', $student);
+
+        try {
+            // Use PDF merge service to merge all approved documents
+            $result = $this->pdfMergeService->mergeAllApprovedDocuments($student);
+
+            if (!$result['success']) {
+                return back()->with('error', $result['error']);
+            }
+
+            // Log the activity
+            Log::info('All approved documents merged and downloaded', [
+                'student_id' => $student->id,
+                'student_name' => $student->name,
+                'downloaded_by' => Auth::id(),
+                'downloaded_by_name' => Auth::user()->name,
+                'timestamp' => now()
+            ]);
+
+            // Return the merged PDF as download
+            return response($result['content'], 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="' . $result['filename'] . '"')
+                ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+                ->header('Pragma', 'no-cache')
+                ->header('Expires', '0');
+        } catch (\Exception $e) {
+            Log::error('Error merging all approved documents', [
+                'student_id' => $student->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Failed to merge documents. Please try again or contact support.');
+        }
     }
 
     /**
