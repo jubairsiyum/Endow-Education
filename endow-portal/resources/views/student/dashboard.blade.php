@@ -103,22 +103,6 @@
                 </div>
             </div>
         </div>
-
-        <div class="col-lg-3 col-md-6">
-            <div class="card-custom">
-                <div class="card-body-custom">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="text-muted mb-1 small">Completed</p>
-                            <h3 class="mb-0 fw-bold">{{ $checklistProgress['completed'] ?? 0 }}</h3>
-                        </div>
-                        <div class="bg-info bg-opacity-10 p-3 rounded">
-                            <i class="fas fa-check-double fa-2x text-info"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
 
     <!-- Profile & Program Info -->
