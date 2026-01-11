@@ -54,6 +54,17 @@
                 @endif
 
                 <div class="col-md-2">
+                    <select name="prospective_status" class="form-select form-select-sm">
+                        <option value="">All Statuses</option>
+                        @foreach(\App\Models\StudentVisit::getStatuses() as $status)
+                        <option value="{{ $status }}" {{ request('prospective_status') == $status ? 'selected' : '' }}>
+                            {{ $status }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div class="col-md-2">
                     <input type="date" name="date_from" class="form-control form-control-sm"
                            placeholder="From Date"
                            value="{{ request('date_from') }}">
@@ -86,6 +97,7 @@
                         <th>Student Name</th>
                         <th>Phone</th>
                         <th>Email</th>
+                        <th>Status</th>
                         <th>Assigned Employee</th>
                         <th>Visit Date</th>
                         <th>Actions</th>
@@ -115,6 +127,13 @@
                             @else
                                 <span class="text-muted small">-</span>
                             @endif
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ $visit->status_color }}"
+                                  title="{{ $visit->status_description }}"
+                                  data-bs-toggle="tooltip">
+                                {{ $visit->prospective_status }}
+                            </span>
                         </td>
                         <td>
                             @if($visit->employee)
@@ -167,7 +186,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-4 text-muted">
+                        <td colspan="7" class="text-center py-4 text-muted">
                             <i class="fas fa-clipboard-list fa-3x mb-3 d-block opacity-25"></i>
                             <p class="mb-0">No student visit records found.</p>
                             <a href="{{ route('student-visits.create') }}" class="btn btn-sm btn-danger mt-2">
