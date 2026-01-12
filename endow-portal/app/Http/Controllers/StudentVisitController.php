@@ -24,45 +24,71 @@ class StudentVisitController extends Controller
      */
     public function index(Request $request)
     {
-        $this->authorize('viewAny', StudentVisit::class);
+        try {
+            $this->authorize('viewAny', StudentVisit::class);
 
-        $query = StudentVisit::with('employee');
+            $query = StudentVisit::query();
 
-        // If employee role, show only their own visits
-        if (Auth::user()->isEmployee() && !Auth::user()->isAdmin()) {
-            $query->where('employee_id', Auth::id());
+            // Only select columns that definitely exist to avoid any column errors
+            try {
+                $query->with('employee');
+            } catch (\Exception $e) {
+                \Log::warning('Could not eager load employee relationship: ' . $e->getMessage());
+            }
+
+            // If employee role, show only their own visits
+            if (Auth::user()->isEmployee() && !Auth::user()->isAdmin()) {
+                $query->where('employee_id', Auth::id());
+            }
+
+            // Search functionality
+            if ($request->has('search') && $request->search != '') {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('student_name', 'like', "%{$search}%")
+                      ->orWhere('phone', 'like', "%{$search}%")
+                      ->orWhere('email', 'like', "%{$search}%");
+                });
+            }
+
+            // Filter by employee (for admins)
+            if ($request->has('employee_id') && $request->employee_id != '') {
+                $query->where('employee_id', $request->employee_id);
+            }
+
+            // Filter by date range
+            if ($request->has('date_from') && $request->date_from != '') {
+                $query->whereDate('created_at', '>=', $request->date_from);
+            }
+
+            if ($request->has('date_to') && $request->date_to != '') {
+                $query->whereDate('created_at', '<=', $request->date_to);
+            }
+
+            $visits = $query->latest()->paginate(15);
+
+            // Get employees for filter dropdown (for admins)
+            $employees = collect();
+            if (Auth::user()->isAdmin()) {
+                try {
+                    $employees = User::role(['Employee', 'Admin', 'Super Admin'])
+                        ->orderBy('name')
+                        ->get();
+                } catch (\Exception $e) {
+                    \Log::warning('Could not load employees: ' . $e->getMessage());
+                }
+            }
+
+            return view('student-visits.index', compact('visits', 'employees'));
+        } catch (\Exception $e) {
+            \Log::error('Student Visits Index Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ]);
+
+            return redirect()->route('home')->with('error', 'Error loading student visits. Please contact support if this persists.');
         }
-
-        // Search functionality
-        if ($request->has('search') && $request->search != '') {
-            $query->search($request->search);
-        }
-
-        // Filter by employee (for admins)
-        if ($request->has('employee_id') && $request->employee_id != '') {
-            $query->where('employee_id', $request->employee_id);
-        }
-
-        // Filter by date range
-        if ($request->has('date_from') && $request->date_from != '') {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->has('date_to') && $request->date_to != '') {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $visits = $query->latest()->paginate(15);
-
-        // Get employees for filter dropdown (for admins)
-        $employees = collect();
-        if (Auth::user()->isAdmin()) {
-            $employees = User::role(['Employee', 'Admin', 'Super Admin'])
-                ->orderBy('name')
-                ->get();
-        }
-
-        return view('student-visits.index', compact('visits', 'employees'));
     }
 
     /**
@@ -70,17 +96,22 @@ class StudentVisitController extends Controller
      */
     public function create()
     {
-        $this->authorize('create', StudentVisit::class);
+        try {
+            $this->authorize('create', StudentVisit::class);
 
-        // Get employees for assignment (for admins)
-        $employees = collect();
-        if (Auth::user()->isAdmin()) {
-            $employees = User::role(['Employee', 'Admin', 'Super Admin'])
-                ->orderBy('name')
-                ->get();
+            // Get employees for assignment (for admins)
+            $employees = collect();
+            if (Auth::user()->isAdmin()) {
+                $employees = User::role(['Employee', 'Admin', 'Super Admin'])
+                    ->orderBy('name')
+                    ->get();
+            }
+
+            return view('student-visits.create', compact('employees'));
+        } catch (\Exception $e) {
+            \Log::error('Student Visit Create Error: ' . $e->getMessage());
+            return back()->with('error', 'Error loading create form: ' . $e->getMessage());
         }
-
-        return view('student-visits.create', compact('employees'));
     }
 
     /**
@@ -98,6 +129,7 @@ class StudentVisitController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')
             ],
+            'prospective_status' => 'nullable|in:prospective_hot,prospective_warm,prospective_cold,prospective_not_interested,confirmed_student',
             'notes' => 'nullable|string',
         ]);
 
@@ -130,9 +162,17 @@ class StudentVisitController extends Controller
      */
     public function show(StudentVisit $studentVisit)
     {
-        $this->authorize('view', $studentVisit);
+        try {
+            $this->authorize('view', $studentVisit);
 
-        return view('student-visits.show', compact('studentVisit'));
+            // Eager load employee relationship
+            $studentVisit->load('employee');
+
+            return view('student-visits.show', compact('studentVisit'));
+        } catch (\Exception $e) {
+            \Log::error('Student Visit Show Error: ' . $e->getMessage());
+            return back()->with('error', 'Error loading visit details: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -140,17 +180,22 @@ class StudentVisitController extends Controller
      */
     public function edit(StudentVisit $studentVisit)
     {
-        $this->authorize('update', $studentVisit);
+        try {
+            $this->authorize('update', $studentVisit);
 
-        // Get employees for assignment (for admins)
-        $employees = collect();
-        if (Auth::user()->isAdmin()) {
-            $employees = User::role(['Employee', 'Admin', 'Super Admin'])
-                ->orderBy('name')
-                ->get();
+            // Get employees for assignment (for admins)
+            $employees = collect();
+            if (Auth::user()->isAdmin()) {
+                $employees = User::role(['Employee', 'Admin', 'Super Admin'])
+                    ->orderBy('name')
+                    ->get();
+            }
+
+            return view('student-visits.edit', compact('studentVisit', 'employees'));
+        } catch (\Exception $e) {
+            \Log::error('Student Visit Edit Error: ' . $e->getMessage());
+            return back()->with('error', 'Error loading edit form: ' . $e->getMessage());
         }
-
-        return view('student-visits.edit', compact('studentVisit', 'employees'));
     }
 
     /**
@@ -168,6 +213,7 @@ class StudentVisitController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')
             ],
+            'prospective_status' => 'nullable|in:prospective_hot,prospective_warm,prospective_cold,prospective_not_interested,confirmed_student',
             'notes' => 'nullable|string',
         ]);
 
@@ -199,7 +245,7 @@ class StudentVisitController extends Controller
 
         $studentName = $studentVisit->student_name;
         $visitId = $studentVisit->id;
-        
+
         // Log activity before deletion
         $this->activityLog->log(
             'student_visit',
@@ -207,7 +253,7 @@ class StudentVisitController extends Controller
             $studentVisit,
             ['student_name' => $studentName, 'id' => $visitId]
         );
-        
+
         $studentVisit->delete();
 
         return redirect()->route('student-visits.index')

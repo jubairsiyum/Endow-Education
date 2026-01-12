@@ -117,6 +117,37 @@
                             </div>
                             @endif
 
+                            <!-- Prospective Status -->
+                            <div class="col-md-12">
+                                <label for="prospective_status" class="form-label fw-semibold">
+                                    Prospective Status
+                                </label>
+                                <select class="form-select @error('prospective_status') is-invalid @enderror"
+                                        id="prospective_status"
+                                        name="prospective_status">
+                                    <option value="">Select Status</option>
+                                    <option value="prospective_hot" {{ old('prospective_status') == 'prospective_hot' ? 'selected' : '' }}>
+                                        🔥 Prospective: Hot (Ready to enroll)
+                                    </option>
+                                    <option value="prospective_warm" {{ old('prospective_status') == 'prospective_warm' ? 'selected' : '' }}>
+                                        🌡️ Prospective: Warm (Interested, needs follow-up)
+                                    </option>
+                                    <option value="prospective_cold" {{ old('prospective_status') == 'prospective_cold' ? 'selected' : '' }}>
+                                        ❄️ Prospective: Cold (Low interest)
+                                    </option>
+                                    <option value="prospective_not_interested" {{ old('prospective_status') == 'prospective_not_interested' ? 'selected' : '' }}>
+                                        ❌ Prospective: Not Interested
+                                    </option>
+                                    <option value="confirmed_student" {{ old('prospective_status') == 'confirmed_student' ? 'selected' : '' }} style="color: green; font-weight: bold;">
+                                        ✅ Confirmed Student (Green)
+                                    </option>
+                                </select>
+                                @error('prospective_status')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">Classify the prospective student based on their interest level</small>
+                            </div>
+
                             <!-- Visit Notes -->
                             <div class="col-md-12">
                                 <label for="notes" class="form-label fw-semibold">

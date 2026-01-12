@@ -20,6 +20,7 @@ class StudentVisit extends Model
         'email',
         'employee_id',
         'notes',
+        'prospective_status',
     ];
 
     /**

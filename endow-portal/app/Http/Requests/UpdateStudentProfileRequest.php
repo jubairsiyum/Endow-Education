@@ -37,7 +37,7 @@ class UpdateStudentProfileRequest extends FormRequest
     {
         // Get student ID from route parameter or authenticated user
         $student = $this->route('student');
-        
+
         if ($student instanceof \App\Models\Student) {
             $studentId = $student->id;
             $studentModel = $student;
@@ -106,6 +106,14 @@ class UpdateStudentProfileRequest extends FormRequest
             'emergency_contact_phone' => ['nullable', 'string', 'max:20'],
             'emergency_contact_relationship' => ['nullable', 'string', 'max:100'],
 
+            // SSC/HSC/IELTS Information
+            'ssc_year' => ['nullable', 'string', 'max:4', 'regex:/^\d{4}$/'],
+            'ssc_result' => ['nullable', 'string', 'max:20'],
+            'hsc_year' => ['nullable', 'string', 'max:4', 'regex:/^\d{4}$/'],
+            'hsc_result' => ['nullable', 'string', 'max:20'],
+            'has_ielts' => ['nullable', 'boolean'],
+            'ielts_score' => ['nullable', 'string', 'max:10'],
+
             // Profile data
             'profile' => ['nullable', 'array'],
             'profile.student_id_number' => [
@@ -141,6 +149,12 @@ class UpdateStudentProfileRequest extends FormRequest
             'date_of_birth' => 'date of birth',
             'target_university_id' => 'target university',
             'target_program_id' => 'target program',
+            'ssc_year' => 'SSC year',
+            'ssc_result' => 'SSC result',
+            'hsc_year' => 'HSC year',
+            'hsc_result' => 'HSC result',
+            'has_ielts' => 'IELTS status',
+            'ielts_score' => 'IELTS score',
             'profile.student_id_number' => 'student ID number',
             'profile.academic_level' => 'academic level',
             'profile.gpa' => 'GPA',
@@ -160,6 +174,8 @@ class UpdateStudentProfileRequest extends FormRequest
             'date_of_birth.before' => 'Date of birth must be before today.',
             'passport_expiry_date.after' => 'Passport expiry date must be in the future.',
             'profile.expected_graduation_date.after' => 'Expected graduation date must be after enrollment date.',
+            'ssc_year.regex' => 'SSC year must be a valid 4-digit year.',
+            'hsc_year.regex' => 'HSC year must be a valid 4-digit year.',
         ];
     }
 }

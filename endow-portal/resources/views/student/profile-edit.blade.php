@@ -155,6 +155,99 @@
                                 <i class="fas fa-graduation-cap me-2"></i>Education Background
                             </h6>
                             <div class="row g-3">
+                                <!-- SSC Information -->
+                                <div class="col-12">
+                                    <label class="form-label fw-semibold">SSC (Secondary School Certificate)</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="ssc_year" class="form-label">SSC Year</label>
+                                    <input type="text"
+                                           class="form-control @error('ssc_year') is-invalid @enderror"
+                                           id="ssc_year"
+                                           name="ssc_year"
+                                           value="{{ old('ssc_year', $student->ssc_year) }}"
+                                           placeholder="e.g., 2018"
+                                           maxlength="4">
+                                    @error('ssc_year')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="ssc_result" class="form-label">SSC Result</label>
+                                    <input type="text"
+                                           class="form-control @error('ssc_result') is-invalid @enderror"
+                                           id="ssc_result"
+                                           name="ssc_result"
+                                           value="{{ old('ssc_result', $student->ssc_result) }}"
+                                           placeholder="e.g., GPA 5.00, A+, 85%">
+                                    @error('ssc_result')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- HSC Information -->
+                                <div class="col-12 mt-3">
+                                    <label class="form-label fw-semibold">HSC (Higher Secondary Certificate)</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="hsc_year" class="form-label">HSC Year</label>
+                                    <input type="text"
+                                           class="form-control @error('hsc_year') is-invalid @enderror"
+                                           id="hsc_year"
+                                           name="hsc_year"
+                                           value="{{ old('hsc_year', $student->hsc_year) }}"
+                                           placeholder="e.g., 2020"
+                                           maxlength="4">
+                                    @error('hsc_year')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6">
+                                    <label for="hsc_result" class="form-label">HSC Result</label>
+                                    <input type="text"
+                                           class="form-control @error('hsc_result') is-invalid @enderror"
+                                           id="hsc_result"
+                                           name="hsc_result"
+                                           value="{{ old('hsc_result', $student->hsc_result) }}"
+                                           placeholder="e.g., GPA 5.00, A+, 85%">
+                                    @error('hsc_result')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- IELTS Information -->
+                                <div class="col-12 mt-3">
+                                    <label class="form-label fw-semibold">IELTS Information</label>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="has_ielts" class="form-label">Have you taken IELTS?</label>
+                                    <select class="form-select @error('has_ielts') is-invalid @enderror"
+                                            id="has_ielts"
+                                            name="has_ielts"
+                                            onchange="toggleIeltsScore()">
+                                        <option value="0" {{ old('has_ielts', $student->has_ielts) == '0' ? 'selected' : '' }}>No</option>
+                                        <option value="1" {{ old('has_ielts', $student->has_ielts) == '1' ? 'selected' : '' }}>Yes</option>
+                                    </select>
+                                    @error('has_ielts')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <div class="col-md-6" id="ielts_score_field" style="display: {{ old('has_ielts', $student->has_ielts) ? 'block' : 'none' }};">
+                                    <label for="ielts_score" class="form-label">IELTS Score</label>
+                                    <input type="text"
+                                           class="form-control @error('ielts_score') is-invalid @enderror"
+                                           id="ielts_score"
+                                           name="ielts_score"
+                                           value="{{ old('ielts_score', $student->ielts_score) }}"
+                                           placeholder="e.g., 7.5, 8.0">
+                                    @error('ielts_score')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
                                 <div class="col-md-6">
                                     <label for="highest_qualification" class="form-label">Highest Qualification</label>
                                     <select class="form-select @error('highest_qualification') is-invalid @enderror"
@@ -279,3 +372,24 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    function toggleIeltsScore() {
+        const hasIelts = document.getElementById('has_ielts').value;
+        const ieltsScoreField = document.getElementById('ielts_score_field');
+
+        if (hasIelts == '1') {
+            ieltsScoreField.style.display = 'block';
+        } else {
+            ieltsScoreField.style.display = 'none';
+            document.getElementById('ielts_score').value = '';
+        }
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        toggleIeltsScore();
+    });
+</script>
+@endpush

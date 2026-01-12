@@ -49,6 +49,12 @@ class Student extends Model
         'emergency_contact_name',
         'emergency_contact_phone',
         'emergency_contact_relationship',
+        'ssc_year',
+        'ssc_result',
+        'hsc_year',
+        'hsc_result',
+        'has_ielts',
+        'ielts_score',
     ];
 
     /**
@@ -70,6 +76,7 @@ class Student extends Model
         'passport_expiry_date' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'has_ielts' => 'boolean',
     ];
 
     /**

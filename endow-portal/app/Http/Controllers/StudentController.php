@@ -191,21 +191,74 @@ class StudentController extends Controller
             $file = fopen('php://output', 'w');
 
             // Add CSV headers
-            fputcsv($file, ['#', 'Name', 'Email', 'Phone', 'University', 'Program', 'Status', 'Account Status', 'Created Date']);
+            fputcsv($file, [
+                '#',
+                'Name',
+                'Email',
+                'Phone',
+                'Passport',
+                'SSC (Year+Result)',
+                'HSC (Year+Result)',
+                'IELTS',
+                'University',
+                'Program',
+                'Status',
+                'Account Status',
+                'Created Date'
+            ]);
 
             // Add data rows
             foreach ($students as $index => $student) {
-                fputcsv($file, [
-                    $index + 1,
-                    $student->name,
-                    $student->email,
-                    $student->phone,
-                    $student->targetUniversity->name ?? 'N/A',
-                    $student->targetProgram->name ?? 'N/A',
-                    ucfirst($student->status),
-                    ucfirst($student->account_status),
-                    $student->created_at->format('Y-m-d H:i:s'),
-                ]);
+                try {
+                    // Format SSC
+                    $ssc = 'N/A';
+                    if (isset($student->ssc_year) || isset($student->ssc_result)) {
+                        $year = $student->ssc_year ?? '';
+                        $result = $student->ssc_result ?? '';
+                        if ($year || $result) {
+                            $ssc = trim($year . ' - ' . $result);
+                            $ssc = $ssc === '-' ? 'N/A' : $ssc;
+                        }
+                    }
+
+                    // Format HSC
+                    $hsc = 'N/A';
+                    if (isset($student->hsc_year) || isset($student->hsc_result)) {
+                        $year = $student->hsc_year ?? '';
+                        $result = $student->hsc_result ?? '';
+                        if ($year || $result) {
+                            $hsc = trim($year . ' - ' . $result);
+                            $hsc = $hsc === '-' ? 'N/A' : $hsc;
+                        }
+                    }
+
+                    // Format IELTS
+                    $ielts = 'No';
+                    if (isset($student->has_ielts) && $student->has_ielts) {
+                        $score = isset($student->ielts_score) && $student->ielts_score ? ' (' . $student->ielts_score . ')' : '';
+                        $ielts = 'Yes' . $score;
+                    }
+
+                    fputcsv($file, [
+                        $index + 1,
+                        $student->name ?? '',
+                        $student->email ?? '',
+                        $student->phone ?? '',
+                        $student->passport_number ?? 'N/A',
+                        $ssc,
+                        $hsc,
+                        $ielts,
+                        optional($student->targetUniversity)->name ?? 'N/A',
+                        optional($student->targetProgram)->name ?? 'N/A',
+                        ucfirst($student->status ?? 'new'),
+                        ucfirst($student->account_status ?? 'pending'),
+                        $student->created_at ? $student->created_at->format('Y-m-d H:i:s') : 'N/A',
+                    ]);
+                } catch (\Exception $e) {
+                    // Log error but continue processing other students
+                    Log::error('CSV Export Error for student ID ' . ($student->id ?? 'unknown') . ': ' . $e->getMessage());
+                    continue;
+                }
             }
 
             fclose($file);
