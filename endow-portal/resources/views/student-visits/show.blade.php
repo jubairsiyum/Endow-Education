@@ -94,11 +94,11 @@
                         <div class="col-md-12">
                             <label class="form-label text-muted small fw-semibold text-uppercase">Prospective Status</label>
                             <div>
-                                <span class="badge bg-{{ $studentVisit->status_color }} fs-6 px-3 py-2">
-                                    {{ $studentVisit->prospective_status }}
+                                <span class="badge bg-{{ $studentVisit->status_color ?? 'secondary' }} fs-6 px-3 py-2">
+                                    {{ $studentVisit->status_label ?? 'Not set' }}
                                 </span>
                                 <div class="text-muted small mt-2">
-                                    <i class="fas fa-info-circle me-1"></i>{{ $studentVisit->status_description }}
+                                    <i class="fas fa-info-circle me-1"></i>{{ $studentVisit->status_description ?? '' }}
                                 </div>
                             </div>
                         </div>

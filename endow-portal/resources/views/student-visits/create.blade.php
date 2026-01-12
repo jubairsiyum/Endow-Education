@@ -93,34 +93,6 @@
                                 </div>
                             </div>
 
-                            <!-- Prospective Status -->
-                            <div class="col-md-12">
-                                <label for="prospective_status" class="form-label fw-semibold">
-                                    Prospective Status <span class="text-danger">*</span>
-                                </label>
-                                <select class="form-select @error('prospective_status') is-invalid @enderror"
-                                        id="prospective_status"
-                                        name="prospective_status"
-                                        required>
-                                    <option value="">Select Status</option>
-                                    @foreach(\App\Models\StudentVisit::getStatuses() as $status)
-                                    <option value="{{ $status }}" {{ old('prospective_status', 'Prospective') == $status ? 'selected' : '' }}>
-                                        {{ $status }}
-                                    </option>
-                                    @endforeach
-                                </select>
-                                @error('prospective_status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <small class="text-muted">
-                                    <strong class="badge bg-primary">Prospective:</strong> Appears eligible and interested &nbsp;|&nbsp;
-                                    <strong class="badge bg-warning">Under Review:</strong> Profile evaluation in progress &nbsp;|&nbsp;
-                                    <strong class="badge bg-success">Eligibility Confirmed:</strong> Meets requirements &nbsp;|&nbsp;
-                                    <strong class="badge bg-info">Needs Counseling:</strong> Requires guidance &nbsp;|&nbsp;
-                                    <strong class="badge bg-danger">Not Eligible:</strong> Does not meet criteria
-                                </small>
-                            </div>
-
                             <!-- Assigned Employee (Only for Admins) -->
                             @if(Auth::user()->isAdmin() && $employees->count() > 0)
                             <div class="col-md-12">
@@ -148,27 +120,18 @@
                             <!-- Prospective Status -->
                             <div class="col-md-12">
                                 <label for="prospective_status" class="form-label fw-semibold">
-                                    Prospective Status
+                                    Prospective Status <span class="text-danger">*</span>
                                 </label>
                                 <select class="form-select @error('prospective_status') is-invalid @enderror"
                                         id="prospective_status"
-                                        name="prospective_status">
+                                        name="prospective_status"
+                                        required>
                                     <option value="">Select Status</option>
-                                    <option value="prospective_hot" {{ old('prospective_status') == 'prospective_hot' ? 'selected' : '' }}>
-                                        🔥 Prospective: Hot (Ready to enroll)
+                                    @foreach(\App\Models\StudentVisit::getStatuses() as $status)
+                                    <option value="{{ $status }}" {{ old('prospective_status') == $status ? 'selected' : '' }}>
+                                        {{ \App\Models\StudentVisit::getStatusLabel($status) }}
                                     </option>
-                                    <option value="prospective_warm" {{ old('prospective_status') == 'prospective_warm' ? 'selected' : '' }}>
-                                        🌡️ Prospective: Warm (Interested, needs follow-up)
-                                    </option>
-                                    <option value="prospective_cold" {{ old('prospective_status') == 'prospective_cold' ? 'selected' : '' }}>
-                                        ❄️ Prospective: Cold (Low interest)
-                                    </option>
-                                    <option value="prospective_not_interested" {{ old('prospective_status') == 'prospective_not_interested' ? 'selected' : '' }}>
-                                        ❌ Prospective: Not Interested
-                                    </option>
-                                    <option value="confirmed_student" {{ old('prospective_status') == 'confirmed_student' ? 'selected' : '' }} style="color: green; font-weight: bold;">
-                                        ✅ Confirmed Student (Green)
-                                    </option>
+                                    @endforeach
                                 </select>
                                 @error('prospective_status')
                                     <div class="invalid-feedback">{{ $message }}</div>
