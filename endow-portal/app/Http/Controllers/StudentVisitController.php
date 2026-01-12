@@ -56,6 +56,11 @@ class StudentVisitController extends Controller
                 $query->where('employee_id', $request->employee_id);
             }
 
+        // Filter by prospective status
+        if ($request->has('prospective_status') && $request->prospective_status != '') {
+            $query->where('prospective_status', $request->prospective_status);
+        }
+
             // Filter by date range
             if ($request->has('date_from') && $request->date_from != '') {
                 $query->whereDate('created_at', '>=', $request->date_from);
@@ -125,6 +130,10 @@ class StudentVisitController extends Controller
             'student_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+            'prospective_status' => [
+                'required',
+                Rule::in(StudentVisit::getStatuses())
+            ],
             'employee_id' => [
                 'nullable',
                 Rule::exists('users', 'id')
@@ -209,6 +218,10 @@ class StudentVisitController extends Controller
             'student_name' => 'required|string|max:255',
             'phone' => 'required|string|max:20',
             'email' => 'nullable|email|max:255',
+            'prospective_status' => [
+                'required',
+                Rule::in(StudentVisit::getStatuses())
+            ],
             'employee_id' => [
                 'nullable',
                 Rule::exists('users', 'id')

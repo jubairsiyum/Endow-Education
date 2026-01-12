@@ -94,6 +94,34 @@
                                 </div>
                             </div>
 
+                            <!-- Prospective Status -->
+                            <div class="col-md-12">
+                                <label for="prospective_status" class="form-label fw-semibold">
+                                    Prospective Status <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select @error('prospective_status') is-invalid @enderror"
+                                        id="prospective_status"
+                                        name="prospective_status"
+                                        required>
+                                    <option value="">Select Status</option>
+                                    @foreach(\App\Models\StudentVisit::getStatuses() as $status)
+                                    <option value="{{ $status }}" {{ old('prospective_status', $studentVisit->prospective_status) == $status ? 'selected' : '' }}>
+                                        {{ $status }}
+                                    </option>
+                                    @endforeach
+                                </select>
+                                @error('prospective_status')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <small class="text-muted">
+                                    <strong class="badge bg-primary">Prospective:</strong> Appears eligible and interested &nbsp;|&nbsp;
+                                    <strong class="badge bg-warning">Under Review:</strong> Profile evaluation in progress &nbsp;|&nbsp;
+                                    <strong class="badge bg-success">Eligibility Confirmed:</strong> Meets requirements &nbsp;|&nbsp;
+                                    <strong class="badge bg-info">Needs Counseling:</strong> Requires guidance &nbsp;|&nbsp;
+                                    <strong class="badge bg-danger">Not Eligible:</strong> Does not meet criteria
+                                </small>
+                            </div>
+
                             <!-- Assigned Employee (Only for Admins) -->
                             @if(Auth::user()->isAdmin() && $employees->count() > 0)
                             <div class="col-md-12">
