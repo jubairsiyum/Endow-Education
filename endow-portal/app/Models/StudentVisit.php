@@ -12,11 +12,43 @@ class StudentVisit extends Model
     /**
      * Prospective status constants
      */
-    public const STATUS_PROSPECTIVE = 'Prospective';
-    public const STATUS_UNDER_REVIEW = 'Under Review';
-    public const STATUS_ELIGIBILITY_CONFIRMED = 'Eligibility Confirmed';
-    public const STATUS_NEEDS_COUNSELING = 'Needs Counseling';
-    public const STATUS_NOT_ELIGIBLE = 'Not Eligible';
+    public const STATUS_PROSPECTIVE_HOT = 'prospective_hot';
+    public const STATUS_PROSPECTIVE_WARM = 'prospective_warm';
+    public const STATUS_PROSPECTIVE_COLD = 'prospective_cold';
+    public const STATUS_PROSPECTIVE_NOT_INTERESTED = 'prospective_not_interested';
+    public const STATUS_CONFIRMED_STUDENT = 'confirmed_student';
+
+    /**
+     * Status metadata for labels, colors and descriptions.
+     * Color values are Bootstrap contextual color names.
+     */
+    private const STATUS_META = [
+        self::STATUS_PROSPECTIVE_HOT => [
+            'label' => 'Prospective: Hot (Ready to enroll)',
+            'color' => 'danger',
+            'description' => 'High intent; ready to enroll with minimal follow-up.',
+        ],
+        self::STATUS_PROSPECTIVE_WARM => [
+            'label' => 'Prospective: Warm (Interested)',
+            'color' => 'warning',
+            'description' => 'Interested and engaged; needs follow-up.',
+        ],
+        self::STATUS_PROSPECTIVE_COLD => [
+            'label' => 'Prospective: Cold (Low interest)',
+            'color' => 'secondary',
+            'description' => 'Low intent; continue nurturing and checking in periodically.',
+        ],
+        self::STATUS_PROSPECTIVE_NOT_INTERESTED => [
+            'label' => 'Prospective: Not Interested',
+            'color' => 'secondary',
+            'description' => 'Not interested at this time.',
+        ],
+        self::STATUS_CONFIRMED_STUDENT => [
+            'label' => 'Confirmed Student',
+            'color' => 'success',
+            'description' => 'Enrollment confirmed.',
+        ],
+    ];
 
     /**
      * The attributes that are mass assignable.
@@ -30,7 +62,6 @@ class StudentVisit extends Model
         'prospective_status',
         'employee_id',
         'notes',
-        'prospective_status',
     ];
 
     /**
@@ -74,15 +105,17 @@ class StudentVisit extends Model
     /**
      * Get all available prospective statuses.
      */
-    public static function getStatuses()
+    public static function getStatuses(): array
     {
-        return [
-            self::STATUS_PROSPECTIVE,
-            self::STATUS_UNDER_REVIEW,
-            self::STATUS_ELIGIBILITY_CONFIRMED,
-            self::STATUS_NEEDS_COUNSELING,
-            self::STATUS_NOT_ELIGIBLE,
-        ];
+        return array_keys(self::STATUS_META);
+    }
+
+    /**
+     * Get a human-friendly label for a status value.
+     */
+    public static function getStatusLabel(string $status): string
+    {
+        return self::STATUS_META[$status]['label'] ?? ucwords(str_replace('_', ' ', $status));
     }
 
     /**
@@ -90,14 +123,7 @@ class StudentVisit extends Model
      */
     public function getStatusColorAttribute()
     {
-        return match($this->prospective_status) {
-            self::STATUS_PROSPECTIVE => 'primary',
-            self::STATUS_UNDER_REVIEW => 'warning',
-            self::STATUS_ELIGIBILITY_CONFIRMED => 'success',
-            self::STATUS_NEEDS_COUNSELING => 'info',
-            self::STATUS_NOT_ELIGIBLE => 'danger',
-            default => 'secondary',
-        };
+        return self::STATUS_META[$this->prospective_status]['color'] ?? 'secondary';
     }
 
     /**
@@ -105,13 +131,14 @@ class StudentVisit extends Model
      */
     public function getStatusDescriptionAttribute()
     {
-        return match($this->prospective_status) {
-            self::STATUS_PROSPECTIVE => 'Potential Student – Appears eligible and interested',
-            self::STATUS_UNDER_REVIEW => 'Profile evaluation in progress',
-            self::STATUS_ELIGIBILITY_CONFIRMED => 'Meets basic requirements',
-            self::STATUS_NEEDS_COUNSELING => 'Requires detailed guidance',
-            self::STATUS_NOT_ELIGIBLE => 'Does not meet criteria',
-            default => '',
-        };
+        return self::STATUS_META[$this->prospective_status]['description'] ?? '';
+    }
+
+    /**
+     * Human-friendly status label accessor.
+     */
+    public function getStatusLabelAttribute(): string
+    {
+        return self::getStatusLabel($this->prospective_status ?? '') ?? 'Not set';
     }
 }
