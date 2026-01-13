@@ -75,7 +75,7 @@ class StudentCsvExportService
             fputcsv($handle, $headers);
 
             // Build query
-            $query = Student::with(['university', 'program', 'assignedUser', 'creator']);
+            $query = Student::with(['targetUniversity', 'targetProgram', 'assignedUser', 'creator']);
 
             // Filter by IDs if provided
             if (!empty($studentIds)) {
@@ -115,8 +115,8 @@ class StudentCsvExportService
             'phone' => $student->phone ?? '',
             'country' => $student->country ?? '',
             'passport_number' => $student->passport_number ?? '',
-            'university' => $student->university?->name ?? '',
-            'program' => $student->program?->name ?? '',
+            'university' => $student->targetUniversity?->name ?? '',
+            'program' => $student->targetProgram?->name ?? '',
             'ssc_year' => $student->ssc_year ?? '',
             'ssc_result' => $student->ssc_result ?? '',
             'hsc_year' => $student->hsc_year ?? '',
