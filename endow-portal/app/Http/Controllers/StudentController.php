@@ -13,6 +13,7 @@ use App\Notifications\StudentAssignedNotification;
 use App\Notifications\StudentAccountCreatedNotification;
 use App\Services\ActivityLogService;
 use App\Services\ChecklistService;
+use App\Services\StudentCsvExportService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -24,11 +25,16 @@ class StudentController extends Controller
 {
     protected $activityLog;
     protected $checklistService;
+    protected $csvExportService;
 
-    public function __construct(ActivityLogService $activityLog, ChecklistService $checklistService)
-    {
+    public function __construct(
+        ActivityLogService $activityLog,
+        ChecklistService $checklistService,
+        StudentCsvExportService $csvExportService
+    ) {
         $this->activityLog = $activityLog;
         $this->checklistService = $checklistService;
+        $this->csvExportService = $csvExportService;
         $this->middleware('auth');
     }
 
@@ -732,5 +738,41 @@ class StudentController extends Controller
 
         // Shuffle to randomize position of required characters
         return str_shuffle($password);
+    }
+
+    /**
+     * Export students to CSV
+     */
+    public function export(Request $request)
+    {
+        $this->authorize('viewAny', Student::class);
+
+        // Get student IDs from request (for bulk export)
+        $studentIds = $request->input('student_ids', []);
+
+        // Get selected columns from request
+        $columns = $request->input('columns', []);
+
+        // Perform the export
+        return $this->csvExportService->export($studentIds, $columns);
+    }
+
+    /**
+     * Show export configuration page
+     */
+    public function exportForm(Request $request)
+    {
+        $this->authorize('viewAny', Student::class);
+
+        // Get student IDs from request (if bulk selecting)
+        $studentIds = $request->input('student_ids', []);
+
+        // Get available columns
+        $availableColumns = $this->csvExportService->getAvailableColumns();
+
+        // Get count of students to be exported
+        $exportCount = $this->csvExportService->getExportCount($studentIds);
+
+        return view('students.export', compact('availableColumns', 'studentIds', 'exportCount'));
     }
 }
