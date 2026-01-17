@@ -540,7 +540,7 @@
                                                     </div>
                                                     <div class="btn-group btn-group-sm ms-auto">
                                                         @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
-                                                            <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
+                                                            <a href="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
                                                                class="btn btn-outline-primary"
                                                                target="_blank"
                                                                rel="noopener noreferrer"
@@ -549,7 +549,6 @@
                                                             </a>
                                                             <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
                                                                class="btn btn-outline-success"
-                                                               download
                                                                title="Download">
                                                                 <i class="fas fa-download"></i>
                                                             </a>

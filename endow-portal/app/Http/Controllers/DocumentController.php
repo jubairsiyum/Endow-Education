@@ -187,7 +187,7 @@ class DocumentController extends Controller
     }
 
     /**
-     * View a document in browser
+     * View a document in browser (inline display)
      */
     public function view(Student $student = null, StudentDocument $document)
     {
@@ -208,7 +208,11 @@ class DocumentController extends Controller
             abort(404, 'Document file not found.');
         }
 
-        return view('students.documents.view', compact('student', 'document', 'fileContent'));
+        // Serve the file inline (view in browser) instead of forcing download
+        return response($fileContent)
+            ->header('Content-Type', $document->mime_type)
+            ->header('Content-Disposition', 'inline; filename="' . $document->filename . '"')
+            ->header('X-Content-Type-Options', 'nosniff');
     }
 
     /**
