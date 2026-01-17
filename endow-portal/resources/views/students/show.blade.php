@@ -1289,7 +1289,7 @@
             });
         }
 
-        // Document viewing with progress indicator and proper title
+        // Document viewing with progress indicator - No popup blocker issues
         document.addEventListener('DOMContentLoaded', function() {
             // Handle view document buttons with progress indicator
             document.querySelectorAll('.view-document-btn').forEach(button => {
@@ -1299,71 +1299,21 @@
                     const url = this.getAttribute('data-url');
                     const filename = this.getAttribute('data-filename');
 
-                    // Show loading indicator with SweetAlert
-                    let timerInterval;
+                    // Show quick loading toast
                     Swal.fire({
-                        title: 'Loading Document',
-                        html: '<div class="mb-3"><i class="fas fa-file-pdf fa-3x text-primary mb-3"></i></div>' +
-                              '<div><strong>' + filename + '</strong></div>' +
-                              '<div class="progress mt-3" style="height: 25px;">' +
-                              '<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>' +
-                              '</div>' +
-                              '<div class="mt-2 text-muted">Preparing document...</div>',
-                        allowOutsideClick: false,
+                        title: 'Opening Document',
+                        html: '<i class="fas fa-file-pdf fa-2x text-primary mb-2"></i><br><strong>' + filename + '</strong>',
+                        timer: 800,
+                        timerProgressBar: true,
                         showConfirmButton: false,
+                        allowOutsideClick: false,
                         didOpen: () => {
                             Swal.showLoading();
-                            const progressBar = Swal.getHtmlContainer().querySelector('.progress-bar');
-                            const statusText = Swal.getHtmlContainer().querySelector('.text-muted');
-                            let progress = 0;
-
-                            timerInterval = setInterval(() => {
-                                progress += Math.random() * 15;
-                                if (progress > 90) progress = 90; // Cap at 90% until actual load
-                                progressBar.style.width = progress + '%';
-
-                                if (progress < 30) {
-                                    statusText.textContent = 'Connecting to server...';
-                                } else if (progress < 60) {
-                                    statusText.textContent = 'Loading document...';
-                                } else {
-                                    statusText.textContent = 'Almost ready...';
-                                }
-                            }, 200);
-                        },
-                        willClose: () => {
-                            clearInterval(timerInterval);
                         }
+                    }).then(() => {
+                        // Navigate directly in new tab - no popup blocker
+                        window.open(url, '_blank', 'noopener,noreferrer');
                     });
-
-                    // Open document in new window with proper title
-                    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
-
-                    if (newWindow) {
-                        // Set the window title to filename
-                        newWindow.document.title = filename;
-
-                        // Close loading indicator after a short delay
-                        setTimeout(() => {
-                            const progressBar = Swal.getHtmlContainer()?.querySelector('.progress-bar');
-                            if (progressBar) {
-                                progressBar.style.width = '100%';
-                                progressBar.classList.remove('progress-bar-animated');
-                                progressBar.classList.add('bg-success');
-                            }
-                            setTimeout(() => {
-                                Swal.close();
-                            }, 300);
-                        }, 800);
-                    } else {
-                        Swal.close();
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Popup Blocked',
-                            text: 'Please allow popups for this site to view documents.',
-                            confirmButtonColor: '#DC143C'
-                        });
-                    }
                 });
             });
         });
