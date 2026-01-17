@@ -540,13 +540,13 @@
                                                     </div>
                                                     <div class="btn-group btn-group-sm ms-auto">
                                                         @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
-                                                            <a href="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
-                                                               class="btn btn-outline-primary"
-                                                               target="_blank"
-                                                               rel="noopener noreferrer"
-                                                               title="View in New Tab">
+                                                            <button type="button"
+                                                                    class="btn btn-outline-primary view-document-btn"
+                                                                    data-url="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
+                                                                    data-filename="{{ $document->filename }}"
+                                                                    title="View in New Tab">
                                                                 <i class="fas fa-eye"></i>
-                                                            </a>
+                                                            </button>
                                                             <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
                                                                class="btn btn-outline-success"
                                                                title="Download">
@@ -1288,6 +1288,85 @@
                 }
             });
         }
+
+        // Document viewing with progress indicator and proper title
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle view document buttons with progress indicator
+            document.querySelectorAll('.view-document-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const url = this.getAttribute('data-url');
+                    const filename = this.getAttribute('data-filename');
+
+                    // Show loading indicator with SweetAlert
+                    let timerInterval;
+                    Swal.fire({
+                        title: 'Loading Document',
+                        html: '<div class="mb-3"><i class="fas fa-file-pdf fa-3x text-primary mb-3"></i></div>' +
+                              '<div><strong>' + filename + '</strong></div>' +
+                              '<div class="progress mt-3" style="height: 25px;">' +
+                              '<div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>' +
+                              '</div>' +
+                              '<div class="mt-2 text-muted">Preparing document...</div>',
+                        allowOutsideClick: false,
+                        showConfirmButton: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                            const progressBar = Swal.getHtmlContainer().querySelector('.progress-bar');
+                            const statusText = Swal.getHtmlContainer().querySelector('.text-muted');
+                            let progress = 0;
+
+                            timerInterval = setInterval(() => {
+                                progress += Math.random() * 15;
+                                if (progress > 90) progress = 90; // Cap at 90% until actual load
+                                progressBar.style.width = progress + '%';
+
+                                if (progress < 30) {
+                                    statusText.textContent = 'Connecting to server...';
+                                } else if (progress < 60) {
+                                    statusText.textContent = 'Loading document...';
+                                } else {
+                                    statusText.textContent = 'Almost ready...';
+                                }
+                            }, 200);
+                        },
+                        willClose: () => {
+                            clearInterval(timerInterval);
+                        }
+                    });
+
+                    // Open document in new window with proper title
+                    const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+
+                    if (newWindow) {
+                        // Set the window title to filename
+                        newWindow.document.title = filename;
+
+                        // Close loading indicator after a short delay
+                        setTimeout(() => {
+                            const progressBar = Swal.getHtmlContainer()?.querySelector('.progress-bar');
+                            if (progressBar) {
+                                progressBar.style.width = '100%';
+                                progressBar.classList.remove('progress-bar-animated');
+                                progressBar.classList.add('bg-success');
+                            }
+                            setTimeout(() => {
+                                Swal.close();
+                            }, 300);
+                        }, 800);
+                    } else {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Popup Blocked',
+                            text: 'Please allow popups for this site to view documents.',
+                            confirmButtonColor: '#DC143C'
+                        });
+                    }
+                });
+            });
+        });
 
         // Display success messages with SweetAlert
         @if(session('success'))
