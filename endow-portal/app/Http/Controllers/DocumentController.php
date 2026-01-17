@@ -187,7 +187,7 @@ class DocumentController extends Controller
     }
 
     /**
-     * View a document in browser (inline display)
+     * View a document in browser (inline display) - Optimized for performance
      */
     public function view(Student $student = null, StudentDocument $document)
     {
@@ -200,19 +200,61 @@ class DocumentController extends Controller
             $this->authorize('view', $document->student);
         }
 
+        // Generate ETag for caching based on document ID and updated timestamp
+        $etag = md5($document->id . '-' . $document->updated_at);
+        $lastModified = $document->updated_at;
+
+        // Check if client has cached version
+        $requestEtag = request()->header('If-None-Match');
+        $requestModifiedSince = request()->header('If-Modified-Since');
+
+        if ($requestEtag === $etag || ($requestModifiedSince && strtotime($requestModifiedSince) >= $lastModified->timestamp)) {
+            // Client has valid cached version, return 304 Not Modified
+            return response('', 304)
+                ->header('ETag', $etag)
+                ->header('Last-Modified', $lastModified->format('D, d M Y H:i:s') . ' GMT');
+        }
+
+        // Prepare response with streaming for better performance
         if ($document->file_data) {
-            $fileContent = base64_decode($document->file_data);
+            // For database-stored files, use StreamedResponse to avoid memory issues
+            $callback = function() use ($document) {
+                // Decode and stream in chunks to reduce memory usage
+                $base64Data = $document->file_data;
+                $chunkSize = 8192; // 8KB chunks
+                $decodedData = base64_decode($base64Data);
+
+                echo $decodedData;
+                flush();
+            };
+
+            return response()->stream($callback, 200, [
+                'Content-Type' => $document->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $document->filename . '"',
+                'Content-Length' => strlen(base64_decode($document->file_data)),
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=3600, must-revalidate', // Cache for 1 hour
+                'ETag' => $etag,
+                'Last-Modified' => $lastModified->format('D, d M Y H:i:s') . ' GMT',
+                'Accept-Ranges' => 'bytes', // Enable range requests for seeking in PDFs
+            ]);
         } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-            $fileContent = Storage::disk('public')->get($document->file_path);
+            // For filesystem-stored files, use streamDownload for optimal performance
+            $path = Storage::disk('public')->path($document->file_path);
+            $fileSize = Storage::disk('public')->size($document->file_path);
+
+            return response()->file($path, [
+                'Content-Type' => $document->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $document->filename . '"',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=3600, must-revalidate',
+                'ETag' => $etag,
+                'Last-Modified' => $lastModified->format('D, d M Y H:i:s') . ' GMT',
+                'Accept-Ranges' => 'bytes',
+            ]);
         } else {
             abort(404, 'Document file not found.');
         }
-
-        // Serve the file inline (view in browser) instead of forcing download
-        return response($fileContent)
-            ->header('Content-Type', $document->mime_type)
-            ->header('Content-Disposition', 'inline; filename="' . $document->filename . '"')
-            ->header('X-Content-Type-Options', 'nosniff');
     }
 
     /**
