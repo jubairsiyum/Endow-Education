@@ -540,14 +540,16 @@
                                                     </div>
                                                     <div class="btn-group btn-group-sm ms-auto">
                                                         @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
-                                                            <button type="button"
-                                                                    class="btn btn-outline-primary"
-                                                                    onclick="viewDocument({{ $document->id }}, '{{ addslashes($document->filename ?? 'Document') }}')"
-                                                                    title="View">
+                                                            <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
+                                                               class="btn btn-outline-primary"
+                                                               target="_blank"
+                                                               rel="noopener noreferrer"
+                                                               title="View in New Tab">
                                                                 <i class="fas fa-eye"></i>
-                                                            </button>
+                                                            </a>
                                                             <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
                                                                class="btn btn-outline-success"
+                                                               download
                                                                title="Download">
                                                                 <i class="fas fa-download"></i>
                                                             </a>
