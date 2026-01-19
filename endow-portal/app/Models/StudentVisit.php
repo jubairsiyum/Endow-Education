@@ -25,7 +25,7 @@ class StudentVisit extends Model
     private const STATUS_META = [
         self::STATUS_PROSPECTIVE_HOT => [
             'label' => 'Prospective: Hot (Ready to enroll)',
-            'color' => 'danger',
+            'color' => 'success',
             'description' => 'High intent; ready to enroll with minimal follow-up.',
         ],
         self::STATUS_PROSPECTIVE_WARM => [
@@ -40,12 +40,12 @@ class StudentVisit extends Model
         ],
         self::STATUS_PROSPECTIVE_NOT_INTERESTED => [
             'label' => 'Prospective: Not Interested',
-            'color' => 'secondary',
+            'color' => 'danger',
             'description' => 'Not interested at this time.',
         ],
         self::STATUS_CONFIRMED_STUDENT => [
             'label' => 'Confirmed Student',
-            'color' => 'success',
+            'color' => 'primary',
             'description' => 'Enrollment confirmed.',
         ],
     ];
