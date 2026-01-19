@@ -158,12 +158,12 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('student-visits.show', $visit) }}"
+                                <a href="{{ route('student-visits.show', $visit) }}?page={{ request('page', 1) }}"
                                    class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @can('update', $visit)
-                                <a href="{{ route('student-visits.edit', $visit) }}"
+                                <a href="{{ route('student-visits.edit', $visit) }}?page={{ request('page', 1) }}"
                                    class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
@@ -175,6 +175,7 @@
                                       id="delete-visit-form-{{ $visit->id }}">
                                     @csrf
                                     @method('DELETE')
+                                    <input type="hidden" name="page" value="{{ request('page', 1) }}">
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
                                             onclick="confirmDeleteVisitIndex({{ $visit->id }})">
                                         <i class="fas fa-trash"></i>

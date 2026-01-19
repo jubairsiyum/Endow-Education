@@ -19,12 +19,12 @@
     @endif
 
     <div class="mb-3 d-flex justify-content-between align-items-center">
-        <a href="{{ route('student-visits.index') }}" class="btn btn-sm btn-outline-secondary">
+        <a href="{{ route('student-visits.index', ['page' => request('page', 1)]) }}" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Visits
         </a>
         <div class="btn-group">
             @if(Auth::user()->isAdmin() || $studentVisit->employee_id == Auth::id())
-            <a href="{{ route('student-visits.edit', $studentVisit) }}" class="btn btn-sm btn-warning">
+            <a href="{{ route('student-visits.edit', $studentVisit) }}?page={{ request('page', 1) }}" class="btn btn-sm btn-warning">
                 <i class="fas fa-edit me-1"></i> Edit
             </a>
             <form action="{{ route('student-visits.destroy', $studentVisit) }}"
@@ -33,6 +33,7 @@
                   id="delete-visit-form">
                 @csrf
                 @method('DELETE')
+                <input type="hidden" name="page" value="{{ request('page', 1) }}">
                 <button type="button" class="btn btn-sm btn-danger"
                         onclick="confirmDeleteVisit()">
                     <i class="fas fa-trash me-1"></i> Delete

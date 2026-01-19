@@ -5,7 +5,7 @@
 
 @section('content')
     <div class="mb-3">
-        <a href="{{ route('student-visits.index') }}" class="btn btn-sm btn-outline-secondary">
+        <a href="{{ route('student-visits.index', ['page' => request('page', 1)]) }}" class="btn btn-sm btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i> Back to Visits
         </a>
     </div>
@@ -36,6 +36,9 @@
                     <form action="{{ route('student-visits.update', $studentVisit) }}" method="POST">
                         @csrf
                         @method('PUT')
+
+                        <!-- Hidden field to preserve pagination page -->
+                        <input type="hidden" name="page" value="{{ request('page', 1) }}">
 
                         <div class="row g-3">
                             <!-- Student Name -->
@@ -156,7 +159,7 @@
                             <button type="submit" class="btn btn-danger px-4">
                                 <i class="fas fa-save me-2"></i>Update Visit Record
                             </button>
-                            <a href="{{ route('student-visits.index') }}" class="btn btn-outline-secondary px-4">
+                            <a href="{{ route('student-visits.index', ['page' => request('page', 1)]) }}" class="btn btn-outline-secondary px-4">
                                 Cancel
                             </a>
                         </div>

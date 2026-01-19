@@ -248,7 +248,9 @@ class StudentVisitController extends Controller
             ['student_name' => $studentVisit->student_name, 'phone' => $studentVisit->phone]
         );
 
-        return redirect()->route('student-visits.index')
+        // Preserve pagination page in redirect
+        $redirectParams = $request->only(['page']);
+        return redirect()->route('student-visits.index', $redirectParams)
             ->with('success', 'Student visit record updated successfully.');
     }
 
@@ -272,7 +274,9 @@ class StudentVisitController extends Controller
 
         $studentVisit->delete();
 
-        return redirect()->route('student-visits.index')
+        // Preserve pagination page in redirect
+        $redirectParams = request()->only(['page']);
+        return redirect()->route('student-visits.index', $redirectParams)
             ->with('success', 'Student visit record deleted successfully.');
     }
 }
