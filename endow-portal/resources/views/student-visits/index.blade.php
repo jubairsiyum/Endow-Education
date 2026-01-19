@@ -138,9 +138,16 @@
                         <td>
                             @if($visit->employee)
                             <div class="d-flex align-items-center">
-                                <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; font-size: 0.7rem;">
-                                    {{ strtoupper(substr($visit->employee->name, 0, 2)) }}
-                                </div>
+                                @if($visit->employee->photo_path && file_exists(public_path('storage/' . $visit->employee->photo_path)))
+                                    <img src="{{ asset('storage/' . $visit->employee->photo_path) }}"
+                                         alt="{{ $visit->employee->name }}"
+                                         class="rounded-circle me-2"
+                                         style="width: 28px; height: 28px; object-fit: cover;">
+                                @else
+                                    <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 28px; height: 28px; font-size: 0.7rem;">
+                                        {{ strtoupper(substr($visit->employee->name, 0, 2)) }}
+                                    </div>
+                                @endif
                                 <span class="small">{{ $visit->employee->name }}</span>
                             </div>
                             @else
