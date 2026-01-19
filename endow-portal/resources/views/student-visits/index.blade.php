@@ -201,12 +201,12 @@
 
         @if($visits->hasPages())
         <div class="card-footer bg-white border-top">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row justify-content-between align-items-center gap-2 py-2">
                 <div class="text-muted small">
                     Showing {{ $visits->firstItem() }} to {{ $visits->lastItem() }} of {{ $visits->total() }} visits
                 </div>
-                <div>
-                    {{ $visits->links() }}
+                <div class="pagination-wrapper">
+                    {{ $visits->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>
@@ -214,6 +214,73 @@
     </div>
 
 @push('scripts')
+<style>
+    /* Compact pagination styling */
+    .pagination-wrapper .pagination {
+        margin-bottom: 0;
+    }
+
+    .pagination-wrapper .page-link {
+        padding: 0.375rem 0.75rem;
+        font-size: 0.875rem;
+        line-height: 1.5;
+    }
+
+    .pagination-wrapper .page-item:first-child .page-link,
+    .pagination-wrapper .page-item:last-child .page-link {
+        padding: 0.375rem 0.65rem;
+    }
+
+    /* Smaller arrows */
+    .pagination-wrapper .page-link svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    /* Active page styling - white text on red background */
+    .pagination-wrapper .page-item.active .page-link {
+        background-color: #DC143C;
+        border-color: #DC143C;
+        color: #ffffff !important;
+    }
+
+    /* Hover effect for non-active pages */
+    .pagination-wrapper .page-link:hover {
+        background-color: #fff5f5;
+        border-color: #DC143C;
+        color: #DC143C;
+    }
+
+    /* Disabled state */
+    .pagination-wrapper .page-item.disabled .page-link {
+        color: #6c757d;
+        background-color: #fff;
+        border-color: #dee2e6;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 576px) {
+        .pagination-wrapper .pagination {
+            font-size: 0.75rem;
+        }
+
+        .pagination-wrapper .page-link {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.75rem;
+        }
+
+        .pagination-wrapper .page-item:first-child .page-link,
+        .pagination-wrapper .page-item:last-child .page-link {
+            padding: 0.25rem 0.4rem;
+        }
+
+        .pagination-wrapper .page-link svg {
+            width: 0.75rem;
+            height: 0.75rem;
+        }
+    }
+</style>
+
 <script>
     function confirmDeleteVisitIndex(visitId) {
         Swal.fire({
@@ -231,6 +298,6 @@
             }
         });
     }
-</script>
+</style>
 @endpush
 @endsection
