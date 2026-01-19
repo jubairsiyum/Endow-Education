@@ -45,7 +45,7 @@ class StudentVisit extends Model
         ],
         self::STATUS_CONFIRMED_STUDENT => [
             'label' => 'Confirmed Student',
-            'color' => 'primary',
+            'color' => 'info',
             'description' => 'Enrollment confirmed.',
         ],
     ];
