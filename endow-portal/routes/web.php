@@ -142,6 +142,7 @@ Route::middleware(['auth'])->group(function () {
 // Checklist Item Routes (Admin/Employee only)
 Route::middleware(['auth', 'can:create checklists'])->group(function () {
     Route::resource('checklist-items', ChecklistItemController::class);
+    Route::post('checklist-items/reorder', [ChecklistItemController::class, 'reorder'])->name('checklist-items.reorder');
 });
 
 // Contact Submission Routes (Admin/Employee only)

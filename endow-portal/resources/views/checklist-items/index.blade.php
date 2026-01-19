@@ -298,6 +298,87 @@
             }
         });
     }
+
+    // Drag and Drop functionality using SortableJS
+    document.addEventListener('DOMContentLoaded', function() {
+        const tbody = document.getElementById('sortable-checklist');
+        if (tbody) {
+            new Sortable(tbody, {
+                animation: 150,
+                handle: '.fa-grip-vertical',
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onEnd: function(evt) {
+                    // Get all row IDs in new order
+                    const items = [];
+                    const rows = tbody.querySelectorAll('tr[data-id]');
+                    rows.forEach((row, index) => {
+                        const id = row.getAttribute('data-id');
+                        items.push(id);
+                        // Update order badge
+                        const badge = row.querySelector('.badge.bg-secondary');
+                        if (badge) {
+                            badge.textContent = index + 1;
+                        }
+                    });
+
+                    // Send AJAX request to update order
+                    fetch('{{ route('checklist-items.reorder') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({ items: items })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success notification
+                            const Toast = Swal.mixin({
+                                toast: true,
+                                position: 'top-end',
+                                showConfirmButton: false,
+                                timer: 2000,
+                                timerProgressBar: true,
+                            });
+                            Toast.fire({
+                                icon: 'success',
+                                title: 'Order updated successfully'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error updating order:', error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to update order. Please refresh the page.'
+                        });
+                    });
+                }
+            });
+        }
+    });
     </script>
+
+    <style>
+    .sortable-ghost {
+        opacity: 0.4;
+        background-color: #f8f9fa;
+    }
+    .sortable-drag {
+        opacity: 1;
+        background-color: #fff;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    }
+    .fa-grip-vertical:hover {
+        color: #DC143C !important;
+        cursor: grab;
+    }
+    .fa-grip-vertical:active {
+        cursor: grabbing;
+    }
+    </style>
 </div>
 @endsection

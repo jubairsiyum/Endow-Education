@@ -123,4 +123,18 @@ class ChecklistItemController extends Controller
             ->route('checklist-items.index')
             ->with('success', 'Checklist item deleted successfully!');
     }
+
+    /**
+     * Reorder checklist items.
+     */
+    public function reorder(Request $request)
+    {
+        $items = $request->input('items', []);
+
+        foreach ($items as $index => $itemId) {
+            ChecklistItem::where('id', $itemId)->update(['order' => $index + 1]);
+        }
+
+        return response()->json(['success' => true, 'message' => 'Order updated successfully']);
+    }
 }
