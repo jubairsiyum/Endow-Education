@@ -1161,7 +1161,8 @@
                         <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar">
                                 @if(Auth::user()->photo_path)
-                                    <img src="{{ storage_url(Auth::user()->photo_path) }}" alt="{{ Auth::user()->name }}">
+                                    {{-- <img src="{{ storage_url(Auth::user()->photo_path) }}" alt="{{ Auth::user()->name }}"> --}}
+                                    <img src="{{ asset('storage/' . Auth::user()->photo_path) }}" alt="{{ Auth::user()->name }}">
                                 @else
                                     {{ strtoupper(substr(Auth::user()->name, 0, 1)) }}
                                 @endif
