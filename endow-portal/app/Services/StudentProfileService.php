@@ -19,7 +19,7 @@ class StudentProfileService
         return DB::transaction(function () use ($data) {
             // Generate registration ID
             $data['registration_id'] = $this->generateRegistrationId();
-            
+
             // Hash password if provided
             if (isset($data['password'])) {
                 $data['password'] = Hash::make($data['password']);
@@ -66,12 +66,14 @@ class StudentProfileService
         return DB::transaction(function () use ($student, $data) {
             // Update student basic info
             $studentData = array_intersect_key($data, array_flip([
-                'name', 'surname', 'given_names', 'email', 'phone', 
-                'date_of_birth', 'gender', 'nationality', 'country', 
-                'address', 'city', 'postal_code', 'status', 
+                'name', 'surname', 'given_names', 'email', 'phone',
+                'date_of_birth', 'gender', 'nationality', 'country',
+                'address', 'city', 'postal_code', 'status',
                 'account_status', 'notes', 'father_name', 'mother_name',
                 'passport_number', 'passport_expiry_date', 'emergency_contact_name',
-                'emergency_contact_phone', 'emergency_contact_relationship'
+                'emergency_contact_phone', 'emergency_contact_relationship',
+                'ssc_year', 'ssc_result', 'hsc_year', 'hsc_result',
+                'has_ielts', 'ielts_score'
             ]));
 
             $student->update($studentData);
@@ -144,7 +146,7 @@ class StudentProfileService
     {
         $prefix = 'STU';
         $year = date('Y');
-        
+
         do {
             $random = str_pad(rand(0, 9999), 4, '0', STR_PAD_LEFT);
             $registrationId = "{$prefix}{$year}{$random}";

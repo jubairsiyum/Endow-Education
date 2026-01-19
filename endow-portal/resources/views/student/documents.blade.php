@@ -166,55 +166,60 @@
                                         </div>
                                     </div>
 
-                                    @if($isRejected && $studentChecklist->feedback)
-                                        <div class="rejection-feedback">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <span>{{ $studentChecklist->feedback }}</span>
-                                        </div>
-                                    @endif
                                 @endif
 
                                 @if($isRejected && $studentChecklist && $studentChecklist->document_path)
-                                    <!-- Resubmit Form for Rejected Documents -->
-                                    <div class="alert alert-warning mb-3">
-                                        <strong><i class="fas fa-info-circle me-2"></i>Document Rejected</strong>
-                                        <p class="mb-2 small">Please review the feedback and upload a corrected document.</p>
-                                    </div>
-                                    <form action="{{ route('student.checklist.resubmit', $studentChecklist->id) }}"
-                                          method="POST"
-                                          enctype="multipart/form-data"
-                                          class="modern-upload-form"
-                                          id="resubmit-form-{{ $item->id }}">
-                                        @csrf
-                                        <div class="upload-area" id="resubmit-area-{{ $item->id }}">
-                                            <input type="file"
-                                                   name="document"
-                                                   id="resubmit-input-{{ $item->id }}"
-                                                   class="file-input"
-                                                   accept=".pdf,.jpg,.jpeg,.png"
-                                                   required
-                                                   onchange="handleFileSelect({{ $item->id }}, this, true)">
-                                            <label for="resubmit-input-{{ $item->id }}" class="upload-label">
-                                                <div class="upload-icon">
-                                                    <i class="fas fa-redo-alt fa-2x"></i>
-                                                </div>
-                                                <div class="upload-text">
-                                                    <span class="upload-main">Resubmit Corrected Document</span>
-                                                    <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
-                                                </div>
-                                            </label>
-                                            <div class="selected-file" id="resubmit-selected-{{ $item->id }}" style="display: none;">
-                                                <i class="fas fa-file-alt"></i>
-                                                <span class="filename"></span>
-                                                <button type="button" class="clear-file" onclick="clearResubmitSelection({{ $item->id }})">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
+                                    <!-- Compact Rejection Notice with Inline Resubmit -->
+                                    <div class="rejection-compact-card">
+                                        <div class="rejection-header">
+                                            <div class="rejection-icon-wrapper">
+                                                <i class="fas fa-exclamation-circle"></i>
+                                            </div>
+                                            <div class="rejection-content">
+                                                <h6 class="rejection-title">Document Rejected</h6>
+                                                @if($studentChecklist->feedback)
+                                                    <p class="rejection-message">{{ $studentChecklist->feedback }}</p>
+                                                @else
+                                                    <p class="rejection-message">Please upload a corrected document.</p>
+                                                @endif
                                             </div>
                                         </div>
-                                        <button type="submit" class="btn btn-warning btn-upload w-100 mt-2" id="resubmit-btn-{{ $item->id }}" style="display: none;">
-                                            <i class="fas fa-redo me-2"></i>Resubmit Document
-                                        </button>
-                                    </form>
+
+                                        <form action="{{ route('student.checklist.resubmit', $studentChecklist->id) }}"
+                                              method="POST"
+                                              enctype="multipart/form-data"
+                                              class="compact-resubmit-form"
+                                              id="resubmit-form-{{ $item->id }}">
+                                            @csrf
+                                            <div class="compact-upload-row">
+                                                <div class="upload-area-compact" id="resubmit-area-{{ $item->id }}">
+                                                    <input type="file"
+                                                           name="document"
+                                                           id="resubmit-input-{{ $item->id }}"
+                                                           class="file-input"
+                                                           accept=".pdf,.jpg,.jpeg,.png"
+                                                           required
+                                                           onchange="handleFileSelect({{ $item->id }}, this, true)">
+                                                    <label for="resubmit-input-{{ $item->id }}" class="compact-upload-label">
+                                                        <i class="fas fa-paperclip me-2"></i>
+                                                        <span class="label-text">Choose corrected file</span>
+                                                        <span class="label-hint">PDF, JPG, PNG</span>
+                                                    </label>
+                                                    <div class="selected-file-compact" id="resubmit-selected-{{ $item->id }}" style="display: none;">
+                                                        <i class="fas fa-check-circle me-2"></i>
+                                                        <span class="filename"></span>
+                                                        <button type="button" class="clear-file-compact" onclick="clearResubmitSelection({{ $item->id }})">
+                                                            <i class="fas fa-times"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                <button type="submit" class="btn-resubmit-compact" id="resubmit-btn-{{ $item->id }}" style="display: none;">
+                                                    <i class="fas fa-redo me-1"></i>
+                                                    Resubmit
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
                                 @elseif($canEdit && !($studentChecklist && $studentChecklist->document_path))
                                     <!-- Initial Upload Form -->
                                     <form action="{{ route('student.checklist.upload', $item->id) }}"
@@ -294,11 +299,11 @@
                         <h3 class="fw-bold mb-1" id="progressPercentage">{{ $progressPercentage }}%</h3>
                         <p class="text-muted mb-0">Complete</p>
                         <div class="progress mt-3" style="height: 8px;">
-                            <div class="progress-bar bg-danger" role="progressbar" 
-                                 style="width: {{ $progressPercentage }}%; transition: width 1s ease;" 
+                            <div class="progress-bar bg-danger" role="progressbar"
+                                 style="width: {{ $progressPercentage }}%; transition: width 1s ease;"
                                  id="progressBar"
-                                 aria-valuenow="{{ $progressPercentage }}" 
-                                 aria-valuemin="0" 
+                                 aria-valuenow="{{ $progressPercentage }}"
+                                 aria-valuemin="0"
                                  aria-valuemax="100"></div>
                         </div>
                     </div>
@@ -651,42 +656,55 @@
         background: white;
         border: 2px solid #e9ecef;
         border-radius: 12px;
-        padding: 15px;
-        margin-bottom: 15px;
+        padding: 12px 15px;
+        margin-bottom: 12px;
+        transition: all 0.3s ease;
+    }
+
+    .uploaded-doc:hover {
+        border-color: #DC143C;
+        box-shadow: 0 3px 12px rgba(220, 20, 60, 0.08);
     }
 
     .file-preview {
         display: flex;
         align-items: center;
-        gap: 15px;
-        margin-bottom: 10px;
+        gap: 12px;
+    }
+
+    .file-preview i {
+        font-size: 28px;
     }
 
     .file-details {
         flex: 1;
+        min-width: 0;
     }
 
     .file-name {
         font-weight: 600;
+        font-size: 13px;
         color: #1a1a1a;
-        margin-bottom: 3px;
+        margin-bottom: 2px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
     }
 
     .file-meta {
-        font-size: 12px;
+        font-size: 11px;
         color: #6c757d;
     }
 
     .file-actions {
         display: flex;
-        gap: 8px;
+        gap: 6px;
+        flex-shrink: 0;
     }
 
     .file-actions .btn {
         border-radius: 8px;
+        padding: 6px 10px;
     }
 
     /* Rejection Feedback */
@@ -711,6 +729,179 @@
         font-size: 13px;
         color: #721c24;
         line-height: 1.5;
+    }
+
+    /* Compact Rejection Card - New Optimized Design */
+    .rejection-compact-card {
+        background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
+        border: 2px solid #ffcdd2;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 0;
+        box-shadow: 0 2px 8px rgba(220, 20, 60, 0.08);
+    }
+
+    .rejection-header {
+        display: flex;
+        align-items: start;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .rejection-icon-wrapper {
+        flex-shrink: 0;
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        box-shadow: 0 3px 10px rgba(220, 20, 60, 0.3);
+    }
+
+    .rejection-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .rejection-title {
+        font-size: 14px;
+        font-weight: 700;
+        color: #c62828;
+        margin: 0 0 4px 0;
+    }
+
+    .rejection-message {
+        font-size: 13px;
+        color: #d32f2f;
+        margin: 0;
+        line-height: 1.5;
+        font-weight: 500;
+    }
+
+    .compact-resubmit-form {
+        margin: 0;
+    }
+
+    .compact-upload-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+    }
+
+    .upload-area-compact {
+        flex: 1;
+        position: relative;
+        min-height: 48px;
+    }
+
+    .compact-upload-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px 16px;
+        background: white;
+        border: 2px dashed #ffcdd2;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+
+    .compact-upload-label:hover {
+        border-color: #DC143C;
+        background: #fff5f5;
+        transform: translateY(-1px);
+    }
+
+    .compact-upload-label i {
+        color: #DC143C;
+        font-size: 16px;
+    }
+
+    .label-text {
+        font-weight: 600;
+        font-size: 13px;
+        color: #1a1a1a;
+    }
+
+    .label-hint {
+        font-size: 11px;
+        color: #6c757d;
+        margin-left: auto;
+        font-weight: 500;
+    }
+
+    .selected-file-compact {
+        display: flex;
+        align-items: center;
+        padding: 10px 16px;
+        background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+        border: 2px solid #81c784;
+        border-radius: 8px;
+        color: #2e7d32;
+        font-size: 13px;
+        font-weight: 600;
+        height: 100%;
+    }
+
+    .selected-file-compact i {
+        color: #4caf50;
+    }
+
+    .selected-file-compact .filename {
+        flex: 1;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        margin-right: 8px;
+    }
+
+    .clear-file-compact {
+        background: rgba(220, 20, 60, 0.1);
+        border: none;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #DC143C;
+        font-size: 11px;
+        transition: all 0.2s;
+        flex-shrink: 0;
+    }
+
+    .clear-file-compact:hover {
+        background: #DC143C;
+        color: white;
+    }
+
+    .btn-resubmit-compact {
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+        box-shadow: 0 3px 12px rgba(220, 20, 60, 0.3);
+    }
+
+    .btn-resubmit-compact:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 18px rgba(220, 20, 60, 0.4);
+    }
+
+    .btn-resubmit-compact:active {
+        transform: translateY(0);
     }
 
     /* Progress Sidebar */
@@ -749,6 +940,46 @@
             height: 45px;
             font-size: 18px;
         }
+
+        /* Compact rejection card responsive */
+        .compact-upload-row {
+            flex-direction: column;
+        }
+
+        .btn-resubmit-compact {
+            width: 100%;
+        }
+
+        .label-hint {
+            display: none;
+        }
+
+        .rejection-compact-card {
+            padding: 12px;
+        }
+
+        .rejection-header {
+            gap: 10px;
+        }
+
+        .rejection-icon-wrapper {
+            width: 32px;
+            height: 32px;
+            font-size: 14px;
+        }
+
+        .rejection-title {
+            font-size: 13px;
+        }
+
+        .rejection-message {
+            font-size: 12px;
+        }
+
+        .file-actions .btn {
+            padding: 5px 8px;
+            font-size: 12px;
+        }
     }
 
     /* Loading State */
@@ -783,14 +1014,14 @@
 <script>
     // Document Upload Script - Manual Button Version
     console.log('Documents page script loading...');
-    
+
     // Define functions in window scope for inline handlers
     window.deleteDocument = function(checklistId, status) {
         const isApproved = status === 'approved' || status === 'completed';
-        
+
         Swal.fire({
             title: isApproved ? 'Remove Approved Document?' : 'Remove Document?',
-            html: isApproved 
+            html: isApproved
                 ? '<p class="text-warning mb-2"><i class="fas fa-exclamation-triangle"></i> <strong>Warning:</strong> This document has been approved.</p><p>Removing it will reset the status and you will need to resubmit it for approval.</p><p class="mt-3">Are you sure you want to proceed?</p>'
                 : '<p>Are you sure you want to remove this document?</p><p class="text-muted small">You can upload a new document after removal.</p>',
             icon: isApproved ? 'warning' : 'question',
@@ -803,7 +1034,7 @@
             if (result.isConfirmed) {
                 const form = document.getElementById('deleteForm');
                 form.action = `/student/checklist/${checklistId}`;
-                
+
                 // Show loading
                 Swal.fire({
                     title: 'Removing Document',
@@ -814,7 +1045,7 @@
                         Swal.showLoading();
                     }
                 });
-                
+
                 form.submit();
             }
         });

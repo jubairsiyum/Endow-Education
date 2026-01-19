@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('student_name');
             $table->string('phone');
             $table->string('email')->nullable();
+            $table->string('prospective_status')->default('prospective_warm');
             $table->foreignId('employee_id')->nullable()->constrained('users')->onDelete('set null');
             $table->longText('notes')->nullable();
             $table->timestamps();
@@ -23,6 +24,7 @@ return new class extends Migration
             // Indexes for faster queries
             $table->index('employee_id');
             $table->index('created_at');
+            $table->index('prospective_status');
         });
     }
 

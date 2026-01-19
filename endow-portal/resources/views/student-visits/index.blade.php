@@ -58,7 +58,7 @@
                         <option value="">All Statuses</option>
                         @foreach(\App\Models\StudentVisit::getStatuses() as $status)
                         <option value="{{ $status }}" {{ request('prospective_status') == $status ? 'selected' : '' }}>
-                            {{ $status }}
+                            {{ \App\Models\StudentVisit::getStatusLabel($status) }}
                         </option>
                         @endforeach
                     </select>
@@ -129,10 +129,10 @@
                             @endif
                         </td>
                         <td>
-                            <span class="badge bg-{{ $visit->status_color }}"
-                                  title="{{ $visit->status_description }}"
+                            <span class="badge bg-{{ $visit->status_color ?? 'secondary' }}"
+                                  title="{{ $visit->status_description ?? '' }}"
                                   data-bs-toggle="tooltip">
-                                {{ $visit->prospective_status }}
+                                {{ $visit->status_label ?? 'Not set' }}
                             </span>
                         </td>
                         <td>

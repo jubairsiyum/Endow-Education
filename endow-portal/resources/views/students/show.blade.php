@@ -541,9 +541,10 @@
                                                     <div class="btn-group btn-group-sm ms-auto">
                                                         @if($document->file_data || ($document->file_path && \Storage::disk('public')->exists($document->file_path)))
                                                             <button type="button"
-                                                                    class="btn btn-outline-primary"
-                                                                    onclick="viewDocument({{ $document->id }}, '{{ addslashes($document->filename ?? 'Document') }}')"
-                                                                    title="View">
+                                                                    class="btn btn-outline-primary view-document-btn"
+                                                                    data-url="{{ route('students.documents.view', ['student' => $student, 'document' => $document]) }}"
+                                                                    data-filename="{{ $document->filename }}"
+                                                                    title="View in New Tab">
                                                                 <i class="fas fa-eye"></i>
                                                             </button>
                                                             <a href="{{ route('students.documents.download', ['student' => $student, 'document' => $document]) }}"
@@ -1287,6 +1288,35 @@
                 }
             });
         }
+
+        // Document viewing with progress indicator - No popup blocker issues
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle view document buttons with progress indicator
+            document.querySelectorAll('.view-document-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const url = this.getAttribute('data-url');
+                    const filename = this.getAttribute('data-filename');
+
+                    // Show quick loading toast
+                    Swal.fire({
+                        title: 'Opening Document',
+                        html: '<i class="fas fa-file-pdf fa-2x text-primary mb-2"></i><br><strong>' + filename + '</strong>',
+                        timer: 800,
+                        timerProgressBar: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    }).then(() => {
+                        // Navigate directly in new tab - no popup blocker
+                        window.open(url, '_blank', 'noopener,noreferrer');
+                    });
+                });
+            });
+        });
 
         // Display success messages with SweetAlert
         @if(session('success'))

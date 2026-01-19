@@ -85,6 +85,11 @@ class DocumentController extends Controller
                 // Check if the file is an image and convert to PDF
                 $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
 
+                $fileName = null;
+                $mimeType = null;
+                $fileSize = null;
+                $filePath = null;
+
                 if ($shouldConvert) {
                     // Convert image to PDF
                     $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
@@ -92,17 +97,22 @@ class DocumentController extends Controller
                     $fileName = $pdfData['filename'];
                     $mimeType = $pdfData['mime_type'];
                     $fileSize = $pdfData['size'];
-                    $base64Content = $pdfData['content'];
+
+                    // Save converted PDF to filesystem instead of database
+                    $sanitizedFileName = $student->id . '_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileName);
+                    $filePath = 'student-documents/' . $student->id . '/' . $sanitizedFileName;
+                    Storage::disk('public')->put($filePath, base64_decode($pdfData['content']));
                 } else {
-                    // Use original file
-                    $fileContent = file_get_contents($file->getRealPath());
-                    $base64Content = base64_encode($fileContent);
+                    // Save original file to filesystem
                     $fileName = $file->getClientOriginalName();
                     $mimeType = $file->getMimeType();
                     $fileSize = $file->getSize();
+
+                    $sanitizedFileName = $student->id . '_' . time() . '_' . preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileName);
+                    $filePath = $file->storeAs('student-documents/' . $student->id, $sanitizedFileName, 'public');
                 }
 
-                // Build document data with only essential fields
+                // Build document data - Store path instead of base64 data for better performance
                 $documentData = [
                     'student_id' => $student->id,
                     'checklist_item_id' => $request->checklist_item_id,
@@ -110,7 +120,7 @@ class DocumentController extends Controller
                     'filename' => $fileName,
                     'file_size' => $fileSize,
                     'mime_type' => $mimeType,
-                    'file_data' => $base64Content,
+                    'file_path' => $filePath,  // Use filesystem path instead of file_data
                     'uploaded_by' => Auth::id(),
                 ];
 
@@ -187,7 +197,7 @@ class DocumentController extends Controller
     }
 
     /**
-     * View a document in browser
+     * View a document in browser (inline display) - Optimized for performance with filesystem storage
      */
     public function view(Student $student = null, StudentDocument $document)
     {
@@ -200,15 +210,59 @@ class DocumentController extends Controller
             $this->authorize('view', $document->student);
         }
 
-        if ($document->file_data) {
-            $fileContent = base64_decode($document->file_data);
-        } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
-            $fileContent = Storage::disk('public')->get($document->file_path);
+        // Generate ETag for caching based on document ID and updated timestamp
+        $etag = md5($document->id . '-' . $document->updated_at);
+        $lastModified = $document->updated_at;
+
+        // Check if client has cached version
+        $requestEtag = request()->header('If-None-Match');
+        $requestModifiedSince = request()->header('If-Modified-Since');
+
+        if ($requestEtag === $etag || ($requestModifiedSince && strtotime($requestModifiedSince) >= $lastModified->timestamp)) {
+            // Client has valid cached version, return 304 Not Modified
+            return response('', 304)
+                ->header('ETag', $etag)
+                ->header('Last-Modified', $lastModified->format('D, d M Y H:i:s') . ' GMT');
+        }
+
+        // Prefer filesystem storage (much faster than database)
+        if ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+            // FASTEST: Direct filesystem response with full optimization
+            $path = Storage::disk('public')->path($document->file_path);
+
+            return response()->file($path, [
+                'Content-Type' => $document->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $document->filename . '"',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=7200, must-revalidate', // Cache for 2 hours
+                'ETag' => $etag,
+                'Last-Modified' => $lastModified->format('D, d M Y H:i:s') . ' GMT',
+                'Accept-Ranges' => 'bytes',
+                'X-Frame-Options' => 'SAMEORIGIN',
+            ]);
+        } elseif ($document->file_data) {
+            // FALLBACK: For legacy database-stored files, use streaming
+            $callback = function() use ($document) {
+                echo base64_decode($document->file_data);
+                flush();
+            };
+
+            $decodedSize = strlen(base64_decode($document->file_data));
+
+            return response()->stream($callback, 200, [
+                'Content-Type' => $document->mime_type,
+                'Content-Disposition' => 'inline; filename="' . $document->filename . '"',
+                'Content-Length' => $decodedSize,
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=7200, must-revalidate',
+                'ETag' => $etag,
+                'Last-Modified' => $lastModified->format('D, d M Y H:i:s') . ' GMT',
+                'Accept-Ranges' => 'bytes',
+                'X-Frame-Options' => 'SAMEORIGIN',
+            ]);
         } else {
             abort(404, 'Document file not found.');
         }
-
-        return view('students.documents.view', compact('student', 'document', 'fileContent'));
     }
 
     /**

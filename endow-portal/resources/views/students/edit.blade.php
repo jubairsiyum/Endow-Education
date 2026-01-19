@@ -27,43 +27,71 @@
                 @csrf
                 @method('PUT')
 
-                <div class="card shadow-sm border-0 mb-4">
-                    <div class="card-header bg-light border-0">
-                        <h5 class="mb-0 fw-semibold"><i class="fas fa-user text-danger me-2"></i>Personal Information</h5>
+                <div class="card shadow-sm border-0 mb-4 card-hover">
+                    <div class="card-header bg-gradient border-0">
+                        <h5 class="mb-0 fw-semibold text-dark">
+                            <i class="fas fa-user-circle text-danger me-2"></i>Personal Information
+                        </h5>
                     </div>
                     <div class="card-body p-4">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label for="name" class="form-label">Full Name <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('name') is-invalid @enderror"
-                                       id="name" name="name" value="{{ old('name', $student->name) }}" required>
+                        <div class="row g-4">
+                            <!-- Full Name - Full Width for Prominence -->
+                            <div class="col-12">
+                                <label for="name" class="form-label fw-semibold">
+                                    <i class="fas fa-id-card text-muted me-2"></i>Full Name
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" class="form-control form-control-lg @error('name') is-invalid @enderror"
+                                       id="name" name="name" value="{{ old('name', $student->name) }}"
+                                       placeholder="Enter student's full name" required>
                                 @error('name')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="email" class="form-label">Email Address <span class="text-danger">*</span></label>
-                                <input type="email" class="form-control @error('email') is-invalid @enderror"
-                                       id="email" name="email" value="{{ old('email', $student->email) }}" required>
-                                @error('email')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                            <!-- Contact Information Row -->
+                            <div class="col-12">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label fw-semibold">
+                                            <i class="fas fa-envelope text-muted me-2"></i>Email Address
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                                               id="email" name="email" value="{{ old('email', $student->email) }}"
+                                               placeholder="student@example.com" required>
+                                        @error('email')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="phone" class="form-label fw-semibold">
+                                            <i class="fas fa-phone text-muted me-2"></i>Phone Number
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" class="form-control @error('phone') is-invalid @enderror"
+                                               id="phone" name="phone" value="{{ old('phone', $student->phone) }}"
+                                               placeholder="+880 1XXX-XXXXXX" required>
+                                        @error('phone')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="col-md-6">
-                                <label for="phone" class="form-label">Phone Number <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('phone') is-invalid @enderror"
-                                       id="phone" name="phone" value="{{ old('phone', $student->phone) }}" required>
-                                @error('phone')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6">
-                                <label for="country" class="form-label">Country <span class="text-danger">*</span></label>
+                            <!-- Location Information -->
+                            <div class="col-12">
+                                <label for="country" class="form-label fw-semibold">
+                                    <i class="fas fa-globe text-muted me-2"></i>Country of Origin
+                                    <span class="text-danger">*</span>
+                                </label>
                                 <input type="text" class="form-control @error('country') is-invalid @enderror"
-                                       id="country" name="country" value="{{ old('country', $student->country) }}" required>
+                                       id="country" name="country" value="{{ old('country', $student->country) }}"
+                                       placeholder="e.g., Bangladesh, India, Pakistan" required>
+                                <small class="form-text text-muted">
+                                    <i class="fas fa-info-circle me-1"></i>Student's country of citizenship
+                                </small>
                                 @error('country')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -122,6 +150,85 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <!-- Educational Background Section -->
+                            <div class="col-12"><hr class="my-3"></div>
+                            <div class="col-12">
+                                <h6 class="fw-semibold mb-3"><i class="fas fa-graduation-cap me-2 text-primary"></i>Educational Background</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="ssc_year" class="form-label">SSC Year</label>
+                                <input type="text" class="form-control @error('ssc_year') is-invalid @enderror"
+                                       id="ssc_year" name="ssc_year" value="{{ old('ssc_year', $student->ssc_year) }}"
+                                       placeholder="e.g., 2018" maxlength="4">
+                                <small class="form-text text-muted">4-digit year</small>
+                                @error('ssc_year')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="ssc_result" class="form-label">SSC Result</label>
+                                <input type="text" class="form-control @error('ssc_result') is-invalid @enderror"
+                                       id="ssc_result" name="ssc_result" value="{{ old('ssc_result', $student->ssc_result) }}"
+                                       placeholder="e.g., 5.00, A+">
+                                @error('ssc_result')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="hsc_year" class="form-label">HSC Year</label>
+                                <input type="text" class="form-control @error('hsc_year') is-invalid @enderror"
+                                       id="hsc_year" name="hsc_year" value="{{ old('hsc_year', $student->hsc_year) }}"
+                                       placeholder="e.g., 2020" maxlength="4">
+                                <small class="form-text text-muted">4-digit year</small>
+                                @error('hsc_year')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="hsc_result" class="form-label">HSC Result</label>
+                                <input type="text" class="form-control @error('hsc_result') is-invalid @enderror"
+                                       id="hsc_result" name="hsc_result" value="{{ old('hsc_result', $student->hsc_result) }}"
+                                       placeholder="e.g., 5.00, A+">
+                                @error('hsc_result')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <!-- IELTS Section -->
+                            <div class="col-12"><hr class="my-3"></div>
+                            <div class="col-12">
+                                <h6 class="fw-semibold mb-3"><i class="fas fa-language me-2 text-success"></i>IELTS Information</h6>
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="has_ielts" class="form-label">Has IELTS?</label>
+                                <select class="form-select @error('has_ielts') is-invalid @enderror"
+                                        id="has_ielts" name="has_ielts">
+                                    <option value="0" {{ old('has_ielts', $student->has_ielts) == '0' ? 'selected' : '' }}>No</option>
+                                    <option value="1" {{ old('has_ielts', $student->has_ielts) == '1' ? 'selected' : '' }}>Yes</option>
+                                </select>
+                                @error('has_ielts')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-md-6">
+                                <label for="ielts_score" class="form-label">IELTS Score</label>
+                                <input type="text" class="form-control @error('ielts_score') is-invalid @enderror"
+                                       id="ielts_score" name="ielts_score" value="{{ old('ielts_score', $student->ielts_score) }}"
+                                       placeholder="e.g., 7.0, 6.5" {{ old('has_ielts', $student->has_ielts) == '0' ? 'disabled' : '' }}>
+                                <small class="form-text text-muted">Enter score if IELTS taken</small>
+                                @error('ielts_score')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+
+                            <div class="col-12"><hr class="my-3"></div>
 
                             <div class="col-md-6">
                                 <label for="status" class="form-label">Application Status</label>
@@ -276,6 +383,170 @@
         </div>
     </div>
 
+    @push('styles')
+    <style>
+        /* Professional Card Styling */
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.12) !important;
+        }
+
+        .bg-gradient {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+        }
+
+        /* Enhanced Form Labels */
+        .form-label {
+            color: #495057;
+            font-size: 0.925rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .form-label i.text-muted {
+            opacity: 0.7;
+            font-size: 0.9rem;
+        }
+
+        /* Form Control Enhancements */
+        .form-control, .form-select {
+            border: 1.5px solid #dee2e6;
+            border-radius: 8px;
+            padding: 0.65rem 1rem;
+            font-size: 0.95rem;
+            transition: all 0.25s ease;
+        }
+
+        .form-control-lg {
+            padding: 0.85rem 1.2rem;
+            font-size: 1.05rem;
+            font-weight: 500;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.15);
+            transform: translateY(-1px);
+        }
+
+        .form-control:hover:not(:focus):not(:disabled),
+        .form-select:hover:not(:focus):not(:disabled) {
+            border-color: #adb5bd;
+        }
+
+        .form-control::placeholder {
+            color: #adb5bd;
+            font-style: italic;
+        }
+
+        /* Card Header Styling */
+        .card-header h5 {
+            color: #2c3e50;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .card-header h5 i {
+            font-size: 1.15rem;
+        }
+
+        /* Enhanced Spacing */
+        .g-4 > * {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+
+        /* Form Text Helper */
+        .form-text {
+            font-size: 0.825rem;
+            color: #6c757d;
+            margin-top: 0.35rem;
+        }
+
+        .form-text i {
+            font-size: 0.75rem;
+        }
+
+        /* Required Asterisk */
+        .text-danger {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        /* Invalid Feedback */
+        .invalid-feedback {
+            font-size: 0.875rem;
+            margin-top: 0.4rem;
+            display: block;
+        }
+
+        /* Button Enhancements */
+        .btn {
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+            border-color: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+            border-color: #bd2130;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+        }
+
+        /* Responsive Improvements */
+        @media (max-width: 992px) {
+            .card-body {
+                padding: 1.5rem !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-control, .form-select {
+                font-size: 16px; /* Prevents iOS zoom */
+            }
+
+            .form-control-lg {
+                font-size: 16px;
+            }
+
+            .card-body {
+                padding: 1.25rem !important;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .btn.ms-auto {
+                margin-left: 0 !important;
+            }
+        }
+
+        /* Card Border Radius */
+        .card {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        /* Smooth Transitions */
+        * {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    </style>
+    @endpush
+
     @push('scripts')
     <script>
         // Dynamic program loading based on university selection
@@ -323,6 +594,18 @@
             const universityId = document.getElementById('target_university_id').value;
             if (universityId) {
                 document.getElementById('target_university_id').dispatchEvent(new Event('change'));
+            }
+        });
+
+        // IELTS Score field enable/disable based on has_ielts selection
+        document.getElementById('has_ielts').addEventListener('change', function() {
+            const ieltsScoreField = document.getElementById('ielts_score');
+            if (this.value === '1') {
+                ieltsScoreField.disabled = false;
+                ieltsScoreField.focus();
+            } else {
+                ieltsScoreField.disabled = true;
+                ieltsScoreField.value = '';
             }
         });
 

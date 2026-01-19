@@ -9,11 +9,19 @@
             <h4 class="mb-1 fw-bold text-dark"><i class="fas fa-users text-danger"></i> Students Management</h4>
             <small class="text-muted">Manage and track all student applications</small>
         </div>
-        @can('create students')
-        <a href="{{ route('students.create') }}" class="btn btn-danger">
-            <i class="fas fa-plus me-1"></i> Add Student
-        </a>
-        @endcan
+        <div class="d-flex gap-2">
+            @can('create students')
+            <a href="{{ route('students.create') }}" class="btn btn-danger">
+                <i class="fas fa-plus me-1"></i> Add Student
+            </a>
+            @endcan
+            <button type="button" class="btn btn-success" id="exportSelectedBtn" style="display: none;">
+                <i class="fas fa-file-export me-1"></i> Export Selected
+            </button>
+            <a href="{{ route('students.export.form') }}" class="btn btn-outline-success">
+                <i class="fas fa-download me-1"></i> Export All
+            </a>
+        </div>
     </div>
 
     <!-- Compact Filters -->
@@ -91,20 +99,17 @@
         </div>
     </div>
 
-    <!-- Export Button -->
-    <div class="d-flex justify-content-end mb-2">
-        <a href="{{ route('students.index', array_merge(request()->except('page'), ['export' => 'csv'])) }}" 
-           class="btn btn-success btn-sm">
-            <i class="fas fa-file-csv me-1"></i> Export to CSV
-        </a>
-    </div>
-
     <!-- Students Table -->
     <div class="card shadow-sm border-0">
         <div class="table-responsive">
             <table class="table table-sm table-hover align-middle mb-0">
                 <thead class="bg-light">
                     <tr class="text-uppercase text-muted student-table-header">
+                        <th style="width: 40px;">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="selectAllStudents">
+                            </div>
+                        </th>
                         <th class="text-center" style="width: 50px;">#</th>
                         <th>Name</th>
                         <th class="d-none d-md-table-cell">Contact</th>
@@ -119,18 +124,23 @@
                 <tbody>
                     @forelse($students as $index => $student)
                     <tr>
+                        <td>
+                            <div class="form-check">
+                                <input class="form-check-input student-checkbox" type="checkbox" value="{{ $student->id }}">
+                            </div>
+                        </td>
                         <td class="text-center fw-bold text-muted" style="font-size: 0.85rem;">
                             {{ ($students->currentPage() - 1) * $students->perPage() + $index + 1 }}
                         </td>
                         <td>
                             <div class="d-flex align-items-center">
                                 @if($student->activeProfilePhoto)
-                                    <img src="{{ $student->activeProfilePhoto->photo_url }}" 
+                                    <img src="{{ $student->activeProfilePhoto->photo_url }}"
                                          alt="{{ $student->name }}"
                                          class="student-avatar rounded-circle me-2"
                                          style="width: 40px; height: 40px; object-fit: cover; border: 2px solid #e9ecef;">
                                 @else
-                                    <div class="student-avatar-placeholder bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                    <div class="student-avatar-placeholder bg-danger bg-opacity-10 text-danger rounded-circle d-flex align-items-center justify-content-center me-2"
                                          style="width: 40px; height: 40px; font-size: 1.2rem; flex-shrink: 0;">
                                         <i class="fas fa-user-graduate"></i>
                                     </div>
@@ -429,6 +439,77 @@
                 }
             });
         }
+
+        // Bulk Selection and Export functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('selectAllStudents');
+            const studentCheckboxes = document.querySelectorAll('.student-checkbox');
+            const exportSelectedBtn = document.getElementById('exportSelectedBtn');
+
+            // Select/Deselect all students
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
+                    studentCheckboxes.forEach(checkbox => {
+                        checkbox.checked = selectAllCheckbox.checked;
+                    });
+                    updateExportButtonVisibility();
+                });
+            }
+
+            // Update export button visibility when individual checkboxes change
+            studentCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    updateExportButtonVisibility();
+                    updateSelectAllState();
+                });
+            });
+
+            // Export selected students
+            if (exportSelectedBtn) {
+                exportSelectedBtn.addEventListener('click', function() {
+                    const selectedIds = Array.from(studentCheckboxes)
+                        .filter(cb => cb.checked)
+                        .map(cb => cb.value);
+
+                    if (selectedIds.length === 0) {
+                        Swal.fire({
+                            title: 'No Students Selected',
+                            text: 'Please select at least one student to export.',
+                            icon: 'warning',
+                            confirmButtonColor: '#DC143C'
+                        });
+                        return;
+                    }
+
+                    // Redirect to export form with selected IDs
+                    const params = new URLSearchParams();
+                    selectedIds.forEach(id => params.append('student_ids[]', id));
+                    window.location.href = '{{ route("students.export.form") }}?' + params.toString();
+                });
+            }
+
+            function updateExportButtonVisibility() {
+                const checkedCount = Array.from(studentCheckboxes).filter(cb => cb.checked).length;
+                if (exportSelectedBtn) {
+                    exportSelectedBtn.style.display = checkedCount > 0 ? 'inline-block' : 'none';
+
+                    // Update button text with count
+                    const icon = '<i class="fas fa-file-export me-1"></i>';
+                    const text = checkedCount > 0 ? `Export Selected (${checkedCount})` : 'Export Selected';
+                    exportSelectedBtn.innerHTML = icon + text;
+                }
+            }
+
+            function updateSelectAllState() {
+                if (selectAllCheckbox) {
+                    const allChecked = Array.from(studentCheckboxes).every(cb => cb.checked);
+                    const someChecked = Array.from(studentCheckboxes).some(cb => cb.checked);
+
+                    selectAllCheckbox.checked = allChecked && studentCheckboxes.length > 0;
+                    selectAllCheckbox.indeterminate = someChecked && !allChecked;
+                }
+            }
+        });
     </script>
     @endpush
 @endsection

@@ -138,9 +138,11 @@ class StudentVisitController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')
             ],
-            'prospective_status' => 'nullable|in:prospective_hot,prospective_warm,prospective_cold,prospective_not_interested,confirmed_student',
             'notes' => 'nullable|string',
         ]);
+
+        // Ensure a default status to avoid null writes
+        $validated['prospective_status'] = $validated['prospective_status'] ?? StudentVisit::STATUS_PROSPECTIVE_WARM;
 
         // Set default employee to logged-in user if not provided
         if (empty($validated['employee_id'])) {
@@ -226,9 +228,10 @@ class StudentVisitController extends Controller
                 'nullable',
                 Rule::exists('users', 'id')
             ],
-            'prospective_status' => 'nullable|in:prospective_hot,prospective_warm,prospective_cold,prospective_not_interested,confirmed_student',
             'notes' => 'nullable|string',
         ]);
+
+        $validated['prospective_status'] = $validated['prospective_status'] ?? StudentVisit::STATUS_PROSPECTIVE_WARM;
 
         // Only admins can change employee assignment
         if (!Auth::user()->isAdmin()) {
