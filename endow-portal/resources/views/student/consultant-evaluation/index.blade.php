@@ -14,7 +14,22 @@
         <p class="text-muted mb-0">Rate your consultant's performance and provide feedback</p>
     </div>
 
-    @if(!$hasConsultant)
+    @if(!isset($isApproved) || !$isApproved)
+    <!-- Application Not Approved -->
+    <div class="alert alert-warning border-0 shadow-sm">
+        <div class="d-flex align-items-start gap-3">
+            <i class="fas fa-clock fa-2x text-warning"></i>
+            <div>
+                <h5 class="mb-1 fw-bold">Application Under Review</h5>
+                <p class="mb-2">Your application is currently being reviewed by our team. The Consultant Evaluation feature will be available once your application is approved.</p>
+                <p class="mb-0 text-muted">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <small>You'll be notified via email once your application status is updated. Thank you for your patience!</small>
+                </p>
+            </div>
+        </div>
+    </div>
+    @elseif(!$hasConsultant)
     <!-- No Consultant Assigned -->
     <div class="alert alert-info border-0 shadow-sm">
         <div class="d-flex align-items-start gap-3">
