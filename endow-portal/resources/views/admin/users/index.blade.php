@@ -83,8 +83,8 @@
             <form method="GET" action="{{ route('users.index') }}" class="row g-3">
                 <div class="col-md-4">
                     <label class="form-label fw-semibold">Search</label>
-                    <input type="text" name="search" class="form-control" 
-                           placeholder="Search by name, email, or phone..." 
+                    <input type="text" name="search" class="form-control"
+                           placeholder="Search by name, email, or phone..."
                            value="{{ request('search') }}">
                 </div>
                 <div class="col-md-3">
@@ -205,19 +205,19 @@
                             <td class="text-end">
                                 <div class="btn-group btn-group-sm">
                                     @can('edit users')
-                                    <a href="{{ route('users.show', $user) }}" 
+                                    <a href="{{ route('users.show', $user) }}"
                                        class="btn btn-outline-primary" title="View Details">
                                         <i class="fas fa-eye"></i>
                                     </a>
-                                    <a href="{{ route('users.edit', $user) }}" 
+                                    <a href="{{ route('users.edit', $user) }}"
                                        class="btn btn-outline-warning" title="Edit User">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('users.toggle-status', $user) }}" 
+                                    <form action="{{ route('users.toggle-status', $user) }}"
                                           method="POST" class="d-inline">
                                         @csrf
                                         @method('PATCH')
-                                        <button type="submit" class="btn btn-outline-info" 
+                                        <button type="submit" class="btn btn-outline-info"
                                                 title="Toggle Status">
                                             <i class="fas fa-power-off"></i>
                                         </button>
@@ -225,7 +225,7 @@
                                     @endcan
                                     @can('delete users')
                                     @if(!$user->hasRole('Super Admin'))
-                                    <button type="button" class="btn btn-outline-danger" 
+                                    <button type="button" class="btn btn-outline-danger"
                                             onclick="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
                                             title="Delete User">
                                         <i class="fas fa-trash"></i>
@@ -247,18 +247,19 @@
                 </table>
             </div>
         </div>
-        @if($users->hasPages())
-        <div class="card-body border-top">
-            {{ $users->links() }}
-        </div>
-        @endif
     </div>
+
+    @if($users->hasPages())
+    <div class="d-flex justify-content-center mt-3">
+        {{ $users->appends(request()->query())->links() }}
+    </div>
+    @endif
 </div>
 
 <!-- Delete Confirmation Forms -->
 @foreach($users as $user)
-<form id="delete-form-{{ $user->id }}" 
-      action="{{ route('users.destroy', $user) }}" 
+<form id="delete-form-{{ $user->id }}"
+      action="{{ route('users.destroy', $user) }}"
       method="POST" style="display: none;">
     @csrf
     @method('DELETE')
@@ -312,16 +313,16 @@ function confirmDelete(userId, userName) {
         .stat-card {
             margin-bottom: 1rem;
         }
-        
+
         .table-responsive {
             font-size: 0.875rem;
         }
-        
+
         .btn-group-sm .btn {
             padding: 0.25rem 0.5rem;
             font-size: 0.75rem;
         }
-        
+
         .avatar-circle {
             width: 35px;
             height: 35px;
@@ -333,11 +334,11 @@ function confirmDelete(userId, userName) {
         .page-title {
             font-size: 1.5rem;
         }
-        
+
         .stat-value {
             font-size: 1.5rem;
         }
-        
+
         .card-custom {
             margin-bottom: 1rem;
         }

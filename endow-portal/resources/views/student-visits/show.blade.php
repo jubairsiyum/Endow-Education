@@ -27,6 +27,7 @@
             <a href="{{ route('student-visits.edit', $studentVisit) }}?page={{ request('page', 1) }}" class="btn btn-sm btn-warning">
                 <i class="fas fa-edit me-1"></i> Edit
             </a>
+            @if(Auth::user()->hasRole('Super Admin'))
             <form action="{{ route('student-visits.destroy', $studentVisit) }}"
                   method="POST"
                   class="d-inline"
@@ -39,6 +40,7 @@
                     <i class="fas fa-trash me-1"></i> Delete
                 </button>
             </form>
+            @endif
             @endif
         </div>
     </div>
