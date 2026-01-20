@@ -401,8 +401,10 @@
         background: #fff;
         border-radius: 15px;
         border: 2px solid #e9ecef;
-        overflow: visible;
+        overflow-x: hidden;
+        overflow-y: visible;
         transition: all 0.3s ease;
+        max-width: 100%;
     }
 
     .modern-doc-card:hover {
@@ -421,18 +423,22 @@
         flex-wrap: wrap;
         padding: 20px;
         gap: 20px;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .doc-left {
         flex: 1;
-        min-width: 300px;
+        min-width: 0;
+        max-width: 100%;
         display: flex;
         gap: 15px;
     }
 
     .doc-right {
         flex: 1;
-        min-width: 300px;
+        min-width: 0;
+        max-width: 100%;
     }
 
     /* Step Number */
@@ -459,6 +465,9 @@
     /* Document Info */
     .doc-info {
         flex: 1;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .doc-title {
@@ -659,6 +668,8 @@
         padding: 12px 15px;
         margin-bottom: 12px;
         transition: all 0.3s ease;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .uploaded-doc:hover {
@@ -670,6 +681,8 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .file-preview i {
@@ -677,8 +690,10 @@
     }
 
     .file-details {
-        flex: 1;
+        flex: 1 1 auto;
         min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .file-name {
@@ -689,6 +704,8 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        max-width: 100%;
+        word-break: break-all;
     }
 
     .file-meta {
@@ -970,7 +987,13 @@
         }
 
         .doc-left, .doc-right {
-            min-width: 100%;
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .doc-left {
+            flex-direction: column;
         }
 
         .upload-label {
