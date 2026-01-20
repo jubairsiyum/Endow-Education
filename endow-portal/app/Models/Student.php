@@ -185,6 +185,8 @@ class Student extends Model
 
     /**
      * Get checklist completion percentage.
+     * Note: Progress now includes both submitted (pending review) and approved documents
+     * to provide real-time visibility when students upload documents.
      */
     public function getChecklistProgressAttribute(): array
     {
@@ -196,6 +198,7 @@ class Student extends Model
                 'submitted' => 0,
                 'rejected' => 0,
                 'pending' => 0,
+                'in_progress' => 0, // New: submitted + approved count
                 'percentage' => 0,
             ];
         }
@@ -216,13 +219,17 @@ class Student extends Model
             ->where('status', 'pending')
             ->count();
 
+        // Calculate in_progress: documents that are submitted or approved
+        $inProgress = $approved + $submitted;
+
         return [
             'total' => $total,
             'approved' => $approved,
             'submitted' => $submitted,
             'rejected' => $rejected,
             'pending' => $pending,
-            'percentage' => (int) (($approved / $total) * 100),
+            'in_progress' => $inProgress, // New field for progress tracking
+            'percentage' => (int) (($inProgress / $total) * 100), // Changed: now based on submitted + approved
         ];
     }
 
