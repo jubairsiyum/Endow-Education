@@ -5,32 +5,32 @@
 
 @section('content')
 <div class="container-fluid px-4">
-    <!-- Modern Header with Gradient -->
-    <div class="modern-header mb-4">
+    <!-- Modern Header -->
+    <div class="modern-header mb-4" style="background: linear-gradient(135deg, #DC143C 0%, #A52A2A 100%); border-radius: 1rem; padding: 2rem; color: #FFFFFF; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
         <div class="d-flex justify-content-between align-items-center">
             <div>
                 <h1 class="display-6 fw-bold mb-2">
-                    <i class="fas fa-building text-white me-3"></i>
+                    <i class="fas fa-building me-3"></i>
                     Department Management
                 </h1>
-                <p class="text-white-50 mb-0">Organize teams and manage organizational structure</p>
+                <p class="mb-0 opacity-75">Organize teams and manage organizational structure</p>
             </div>
-            <a href="{{ route('office.departments.create') }}" class="btn btn-light btn-lg shadow-sm">
-                <i class="fas fa-plus-circle me-2"></i>Create Department
+            <a href="{{ route('office.departments.create') }}" class="btn shadow-sm" style="background-color: #FFFFFF; color: #000000; border: 1px solid #E0E0E0;">
+                <i class="fas fa-plus-circle me-2" style="color: #DC143C;"></i>Create Department
             </a>
         </div>
     </div>
 
     @if(session('success'))
-    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0" role="alert">
-        <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
+    <div class="alert alert-success alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="background-color: #FFFFFF; color: #000000; border: 1px solid #E0E0E0;">
+        <i class="fas fa-check-circle me-2" style="color: #DC143C;"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
 
     @if(session('error'))
-    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0" role="alert">
-        <i class="fas fa-exclamation-circle me-2"></i>{{ session('error') }}
+    <div class="alert alert-danger alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" style="background-color: #FFFFFF; color: #000000; border: 1px solid #E0E0E0;">
+        <i class="fas fa-exclamation-circle me-2" style="color: #DC143C;"></i>{{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     </div>
     @endif
@@ -38,89 +38,89 @@
     <!-- Statistics Cards -->
     <div class="row g-4 mb-4">
         <div class="col-md-3">
-            <div class="stat-card-modern bg-gradient-primary">
-                <div class="stat-icon">
+            <div class="stat-card-modern shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); width: 50px; height: 50px; font-size: 1.5rem; color: #DC143C;">
                     <i class="fas fa-building"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">{{ $departments->count() }}</div>
-                    <div class="stat-label">Total Departments</div>
+                    <div class="stat-value" style="font-size: 2rem; font-weight: bold; color: #000000;">{{ $departments->count() }}</div>
+                    <div class="stat-label text-uppercase fw-semibold" style="font-size: 0.875rem; color: #6C757D;">Total Departments</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card-modern bg-gradient-success">
-                <div class="stat-icon">
+            <div class="stat-card-modern shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); width: 50px; height: 50px; font-size: 1.5rem; color: #DC143C;">
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">{{ $departments->where('is_active', true)->count() }}</div>
-                    <div class="stat-label">Active Departments</div>
+                    <div class="stat-value" style="font-size: 2rem; font-weight: bold; color: #000000;">{{ $departments->where('is_active', true)->count() }}</div>
+                    <div class="stat-label text-uppercase fw-semibold" style="font-size: 0.875rem; color: #6C757D;">Active Departments</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card-modern bg-gradient-info">
-                <div class="stat-icon">
+            <div class="stat-card-modern shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); width: 50px; height: 50px; font-size: 1.5rem; color: #DC143C;">
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">{{ $departments->sum('users_count') }}</div>
-                    <div class="stat-label">Total Team Members</div>
+                    <div class="stat-value" style="font-size: 2rem; font-weight: bold; color: #000000;">{{ $departments->sum('users_count') }}</div>
+                    <div class="stat-label text-uppercase fw-semibold" style="font-size: 0.875rem; color: #6C757D;">Total Team Members</div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
-            <div class="stat-card-modern bg-gradient-warning">
-                <div class="stat-icon">
+            <div class="stat-card-modern shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0; padding: 1.5rem; display: flex; align-items: center; gap: 1rem; transition: transform 0.3s ease, box-shadow 0.3s ease;">
+                <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); width: 50px; height: 50px; font-size: 1.5rem; color: #DC143C;">
                     <i class="fas fa-user-tie"></i>
                 </div>
                 <div class="stat-content">
-                    <div class="stat-value">{{ $departments->whereNotNull('manager_id')->count() }}</div>
-                    <div class="stat-label">Assigned Managers</div>
+                    <div class="stat-value" style="font-size: 2rem; font-weight: bold; color: #000000;">{{ $departments->whereNotNull('manager_id')->count() }}</div>
+                    <div class="stat-label text-uppercase fw-semibold" style="font-size: 0.875rem; color: #6C757D;">Assigned Managers</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Departments Grid with Modern Design -->
+    <!-- Departments Grid -->
     <div class="row g-4">
         @forelse($departments as $department)
         <div class="col-xl-4 col-lg-6">
-            <div class="department-card">
-                <!-- Department Header with Color -->
-                <div class="department-header" style="background: linear-gradient(135deg, {{ $department->color }} 0%, {{ $department->color }}dd 100%);">
+            <div class="department-card shadow-sm rounded overflow-hidden" style="background-color: #FFFFFF; transition: transform 0.3s ease, box-shadow 0.3s ease; height: 100%; display: flex; flex-direction: column;">
+                <!-- Department Header -->
+                <div class="department-header p-4" style="background: linear-gradient(135deg, #DC143C 0%, #A52A2A 100%); color: #FFFFFF;">
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
-                            <div class="department-icon-wrapper">
+                            <div class="department-icon-wrapper rounded d-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px; background-color: rgba(255, 255, 255, 0.2); font-size: 1.75rem;">
                                 <i class="{{ $department->icon }}"></i>
                             </div>
-                            <h4 class="department-title">{{ $department->name }}</h4>
-                            <span class="department-code">{{ $department->code }}</span>
+                            <h4 class="department-title fw-bold mb-1" style="font-size: 1.5rem;">{{ $department->name }}</h4>
+                            <span class="department-code rounded-pill px-3 py-1" style="background-color: rgba(255, 255, 255, 0.25); font-size: 0.75rem; font-weight: 600;">{{ $department->code }}</span>
                         </div>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                            <button class="btn btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" style="background-color: transparent; border: none; color: #FFFFFF;">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
-                            <ul class="dropdown-menu">
+                            <ul class="dropdown-menu shadow-sm rounded border-0" style="background-color: #FFFFFF;">
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('office.departments.show', $department) }}">
-                                        <i class="fas fa-eye me-2"></i>View Details
+                                    <a class="dropdown-item d-flex align-items-center" href="{{ route('office.departments.show', $department) }}" style="color: #000000;">
+                                        <i class="fas fa-eye me-2" style="color: #DC143C;"></i>View Details
                                     </a>
                                 </li>
                                 <li>
-                                    <a class="dropdown-item" href="{{ route('office.departments.edit', $department) }}">
-                                        <i class="fas fa-edit me-2"></i>Edit
+                                    <a class="dropdown-item d-flex align-items-center" href="{{ route('office.departments.edit', $department) }}" style="color: #000000;">
+                                        <i class="fas fa-edit me-2" style="color: #DC143C;"></i>Edit
                                     </a>
                                 </li>
-                                <li><hr class="dropdown-divider"></li>
+                                <li><hr class="dropdown-divider m-0"></li>
                                 <li>
                                     <form action="{{ route('office.departments.destroy', $department) }}"
                                           method="POST"
                                           onsubmit="return confirm('Are you sure? This will unassign all users from this department.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="dropdown-item text-danger">
+                                        <button type="submit" class="dropdown-item d-flex align-items-center text-danger">
                                             <i class="fas fa-trash me-2"></i>Delete
                                         </button>
                                     </form>
@@ -131,56 +131,56 @@
                 </div>
 
                 <!-- Department Body -->
-                <div class="department-body">
-                    <p class="department-description">{{ Str::limit($department->description, 100) }}</p>
+                <div class="department-body p-4 flex-grow-1">
+                    <p class="department-description mb-4" style="color: #6C757D; font-size: 0.9rem; line-height: 1.6;">{{ Str::limit($department->description, 100) }}</p>
 
                     <!-- Stats Row -->
-                    <div class="department-stats">
-                        <div class="stat-item">
-                            <div class="stat-icon-sm" style="background: {{ $department->color }}20; color: {{ $department->color }};">
+                    <div class="department-stats d-grid mb-4" style="grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                        <div class="stat-item d-flex align-items-center gap-3">
+                            <div class="stat-icon-sm rounded d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; width: 40px; height: 40px; font-size: 1.125rem;">
                                 <i class="fas fa-users"></i>
                             </div>
                             <div>
-                                <div class="stat-value-sm">{{ $department->users_count }}</div>
-                                <div class="stat-label-sm">Members</div>
+                                <div class="stat-value-sm fw-bold" style="font-size: 1.125rem; color: #000000;">{{ $department->users_count }}</div>
+                                <div class="stat-label-sm text-uppercase" style="font-size: 0.75rem; color: #6C757D;">Members</div>
                             </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-icon-sm" style="background: {{ $department->color }}20; color: {{ $department->color }};">
+                        <div class="stat-item d-flex align-items-center gap-3">
+                            <div class="stat-icon-sm rounded d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; width: 40px; height: 40px; font-size: 1.125rem;">
                                 <i class="fas fa-user-tie"></i>
                             </div>
                             <div>
-                                <div class="stat-value-sm">{{ $department->manager ? '1' : '0' }}</div>
-                                <div class="stat-label-sm">Manager</div>
+                                <div class="stat-value-sm fw-bold" style="font-size: 1.125rem; color: #000000;">{{ $department->manager ? '1' : '0' }}</div>
+                                <div class="stat-label-sm text-uppercase" style="font-size: 0.75rem; color: #6C757D;">Manager</div>
                             </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-icon-sm" style="background: {{ $department->color }}20; color: {{ $department->color }};">
+                        <div class="stat-item d-flex align-items-center gap-3">
+                            <div class="stat-icon-sm rounded d-flex align-items-center justify-content-center" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; width: 40px; height: 40px; font-size: 1.125rem;">
                                 <i class="fas fa-{{ $department->is_active ? 'check-circle' : 'times-circle' }}"></i>
                             </div>
                             <div>
-                                <div class="stat-value-sm">{{ $department->is_active ? 'Active' : 'Inactive' }}</div>
-                                <div class="stat-label-sm">Status</div>
+                                <div class="stat-value-sm fw-bold" style="font-size: 1.125rem; color: #000000;">{{ $department->is_active ? 'Active' : 'Inactive' }}</div>
+                                <div class="stat-label-sm text-uppercase" style="font-size: 0.75rem; color: #6C757D;">Status</div>
                             </div>
                         </div>
                     </div>
 
                     @if($department->manager)
-                    <div class="manager-info">
-                        <div class="manager-avatar" style="background: {{ $department->color }};">
+                    <div class="manager-info d-flex align-items-center gap-3 p-3 rounded" style="background-color: #F8F9FA; border: 1px solid #E0E0E0;">
+                        <div class="manager-avatar rounded d-flex align-items-center justify-content-center fw-bold" style="background-color: #DC143C; color: #FFFFFF; width: 45px; height: 45px; font-size: 0.875rem;">
                             {{ strtoupper(substr($department->manager->name, 0, 2)) }}
                         </div>
                         <div>
-                            <div class="manager-label">Department Manager</div>
-                            <div class="manager-name">{{ $department->manager->name }}</div>
+                            <div class="manager-label text-uppercase fw-semibold" style="font-size: 0.75rem; color: #6C757D;">Department Manager</div>
+                            <div class="manager-name fw-semibold" style="color: #000000;">{{ $department->manager->name }}</div>
                         </div>
                     </div>
                     @endif
                 </div>
 
                 <!-- Department Footer -->
-                <div class="department-footer">
-                    <a href="{{ route('office.departments.show', $department) }}" class="btn btn-sm w-100" style="background: {{ $department->color }}15; color: {{ $department->color }}; border: 1px solid {{ $department->color }}30;">
+                <div class="department-footer p-3 border-top" style="background-color: #F8F9FA; border-color: #E0E0E0;">
+                    <a href="{{ route('office.departments.show', $department) }}" class="btn btn-sm w-100" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; border: 1px solid rgba(220, 20, 60, 0.3);">
                         <i class="fas fa-cog me-2"></i>Manage Department
                     </a>
                 </div>
@@ -188,11 +188,11 @@
         </div>
         @empty
         <div class="col-12">
-            <div class="empty-state">
-                <i class="fas fa-building"></i>
-                <h3>No Departments Yet</h3>
-                <p>Create your first department to start organizing your team</p>
-                <a href="{{ route('office.departments.create') }}" class="btn btn-primary btn-lg mt-3">
+            <div class="empty-state text-center p-5 rounded shadow-sm" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;">
+                <i class="fas fa-building" style="font-size: 5rem; color: #E0E0E0; margin-bottom: 1.5rem;"></i>
+                <h3 style="color: #000000; margin-bottom: 0.5rem;">No Departments Yet</h3>
+                <p style="color: #6C757D; margin-bottom: 0;">Create your first department to start organizing your team</p>
+                <a href="{{ route('office.departments.create') }}" class="btn mt-3" style="background-color: #DC143C; color: #FFFFFF; border: none;">
                     <i class="fas fa-plus-circle me-2"></i>Create First Department
                 </a>
             </div>
@@ -202,229 +202,31 @@
 </div>
 
 <style>
-    .modern-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 2rem;
-        border-radius: 20px;
-        color: white;
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-    }
-
-    .stat-card-modern {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        padding: 1.5rem;
-        border-radius: 15px;
-        color: white;
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .stat-card-modern:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
-    }
-
-    .bg-gradient-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important; }
-    .bg-gradient-success { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important; }
-    .bg-gradient-info { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important; }
-    .bg-gradient-warning { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%) !important; }
-
-    .stat-icon {
-        font-size: 2.5rem;
-        opacity: 0.8;
-    }
-
-    .stat-content .stat-value {
-        font-size: 2rem;
-        font-weight: 700;
-        line-height: 1;
-    }
-
-    .stat-content .stat-label {
-        font-size: 0.875rem;
-        opacity: 0.9;
-        margin-top: 0.25rem;
-    }
-
-    .department-card {
-        background: white;
-        border-radius: 20px;
-        overflow: hidden;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-        transition: all 0.3s ease;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-    }
-
+    .stat-card-modern:hover,
     .department-card:hover {
-        transform: translateY(-10px);
-        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        transform: translateY(-5px);
+        box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.15) !important;
     }
 
-    .department-header {
-        padding: 2rem;
-        color: white;
-        position: relative;
-        overflow: hidden;
+    .dropdown-menu .dropdown-item:hover {
+        background-color: #F8F9FA;
+        color: #DC143C !important;
     }
 
-    .department-header::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        right: -50%;
-        width: 200%;
-        height: 200%;
-        background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
-        animation: float 6s ease-in-out infinite;
+    .department-footer .btn:hover {
+        background-color: #DC143C !important;
+        color: #FFFFFF !important;
+        border-color: #DC143C !important;
     }
 
-    @keyframes float {
-        0%, 100% { transform: translate(0, 0); }
-        50% { transform: translate(-30px, -30px); }
+    .modern-header a.btn:hover {
+        background-color: #F8F9FA !important;
+        color: #DC143C !important;
+        border-color: #DC143C !important;
     }
 
-    .department-icon-wrapper {
-        width: 60px;
-        height: 60px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 15px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.75rem;
-        margin-bottom: 1rem;
-        backdrop-filter: blur(10px);
-    }
-
-    .department-title {
-        font-size: 1.5rem;
-        font-weight: 700;
-        margin-bottom: 0.5rem;
-    }
-
-    .department-code {
-        background: rgba(255, 255, 255, 0.25);
-        padding: 0.25rem 0.75rem;
-        border-radius: 50px;
-        font-size: 0.75rem;
-        font-weight: 600;
-        letter-spacing: 0.5px;
-    }
-
-    .department-body {
-        padding: 1.5rem;
-        flex-grow: 1;
-    }
-
-    .department-description {
-        color: #6c757d;
-        font-size: 0.9rem;
-        line-height: 1.6;
-        margin-bottom: 1.5rem;
-    }
-
-    .department-stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .stat-item {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .stat-icon-sm {
-        width: 40px;
-        height: 40px;
-        border-radius: 10px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.125rem;
-    }
-
-    .stat-value-sm {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #212529;
-        line-height: 1;
-    }
-
-    .stat-label-sm {
-        font-size: 0.75rem;
-        color: #6c757d;
-        margin-top: 0.125rem;
-    }
-
-    .manager-info {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        padding: 1rem;
-        background: #f8f9fa;
-        border-radius: 12px;
-    }
-
-    .manager-avatar {
-        width: 45px;
-        height: 45px;
-        border-radius: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
-        font-size: 0.875rem;
-    }
-
-    .manager-label {
-        font-size: 0.75rem;
-        color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .manager-name {
-        font-weight: 600;
-        color: #212529;
-    }
-
-    .department-footer {
-        padding: 1rem 1.5rem;
-        background: #f8f9fa;
-        border-top: 1px solid #e9ecef;
-    }
-
-    .empty-state {
-        text-align: center;
-        padding: 5rem 2rem;
-        background: white;
-        border-radius: 20px;
-        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
-    }
-
-    .empty-state i {
-        font-size: 5rem;
-        color: #e9ecef;
-        margin-bottom: 1.5rem;
-    }
-
-    .empty-state h3 {
-        color: #212529;
-        margin-bottom: 0.5rem;
-    }
-
-    .empty-state p {
-        color: #6c757d;
-        margin-bottom: 0;
+    .empty-state .btn:hover {
+        background-color: #A52A2A !important;
     }
 </style>
 @endsection
