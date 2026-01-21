@@ -1007,6 +1007,31 @@
                     <span>Dashboard</span>
                 </a>
 
+                {{-- OFFICE MANAGEMENT SECTION --}}
+                @if(Auth::user()->hasAnyRole(['Super Admin', 'Admin', 'Employee', 'office_admin', 'department_manager', 'staff']))
+                <div class="menu-section-title">Office Management</div>
+
+                <a href="{{ route('office.daily-reports.index') }}" class="menu-item {{ request()->routeIs('office.daily-reports.*') ? 'active' : '' }}">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Daily Reports</span>
+                    @php
+                        $myPendingReports = \App\Models\DailyReport::where('status', 'pending')
+                            ->where('submitted_by', Auth::id())
+                            ->count();
+                    @endphp
+                    @if($myPendingReports > 0)
+                        <span class="menu-badge">{{ $myPendingReports }}</span>
+                    @endif
+                </a>
+
+                @if(Auth::user()->hasRole('Super Admin'))
+                <a href="{{ route('office.departments.index') }}" class="menu-item {{ request()->routeIs('office.departments.*') ? 'active' : '' }}">
+                    <i class="fas fa-building"></i>
+                    <span>Departments</span>
+                </a>
+                @endif
+                @endif
+
                 @canany(['view students', 'create students', 'edit students', 'delete students'])
                 <div class="menu-section-title">Student Management</div>
 
@@ -1087,6 +1112,11 @@
                 <a href="{{ route('users.index') }}" class="menu-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
                     <i class="fas fa-users-cog"></i>
                     <span>User Management</span>
+                </a>
+
+                <a href="{{ route('admin.roles.index') }}" class="menu-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">
+                    <i class="fas fa-user-shield"></i>
+                    <span>Role Management</span>
                 </a>
 
                 <a href="{{ route('admin.email-settings.index') }}" class="menu-item {{ request()->routeIs('admin.email-settings.*') ? 'active' : '' }}">
