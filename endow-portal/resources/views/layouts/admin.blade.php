@@ -1018,7 +1018,43 @@
                         $myPendingReports = \App\Models\DailyReport::where('status', 'pending')
                             ->where('submitted_by', Auth::id())
                             ->count();
+                        // Show NEW badge to Super Admin and Admin for 10 days (until Feb 1, 2026)
+                        $showNewBadge = Auth::user()->hasAnyRole(['Super Admin', 'Admin'])
+                            && now()->lt(now()->parse('2026-02-01'));
                     @endphp
+                    @if($showNewBadge)
+                        <style>
+                            @keyframes borderGradient {
+                                0% {
+                                    background: linear-gradient(90deg, #06B6D4 0%, #10B981 100%);
+                                }
+                                50% {
+                                    background: linear-gradient(90deg, #0EA5E9 0%, #06B6D4 100%);
+                                }
+                                100% {
+                                    background: linear-gradient(90deg, #06B6D4 0%, #10B981 100%);
+                                }
+                            }
+                            .trending-badge {
+                                display: inline-flex;
+                                align-items: center;
+                                justify-content: center;
+                                padding: 0.3rem 0.65rem;
+                                border-radius: 20px;
+                                font-size: 0.65rem;
+                                font-weight: 700;
+                                letter-spacing: 0.5px;
+                                color: #FFFFFF;
+                                background: linear-gradient(135deg, #0EA5E9 0%, #10B981 100%);
+                                position: relative;
+                                margin-left: 0.5rem;
+                                animation: borderGradient 3s ease-in-out infinite;
+                                box-shadow: 0 0 10px rgba(16, 185, 129, 0.3), inset 0 0 6px rgba(255, 255, 255, 0.2);
+                                border: 1px solid rgba(255, 255, 255, 0.4);
+                            }
+                        </style>
+                        <span class="trending-badge">NEW</span>
+                    @endif
                     @if($myPendingReports > 0)
                         <span class="menu-badge">{{ $myPendingReports }}</span>
                     @endif
