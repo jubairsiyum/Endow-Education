@@ -29,6 +29,8 @@ class StudentChecklist extends Model
         'reviewed_by',
         'reviewed_at',
         'submitted_at',
+        'deadline',
+        'is_overdue',
     ];
 
     /**
@@ -40,8 +42,10 @@ class StudentChecklist extends Model
         'approved_at' => 'datetime',
         'reviewed_at' => 'datetime',
         'submitted_at' => 'datetime',
+        'deadline' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'is_overdue' => 'boolean',
     ];
 
     /**
@@ -114,5 +118,80 @@ class StudentChecklist extends Model
     public function isRejected(): bool
     {
         return $this->status === 'rejected';
+    }
+
+    /**
+     * Get the applicable deadline for this checklist item based on the student's program.
+     * Returns the deadline as a Carbon date instance or null if no deadline is set.
+     */
+    public function getApplicableDeadline()
+    {
+        if (!$this->student || !$this->student->targetProgram) {
+            return null;
+        }
+
+        // Check if there's a program-specific deadline for this document
+        $programDeadline = $this->student->targetProgram->documentDeadlines()
+            ->where('checklist_item_id', $this->checklist_item_id)
+            ->first();
+
+        if ($programDeadline && $programDeadline->has_specific_deadline && $programDeadline->specific_deadline) {
+            return $programDeadline->specific_deadline;
+        }
+
+        // Fall back to program's default deadline
+        if ($this->student->targetProgram->default_deadline) {
+            return $this->student->targetProgram->default_deadline;
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if this checklist item's deadline is approaching (within 7 days).
+     */
+    public function isDeadlineApproaching(): bool
+    {
+        $deadline = $this->getApplicableDeadline();
+        if (!$deadline) {
+            return false;
+        }
+
+        $daysUntilDeadline = now()->diffInDays($deadline, false);
+        return $daysUntilDeadline >= 0 && $daysUntilDeadline <= 7;
+    }
+
+    /**
+     * Check if this checklist item's deadline has passed.
+     */
+    public function isDeadlinePassed(): bool
+    {
+        $deadline = $this->getApplicableDeadline();
+        if (!$deadline) {
+            return false;
+        }
+
+        return now()->greaterThan($deadline);
+    }
+
+    /**
+     * Get formatted deadline string with status indicator.
+     */
+    public function getFormattedDeadlineAttribute(): ?string
+    {
+        $deadline = $this->getApplicableDeadline();
+        if (!$deadline) {
+            return null;
+        }
+
+        $formatted = $deadline->format('M d, Y');
+
+        if ($this->isDeadlinePassed()) {
+            return "$formatted (Overdue)";
+        } elseif ($this->isDeadlineApproaching()) {
+            return "$formatted (Approaching)";
+        }
+
+        return $formatted;
     }
 }

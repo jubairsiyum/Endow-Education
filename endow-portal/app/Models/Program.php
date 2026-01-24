@@ -27,6 +27,7 @@ class Program extends Model
         'is_active',
         'order',
         'created_by',
+        'default_deadline',
     ];
 
     /**
@@ -38,6 +39,7 @@ class Program extends Model
         'tuition_fee' => 'decimal:2',
         'is_active' => 'boolean',
         'order' => 'integer',
+        'default_deadline' => 'date',
     ];
 
     /**
@@ -54,6 +56,52 @@ class Program extends Model
     public function checklistItems()
     {
         return $this->belongsToMany(ChecklistItem::class, 'checklist_program');
+    }
+
+    /**
+     * Get document deadlines for this program.
+     */
+    public function documentDeadlines()
+    {
+        return $this->hasMany(ProgramDocumentDeadline::class);
+    }
+
+    /**
+     * Get deadline for a specific checklist item in this program.
+     * Returns specific deadline if set, otherwise returns program default.
+     */
+    public function getDeadlineForDocument($checklistItemId)
+    {
+        $documentDeadline = $this->documentDeadlines()
+            ->where('checklist_item_id', $checklistItemId)
+            ->first();
+
+        if ($documentDeadline && $documentDeadline->has_specific_deadline) {
+            return $documentDeadline->specific_deadline;
+        }
+
+        return $this->default_deadline;
+    }
+
+    /**
+     * Get formatted default deadline
+     */
+    public function getFormattedDefaultDeadlineAttribute()
+    {
+        if (!$this->default_deadline) {
+            return 'No deadline set';
+        }
+        return $this->default_deadline->format('M d, Y');
+    }
+
+    /**
+     * Check if program has any document-specific deadlines
+     */
+    public function hasDocumentSpecificDeadlines()
+    {
+        return $this->documentDeadlines()
+            ->where('has_specific_deadline', true)
+            ->exists();
     }
 
     /**

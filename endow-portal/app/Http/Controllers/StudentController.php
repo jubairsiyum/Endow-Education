@@ -67,9 +67,20 @@ class StudentController extends Controller
             $query->where('target_university_id', $request->university_id);
         }
 
-        // Filter by program
+        // Filter by program - WITH university validation
         if ($request->has('program_id') && $request->program_id != '') {
-            $query->where('target_program_id', $request->program_id);
+            $program = \App\Models\Program::find($request->program_id);
+            if ($program) {
+                // Verify program belongs to selected university (if university is also selected)
+                if ($request->has('university_id') && $request->university_id != '') {
+                    if ($program->university_id == $request->university_id) {
+                        $query->where('target_program_id', $request->program_id);
+                    }
+                } else {
+                    // If no university selected, just use the program
+                    $query->where('target_program_id', $request->program_id);
+                }
+            }
         }
 
         // If employee, show only assigned students
@@ -111,9 +122,23 @@ class StudentController extends Controller
                 ->get();
         }
 
-        // Get universities and programs for filters
+        // Get universities for filters
         $universities = \App\Models\University::active()->orderBy('name')->get();
-        $programs = \App\Models\Program::active()->orderBy('name')->get();
+        
+        // Get programs filtered by selected university (if any)
+        $programs = collect();
+        if ($request->has('university_id') && $request->university_id != '') {
+            $programs = \App\Models\Program::where('university_id', $request->university_id)
+                ->active()
+                ->orderBy('name')
+                ->get();
+        } else {
+            // Get all active programs with their universities
+            $programs = \App\Models\Program::with('university')
+                ->active()
+                ->orderBy('name')
+                ->get();
+        }
 
         return view('students.index', compact('students', 'employees', 'universities', 'programs'));
     }
@@ -144,9 +169,20 @@ class StudentController extends Controller
             $query->where('target_university_id', $request->university_id);
         }
 
-        // Filter by program
+        // Filter by program - WITH university validation
         if ($request->has('program_id') && $request->program_id != '') {
-            $query->where('target_program_id', $request->program_id);
+            $program = \App\Models\Program::find($request->program_id);
+            if ($program) {
+                // Verify program belongs to selected university (if university is also selected)
+                if ($request->has('university_id') && $request->university_id != '') {
+                    if ($program->university_id == $request->university_id) {
+                        $query->where('target_program_id', $request->program_id);
+                    }
+                } else {
+                    // If no university selected, just use the program
+                    $query->where('target_program_id', $request->program_id);
+                }
+            }
         }
 
         // Search
@@ -174,9 +210,23 @@ class StudentController extends Controller
         // Sort students by creation date (latest first)
         $students = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends(request()->except('page'));
 
-        // Get universities and programs for filters
+        // Get universities for filters
         $universities = \App\Models\University::active()->orderBy('name')->get();
-        $programs = \App\Models\Program::active()->orderBy('name')->get();
+        
+        // Get programs filtered by selected university (if any)
+        $programs = collect();
+        if ($request->has('university_id') && $request->university_id != '') {
+            $programs = \App\Models\Program::where('university_id', $request->university_id)
+                ->active()
+                ->orderBy('name')
+                ->get();
+        } else {
+            // Get all active programs with their universities
+            $programs = \App\Models\Program::with('university')
+                ->active()
+                ->orderBy('name')
+                ->get();
+        }
 
         return view('students.my-students', compact('students', 'universities', 'programs'));
     }
@@ -415,7 +465,9 @@ class StudentController extends Controller
             'assignedUser',
             'creator',
             'targetUniversity',
-            'targetProgram',
+            'targetProgram' => function($query) {
+                $query->with('documentDeadlines');
+            },
             'followUps' => function($query) {
                 $query->orderBy('created_at', 'desc')->with('creator');
             },

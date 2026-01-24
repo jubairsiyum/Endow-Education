@@ -38,10 +38,10 @@
                 <thead class="bg-light">
                     <tr class="text-uppercase text-muted" style="font-size: 0.75rem;">
                         <th style="width: 80px;" class="text-center">Order</th>
-                        <th style="width: 25%;">Document Name</th>
-                        <th style="width: 40%;">Description</th>
-                        <th style="width: 100px;">Required</th>
-                        <th style="width: 100px;">Status</th>
+                        <th style="width: 20%;">Document Name</th>
+                        <th style="width: 35%;">Description</th>
+                        <th style="width: 80px;">Required</th>
+                        <th style="width: 80px;">Status</th>
                         <th style="width: 180px;" class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -109,7 +109,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="text-center py-5">
+                        <td colspan="7" class="text-center py-5">
                             <div class="my-4">
                                 <i class="fas fa-clipboard-check fa-3x text-muted mb-3 d-block"></i>
                                 <p class="text-muted mb-0">No checklist items found</p>
@@ -191,6 +191,23 @@
                             </div>
                             <small class="text-muted d-block ms-4">Only active items appear in student checklists</small>
                         </div>
+
+                        <hr class="my-3">
+                        <h6 class="fw-semibold mb-3"><i class="fas fa-calendar text-danger me-2"></i>Submission Deadline (Optional)</h6>
+
+                        <div class="mb-3">
+                            <label for="default_deadline" class="form-label fw-semibold">Default Deadline for All Programs</label>
+                            <input type="date" class="form-control @error('default_deadline') is-invalid @enderror"
+                                   id="default_deadline" name="default_deadline" value="{{ old('default_deadline') }}">
+                            @error('default_deadline')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Leave blank if no deadline is needed (optional)</small>
+                        </div>
+
+                        <div class="alert alert-info alert-sm mb-3">
+                            <small><i class="fas fa-lightbulb me-2"></i>Deadlines are optional. You can set a default deadline for all programs, or manage program-specific deadlines after creation.</small>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -259,6 +276,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Deadline Management Modal -->
+    <!-- REMOVED: Deadline management is now handled at the Program level via program-document-deadlines -->
 
     <script>
     function editItem(id, title, description, isRequired, isActive) {

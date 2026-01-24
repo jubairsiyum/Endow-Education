@@ -72,6 +72,8 @@ class StudentDocument extends Model
         'reviewed_by',
         'reviewed_at',
         'notes',
+        'deadline',
+        'is_overdue',
     ];
 
     /**
@@ -81,10 +83,12 @@ class StudentDocument extends Model
      */
     protected $casts = [
         'reviewed_at' => 'datetime',
+        'deadline' => 'date',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
         'is_notarized' => 'boolean',
         'is_translated' => 'boolean',
+        'is_overdue' => 'boolean',
         'attestation_details' => 'array',
     ];
 

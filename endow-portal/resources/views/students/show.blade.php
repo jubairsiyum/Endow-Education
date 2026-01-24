@@ -468,6 +468,22 @@
                                                 <span class="badge bg-secondary ms-2">Optional</span>
                                             @endif
                                         </h6>
+                                        @php
+                                            $deadline = $checklist->getApplicableDeadline();
+                                        @endphp
+                                        @if($deadline)
+                                            <small class="text-muted d-block mt-1">
+                                                <i class="fas fa-calendar-alt me-1"></i>
+                                                Deadline: 
+                                                @if($checklist->isDeadlinePassed())
+                                                    <span class="text-danger fw-bold">{{ $deadline->format('M d, Y') }} (Overdue)</span>
+                                                @elseif($checklist->isDeadlineApproaching())
+                                                    <span class="text-warning fw-bold">{{ $deadline->format('M d, Y') }} (Approaching)</span>
+                                                @else
+                                                    <span>{{ $deadline->format('M d, Y') }}</span>
+                                                @endif
+                                            </small>
+                                        @endif
                                     </div>
                                     <div class="ms-3">
                                         @php

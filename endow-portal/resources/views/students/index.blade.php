@@ -45,13 +45,29 @@
                 </div>
 
                 <div class="col-md-2 col-6">
-                    <select name="program_id" class="form-select form-select-sm">
+                    <select name="program_id" class="form-select form-select-sm" id="program_filter">
                         <option value="">All Programs</option>
-                        @foreach($programs ?? [] as $program)
-                        <option value="{{ $program->id }}" {{ request('program_id') == $program->id ? 'selected' : '' }}>
-                            {{ Str::limit($program->name, 30) }}
-                        </option>
-                        @endforeach
+                        @forelse($programs ?? [] as $program)
+                            @if($program->university || request('university_id'))
+                                <option value="{{ $program->id }}" 
+                                        data-university-id="{{ $program->university_id ?? '' }}"
+                                        {{ request('program_id') == $program->id ? 'selected' : '' }}>
+                                    {{ Str::limit($program->name, 20) }}
+                                    @if($program->university && !request('university_id'))
+                                        ({{ Str::limit($program->university->name, 15) }})
+                                    @endif
+                                </option>
+                            @else
+                                <option value="{{ $program->id }}" 
+                                        data-university-id="{{ $program->university_id ?? '' }}"
+                                        style="display: none;"
+                                        {{ request('program_id') == $program->id ? 'selected' : '' }}>
+                                    {{ Str::limit($program->name, 20) }}
+                                </option>
+                            @endif
+                        @empty
+                            <option value="" disabled>No programs available</option>
+                        @endforelse
                     </select>
                 </div>
 
@@ -513,6 +529,39 @@
                     selectAllCheckbox.checked = allChecked && studentCheckboxes.length > 0;
                     selectAllCheckbox.indeterminate = someChecked && !allChecked;
                 }
+            }
+
+            // Dynamic program filtering based on university selection
+            const universityFilter = document.querySelector('select[name="university_id"]');
+            const programFilter = document.getElementById('program_filter');
+            
+            if (universityFilter && programFilter) {
+                universityFilter.addEventListener('change', function() {
+                    const selectedUniversityId = this.value;
+                    const options = programFilter.querySelectorAll('option');
+                    
+                    // Reset program filter
+                    programFilter.value = '';
+                    
+                    options.forEach(option => {
+                        if (option.value === '') {
+                            // Always show "All Programs" option
+                            option.style.display = 'block';
+                        } else {
+                            const optionUniversityId = option.getAttribute('data-university-id');
+                            if (selectedUniversityId === '') {
+                                // Show all programs with university context
+                                option.style.display = 'block';
+                            } else if (optionUniversityId === selectedUniversityId) {
+                                // Show only programs from selected university
+                                option.style.display = 'block';
+                            } else {
+                                // Hide programs from other universities
+                                option.style.display = 'none';
+                            }
+                        }
+                    });
+                });
             }
         });
     </script>

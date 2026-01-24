@@ -139,11 +139,30 @@
 
                     <div class="col-12">
                         <hr>
+                        <h6 class="fw-bold text-dark mb-3"><i class="fas fa-calendar-alt text-danger me-2"></i>Document Submission Deadlines</h6>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Default Deadline for All Documents</label>
+                                <input type="date" name="default_deadline" class="form-control @error('default_deadline') is-invalid @enderror"
+                                       value="{{ old('default_deadline', $program->default_deadline ? $program->default_deadline->format('Y-m-d') : '') }}">
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle"></i> 
+                                    Set a default deadline for all documents in this program. 
+                                    Individual documents can override this deadline below.
+                                </small>
+                                @error('default_deadline')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
                         <h6 class="fw-bold text-dark mb-3"><i class="fas fa-clipboard-list text-danger me-2"></i>Required Checklist Items</h6>
-                        <p class="text-muted small mb-3">Select the documents required for this program.</p>
+                        <p class="text-muted small mb-3">Select the documents required for this program. Optionally set specific deadlines for individual documents.</p>
 
                         @php
                             $selectedItems = old('checklist_items', $program->checklistItems->pluck('id')->toArray());
+                            $programDeadlines = $program->documentDeadlines->keyBy('checklist_item_id');
                         @endphp
 
                         @if($checklistItems->isEmpty())
@@ -152,22 +171,66 @@
                                 No checklist items available.
                             </div>
                         @else
-                            <div class="row g-2">
+                            <div id="checklistItemsContainer">
                                 @foreach($checklistItems as $item)
-                                    <div class="col-md-6">
-                                        <div class="form-check p-3 border rounded">
-                                            <input class="form-check-input" type="checkbox" name="checklist_items[]"
-                                                   value="{{ $item->id }}" id="checklist_{{ $item->id }}"
-                                                   {{ in_array($item->id, $selectedItems) ? 'checked' : '' }}>
-                                            <label class="form-check-label w-100" for="checklist_{{ $item->id }}">
-                                                <strong>{{ $item->title }}</strong>
-                                                @if($item->is_required)
-                                                    <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Required</span>
-                                                @endif
-                                                @if($item->description)
-                                                    <br><small class="text-muted">{{ Str::limit($item->description, 60) }}</small>
-                                                @endif
-                                            </label>
+                                    @php
+                                        $deadlineRecord = $programDeadlines->get($item->id);
+                                    @endphp
+                                    <div class="card mb-2 border">
+                                        <div class="card-body p-3">
+                                            <div class="row align-items-start">
+                                                <div class="col-md-auto">
+                                                    <div class="form-check">
+                                                        <input class="form-check-input checklist-toggle" type="checkbox" name="checklist_items[]"
+                                                               value="{{ $item->id }}" id="checklist_{{ $item->id }}" data-item-id="{{ $item->id }}"
+                                                               {{ in_array($item->id, $selectedItems) ? 'checked' : '' }}>
+                                                        <label class="form-check-label" for="checklist_{{ $item->id }}">
+                                                            <strong>{{ $item->title }}</strong>
+                                                            @if($item->is_required)
+                                                                <span class="badge bg-danger ms-1" style="font-size: 0.65rem;">Required</span>
+                                                            @endif
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md">
+                                                    @if($item->description)
+                                                        <small class="text-muted d-block">{{ $item->description }}</small>
+                                                    @endif
+                                                </div>
+                                                <div class="col-md-3 text-md-end">
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-calendar"></i>
+                                                        <a href="javascript:void(0)" class="deadline-link" data-item-id="{{ $item->id }}">
+                                                            @if($deadlineRecord && $deadlineRecord->has_specific_deadline)
+                                                                Deadline: {{ \Carbon\Carbon::parse($deadlineRecord->specific_deadline)->format('M d, Y') }}
+                                                            @else
+                                                                Set deadline
+                                                            @endif
+                                                        </a>
+                                                    </small>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="deadline-section mt-3 p-3 bg-light rounded {{ !$deadlineRecord ? 'd-none' : '' }}" id="deadline_{{ $item->id }}">
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input deadline-toggle" type="checkbox" 
+                                                           name="document_deadlines[{{ $loop->index }}][has_specific]"
+                                                           id="deadline_toggle_{{ $item->id }}" data-item-id="{{ $item->id }}"
+                                                           {{ $deadlineRecord && $deadlineRecord->has_specific_deadline ? 'checked' : '' }}>
+                                                    <label class="form-check-label" for="deadline_toggle_{{ $item->id }}">
+                                                        Use specific deadline for this document
+                                                    </label>
+                                                </div>
+                                                <input type="hidden" name="document_deadlines[{{ $loop->index }}][checklist_item_id]" 
+                                                       value="{{ $item->id }}">
+                                                <div class="mt-2 deadline-date-group {{ !($deadlineRecord && $deadlineRecord->has_specific_deadline) ? 'd-none' : '' }}">
+                                                    <label class="form-label small">Specific Deadline Date</label>
+                                                    <input type="date" 
+                                                           name="document_deadlines[{{ $loop->index }}][specific_deadline]"
+                                                           class="form-control form-control-sm"
+                                                           value="{{ old('document_deadlines.' . $loop->index . '.specific_deadline', $deadlineRecord && $deadlineRecord->specific_deadline ? $deadlineRecord->specific_deadline->format('Y-m-d') : '') }}">
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 @endforeach
@@ -188,4 +251,48 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle deadline section visibility
+    document.querySelectorAll('.deadline-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            const itemId = this.dataset.itemId;
+            const section = document.getElementById('deadline_' + itemId);
+            section.classList.toggle('d-none');
+        });
+    });
+
+    // Toggle date picker visibility when checkbox is checked/unchecked
+    document.querySelectorAll('.deadline-toggle').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const itemId = this.dataset.itemId;
+            const dateGroup = this.closest('.deadline-section').querySelector('.deadline-date-group');
+            if (this.checked) {
+                dateGroup.classList.remove('d-none');
+            } else {
+                dateGroup.classList.add('d-none');
+            }
+        });
+    });
+
+    // Sync checklist toggle with deadline section
+    document.querySelectorAll('.checklist-toggle').forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const itemId = this.dataset.itemId;
+            const deadlineSection = document.getElementById('deadline_' + itemId);
+            if (!this.checked && !deadlineSection.classList.contains('d-none')) {
+                deadlineSection.classList.add('d-none');
+                // Uncheck the deadline toggle too
+                const toggle = deadlineSection.querySelector('.deadline-toggle');
+                if (toggle) {
+                    toggle.checked = false;
+                    toggle.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    });
+});
+</script>
 @endsection

@@ -66,8 +66,13 @@ class ProgramController extends Controller
             'currency' => 'nullable|string|max:3',
             'is_active' => 'sometimes|boolean',
             'order' => 'nullable|integer|min:0',
+            'default_deadline' => 'nullable|date',
             'checklist_items' => 'nullable|array',
             'checklist_items.*' => 'exists:checklist_items,id',
+            'document_deadlines' => 'nullable|array',
+            'document_deadlines.*.checklist_item_id' => 'required_with:document_deadlines|exists:checklist_items,id',
+            'document_deadlines.*.has_specific' => 'sometimes|boolean',
+            'document_deadlines.*.specific_deadline' => 'nullable|date|required_if:document_deadlines.*.has_specific,true',
         ]);
 
         $validated['created_by'] = Auth::id();
@@ -78,12 +83,18 @@ class ProgramController extends Controller
         }
 
         $checklistItems = $validated['checklist_items'] ?? [];
-        unset($validated['checklist_items']);
+        $documentDeadlines = $validated['document_deadlines'] ?? [];
+        unset($validated['checklist_items'], $validated['document_deadlines']);
 
         $program = Program::create($validated);
 
         if (!empty($checklistItems)) {
             $program->checklistItems()->sync($checklistItems);
+        }
+
+        // Save document-specific deadlines
+        if (!empty($documentDeadlines)) {
+            $this->saveDocumentDeadlines($program, $documentDeadlines);
         }
 
         return redirect()->route('programs.index')
@@ -112,7 +123,7 @@ class ProgramController extends Controller
 
         $universities = University::active()->ordered()->get();
         $checklistItems = ChecklistItem::active()->ordered()->get();
-        $program->load('checklistItems');
+        $program->load(['checklistItems', 'documentDeadlines']);
 
         return view('programs.edit', compact('program', 'universities', 'checklistItems'));
     }
@@ -135,20 +146,34 @@ class ProgramController extends Controller
             'currency' => 'nullable|string|max:3',
             'is_active' => 'sometimes|boolean',
             'order' => 'nullable|integer|min:0',
+            'default_deadline' => 'nullable|date',
             'checklist_items' => 'nullable|array',
             'checklist_items.*' => 'exists:checklist_items,id',
+            'document_deadlines' => 'nullable|array',
+            'document_deadlines.*.checklist_item_id' => 'required_with:document_deadlines|exists:checklist_items,id',
+            'document_deadlines.*.has_specific' => 'sometimes|boolean',
+            'document_deadlines.*.specific_deadline' => 'nullable|date|required_if:document_deadlines.*.has_specific,true',
         ]);
 
         $validated['is_active'] = $request->has('is_active') ? ($request->is_active == '1' || $request->is_active === true) : false;
 
         $checklistItems = $validated['checklist_items'] ?? [];
-        unset($validated['checklist_items']);
+        $documentDeadlines = $validated['document_deadlines'] ?? [];
+        unset($validated['checklist_items'], $validated['document_deadlines']);
 
         $program->update($validated);
         $program->checklistItems()->sync($checklistItems);
 
         // Clear the relationship cache to ensure fresh data on next load
         $program->load('checklistItems');
+
+        // Update document-specific deadlines
+        if (!empty($documentDeadlines)) {
+            $this->saveDocumentDeadlines($program, $documentDeadlines);
+        } else {
+            // Clear all specific deadlines if none provided
+            $program->documentDeadlines()->delete();
+        }
 
         // Update student checklists for students enrolled in this program
         $this->updateStudentChecklistsForProgram($program);
@@ -172,6 +197,24 @@ class ProgramController extends Controller
 
         return redirect()->route('programs.index')
             ->with('success', 'Program deleted successfully.');
+    }
+
+    /**
+     * Save or update document-specific deadlines for a program
+     */
+    protected function saveDocumentDeadlines(Program $program, array $documentDeadlines)
+    {
+        foreach ($documentDeadlines as $deadline) {
+            $program->documentDeadlines()->updateOrCreate(
+                [
+                    'checklist_item_id' => $deadline['checklist_item_id'],
+                ],
+                [
+                    'has_specific_deadline' => $deadline['has_specific'] ?? false,
+                    'specific_deadline' => ($deadline['has_specific'] ?? false) ? ($deadline['specific_deadline'] ?? null) : null,
+                ]
+            );
+        }
     }
 
     /**
