@@ -27,6 +27,7 @@ class User extends Authenticatable
         'status',
         'photo_path',
         'address',
+        'department_id',
     ];
 
     /**
@@ -54,6 +55,22 @@ class User extends Authenticatable
     public function student()
     {
         return $this->hasOne(Student::class);
+    }
+
+    /**
+     * Get the department this user belongs to.
+     */
+    public function department()
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Get all daily reports submitted by this user.
+     */
+    public function dailyReports()
+    {
+        return $this->hasMany(DailyReport::class, 'submitted_by');
     }
 
     /**

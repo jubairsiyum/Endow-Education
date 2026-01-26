@@ -8,6 +8,7 @@ use App\Models\ChecklistItem;
 use App\Models\StudentDocument;
 use App\Services\ActivityLogService;
 use App\Services\ImageProcessingService;
+use App\Notifications\DocumentRejectedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class StudentChecklistController extends Controller
 {
@@ -137,7 +139,7 @@ class StudentChecklistController extends Controller
         $student = Student::where('user_id', $user->id)->firstOrFail();
 
         $request->validate([
-            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
+            'document' => 'required|file|max:15360|mimes:pdf,jpg,jpeg,png', // Increased to 15MB
         ]);
 
         // Delete old file if exists
@@ -542,6 +544,23 @@ class StudentChecklistController extends Controller
             ]
         );
 
+        // Send email notification to student
+        try {
+            if ($student->user) {
+                $student->user->notify(new DocumentRejectedNotification($studentChecklist, $student, $request->feedback));
+                Log::info('Document rejection email sent successfully', [
+                    'student_id' => $student->id,
+                    'student_email' => $student->email,
+                    'document' => $studentChecklist->checklistItem->title
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send document rejection email', [
+                'student_email' => $student->email,
+                'error' => $e->getMessage()
+            ]);
+        }
+
         return back()->with('success', 'Document rejected. Feedback has been sent to the student.');
     }
 
@@ -564,7 +583,7 @@ class StudentChecklistController extends Controller
         }
 
         $request->validate([
-            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
+            'document' => 'required|file|max:15360|mimes:pdf,jpg,jpeg,png', // Increased to 15MB
         ]);
 
         // Delete old file if exists

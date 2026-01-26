@@ -175,6 +175,7 @@
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @endcan
+                                @if(Auth::user()->hasRole('Super Admin'))
                                 @can('delete', $visit)
                                 <form action="{{ route('student-visits.destroy', $visit) }}"
                                       method="POST"
@@ -189,6 +190,7 @@
                                     </button>
                                 </form>
                                 @endcan
+                                @endif
                             </div>
                         </td>
                     </tr>

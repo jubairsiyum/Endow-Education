@@ -46,7 +46,7 @@
                             <i class="fas fa-file-pdf text-danger me-1"></i> PDF, JPG, PNG Accepted
                         </span>
                         <span class="badge bg-white text-dark px-3 py-2">
-                            <i class="fas fa-weight text-warning me-1"></i> Max 10MB per file
+                            <i class="fas fa-weight text-warning me-1"></i> Max 15MB per file
                         </span>
                         <span class="badge bg-white text-dark px-3 py-2">
                             <i class="fas fa-shield-alt text-success me-1"></i> Secure Upload
@@ -242,7 +242,7 @@
                                                 </div>
                                                 <div class="upload-text">
                                                     <span class="upload-main">Choose File or Drag & Drop</span>
-                                                    <span class="upload-sub">PDF, JPG, PNG up to 10MB</span>
+                                                    <span class="upload-sub">PDF, JPG, PNG up to 15MB</span>
                                                 </div>
                                             </label>
                                             <div class="selected-file" id="selected-file-{{ $item->id }}" style="display: none;">
@@ -338,7 +338,7 @@
                             </li>
                             <li class="mb-2 small">
                                 <i class="fas fa-check text-success me-2"></i>
-                                Keep file sizes under 10MB
+                                Keep file sizes under 15MB
                             </li>
                             <li class="mb-2 small">
                                 <i class="fas fa-check text-success me-2"></i>
@@ -401,8 +401,10 @@
         background: #fff;
         border-radius: 15px;
         border: 2px solid #e9ecef;
-        overflow: hidden;
+        overflow-x: hidden;
+        overflow-y: visible;
         transition: all 0.3s ease;
+        max-width: 100%;
     }
 
     .modern-doc-card:hover {
@@ -421,18 +423,22 @@
         flex-wrap: wrap;
         padding: 20px;
         gap: 20px;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .doc-left {
         flex: 1;
-        min-width: 300px;
+        min-width: 0;
+        max-width: 100%;
         display: flex;
         gap: 15px;
     }
 
     .doc-right {
         flex: 1;
-        min-width: 300px;
+        min-width: 0;
+        max-width: 100%;
     }
 
     /* Step Number */
@@ -459,6 +465,9 @@
     /* Document Info */
     .doc-info {
         flex: 1;
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .doc-title {
@@ -659,6 +668,8 @@
         padding: 12px 15px;
         margin-bottom: 12px;
         transition: all 0.3s ease;
+        max-width: 100%;
+        overflow-x: hidden;
     }
 
     .uploaded-doc:hover {
@@ -670,6 +681,8 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .file-preview i {
@@ -677,8 +690,10 @@
     }
 
     .file-details {
-        flex: 1;
+        flex: 1 1 auto;
         min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
     }
 
     .file-name {
@@ -689,6 +704,8 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        max-width: 100%;
+        word-break: break-all;
     }
 
     .file-meta {
@@ -731,35 +748,44 @@
         line-height: 1.5;
     }
 
-    /* Compact Rejection Card - New Optimized Design */
+    /* Compact Rejection Card - Enhanced Modern Design */
     .rejection-compact-card {
         background: linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%);
         border: 2px solid #ffcdd2;
-        border-radius: 12px;
-        padding: 16px;
+        border-radius: 15px;
+        padding: 20px;
         margin-bottom: 0;
-        box-shadow: 0 2px 8px rgba(220, 20, 60, 0.08);
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.12);
+        transition: all 0.3s ease;
+        overflow: visible;
+    }
+
+    .rejection-compact-card:hover {
+        box-shadow: 0 6px 20px rgba(220, 20, 60, 0.18);
+        transform: translateY(-2px);
     }
 
     .rejection-header {
         display: flex;
         align-items: start;
-        gap: 12px;
-        margin-bottom: 12px;
+        gap: 15px;
+        margin-bottom: 16px;
+        padding-bottom: 16px;
+        border-bottom: 2px dashed rgba(220, 20, 60, 0.2);
     }
 
     .rejection-icon-wrapper {
         flex-shrink: 0;
-        width: 36px;
-        height: 36px;
+        width: 44px;
+        height: 44px;
         background: linear-gradient(135deg, #DC143C, #ff1744);
-        border-radius: 50%;
+        border-radius: 12px;
         display: flex;
         align-items: center;
         justify-content: center;
         color: white;
-        font-size: 16px;
-        box-shadow: 0 3px 10px rgba(220, 20, 60, 0.3);
+        font-size: 18px;
+        box-shadow: 0 4px 12px rgba(220, 20, 60, 0.35);
     }
 
     .rejection-content {
@@ -768,18 +794,25 @@
     }
 
     .rejection-title {
-        font-size: 14px;
+        font-size: 15px;
         font-weight: 700;
         color: #c62828;
-        margin: 0 0 4px 0;
+        margin: 0 0 6px 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .rejection-message {
         font-size: 13px;
         color: #d32f2f;
         margin: 0;
-        line-height: 1.5;
+        line-height: 1.6;
         font-weight: 500;
+        background: rgba(255, 255, 255, 0.6);
+        padding: 10px 12px;
+        border-radius: 8px;
+        border-left: 3px solid #DC143C;
     }
 
     .compact-resubmit-form {
@@ -788,43 +821,55 @@
 
     .compact-upload-row {
         display: flex;
-        gap: 10px;
-        align-items: stretch;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: flex-start;
     }
 
     .upload-area-compact {
-        flex: 1;
+        flex: 1 1 auto;
+        min-width: 200px;
         position: relative;
-        min-height: 48px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
     }
 
     .compact-upload-label {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 12px 16px;
+        gap: 10px;
+        padding: 14px 18px;
         background: white;
         border: 2px dashed #ffcdd2;
-        border-radius: 8px;
+        border-radius: 10px;
         cursor: pointer;
         transition: all 0.3s ease;
-        height: 100%;
+        min-height: 52px;
+        box-shadow: 0 2px 6px rgba(220, 20, 60, 0.08);
     }
 
     .compact-upload-label:hover {
         border-color: #DC143C;
         background: #fff5f5;
-        transform: translateY(-1px);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 20, 60, 0.15);
+        border-style: solid;
     }
 
     .compact-upload-label i {
         color: #DC143C;
-        font-size: 16px;
+        font-size: 18px;
+        transition: transform 0.3s ease;
+    }
+
+    .compact-upload-label:hover i {
+        transform: scale(1.1);
     }
 
     .label-text {
         font-weight: 600;
-        font-size: 13px;
+        font-size: 14px;
         color: #1a1a1a;
     }
 
@@ -833,23 +878,28 @@
         color: #6c757d;
         margin-left: auto;
         font-weight: 500;
+        background: rgba(108, 117, 125, 0.1);
+        padding: 4px 10px;
+        border-radius: 12px;
     }
 
     .selected-file-compact {
         display: flex;
         align-items: center;
-        padding: 10px 16px;
+        padding: 12px 18px;
         background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
-        border: 2px solid #81c784;
-        border-radius: 8px;
+        border: 2px solid #66bb6a;
+        border-radius: 10px;
         color: #2e7d32;
         font-size: 13px;
         font-weight: 600;
-        height: 100%;
+        min-height: 52px;
+        box-shadow: 0 3px 10px rgba(76, 175, 80, 0.2);
     }
 
     .selected-file-compact i {
         color: #4caf50;
+        font-size: 18px;
     }
 
     .selected-file-compact .filename {
@@ -857,21 +907,21 @@
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
-        margin-right: 8px;
+        margin-right: 10px;
     }
 
     .clear-file-compact {
-        background: rgba(220, 20, 60, 0.1);
+        background: rgba(220, 20, 60, 0.15);
         border: none;
-        width: 24px;
-        height: 24px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
         cursor: pointer;
         color: #DC143C;
-        font-size: 11px;
+        font-size: 12px;
         transition: all 0.2s;
         flex-shrink: 0;
     }
@@ -879,25 +929,34 @@
     .clear-file-compact:hover {
         background: #DC143C;
         color: white;
+        transform: rotate(90deg);
     }
 
     .btn-resubmit-compact {
         background: linear-gradient(135deg, #DC143C, #ff1744);
         color: white;
         border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
+        padding: 14px 24px;
+        border-radius: 10px;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 14px;
         cursor: pointer;
         transition: all 0.3s ease;
         white-space: nowrap;
-        box-shadow: 0 3px 12px rgba(220, 20, 60, 0.3);
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.35);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-shrink: 0;
+        min-width: fit-content;
+        height: fit-content;
+        align-self: flex-start;
     }
 
     .btn-resubmit-compact:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 18px rgba(220, 20, 60, 0.4);
+        box-shadow: 0 6px 20px rgba(220, 20, 60, 0.45);
+        background: linear-gradient(135deg, #ff1744, #DC143C);
     }
 
     .btn-resubmit-compact:active {
@@ -928,7 +987,13 @@
         }
 
         .doc-left, .doc-right {
-            min-width: 100%;
+            min-width: 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .doc-left {
+            flex-direction: column;
         }
 
         .upload-label {
@@ -944,10 +1009,16 @@
         /* Compact rejection card responsive */
         .compact-upload-row {
             flex-direction: column;
+            align-items: stretch;
+        }
+
+        .upload-area-compact {
+            width: 100%;
         }
 
         .btn-resubmit-compact {
             width: 100%;
+            min-height: 48px;
         }
 
         .label-hint {
@@ -1058,15 +1129,16 @@
         const prefix = isResubmit ? 'resubmit' : 'upload';
         const uploadArea = document.getElementById(`${prefix}-area-${itemId}`);
         const selectedFileDiv = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-selected' : 'selected-file'}-${itemId}`);
-        const label = uploadArea.querySelector('.upload-label');
+        const labelClass = isResubmit ? '.compact-upload-label' : '.upload-label';
+        const label = uploadArea.querySelector(labelClass);
         const submitBtn = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-btn' : 'upload-btn'}-${itemId}`);
 
-        // Validate file size
-        if (file.size > 10 * 1024 * 1024) {
+        // Validate file size (15MB limit)
+        if (file.size > 15 * 1024 * 1024) {
             Swal.fire({
                 icon: 'error',
                 title: 'File Too Large',
-                text: 'File size exceeds 10MB limit. Please choose a smaller file.',
+                text: 'File size exceeds 15MB limit. Please choose a smaller file.',
                 confirmButtonColor: '#DC143C'
             });
             input.value = '';
@@ -1090,8 +1162,8 @@
         // Show selected file and upload button
         selectedFileDiv.style.display = 'flex';
         selectedFileDiv.querySelector('.filename').textContent = file.name;
-        label.style.display = 'none';
-        if (submitBtn) submitBtn.style.display = 'block';
+        if (label) label.style.display = 'none';
+        if (submitBtn) submitBtn.style.display = 'flex';
     };
 
     window.clearFileSelection = function(itemId) {
@@ -1111,12 +1183,12 @@
         const uploadArea = document.getElementById(`resubmit-area-${itemId}`);
         const input = document.getElementById(`resubmit-input-${itemId}`);
         const selectedFileDiv = document.getElementById(`resubmit-selected-${itemId}`);
-        const label = uploadArea.querySelector('.upload-label');
+        const label = uploadArea.querySelector('.compact-upload-label');
         const submitBtn = document.getElementById(`resubmit-btn-${itemId}`);
 
         input.value = '';
         selectedFileDiv.style.display = 'none';
-        label.style.display = 'flex';
+        if (label) label.style.display = 'flex';
         if (submitBtn) submitBtn.style.display = 'none';
     };
 

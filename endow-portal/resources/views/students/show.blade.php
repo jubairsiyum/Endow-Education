@@ -229,9 +229,12 @@
                     <div>
                         <div class="stat-label">Checklist Progress</div>
                         <div class="stat-value" style="font-size: 1.5rem;">
-                            {{ $student->checklist_progress['approved'] ?? 0 }} of {{ $student->checklist_progress['total'] ?? 0 }}
+                            {{ $student->checklist_progress['in_progress'] ?? 0 }} of {{ $student->checklist_progress['total'] ?? 0 }}
                         </div>
-                        <small class="text-muted" style="font-size: 0.75rem;">submitted</small>
+                        <small class="text-muted" style="font-size: 0.75rem;">
+                            {{ $student->checklist_progress['approved'] ?? 0 }} approved,
+                            {{ $student->checklist_progress['submitted'] ?? 0 }} pending
+                        </small>
                     </div>
                     <div class="stat-icon primary">
                         <i class="fas fa-tasks"></i>
@@ -406,8 +409,10 @@
                     </div>
                     @php
                         $total = $student->checklist_progress['total'] ?? 0;
+                        $inProgress = $student->checklist_progress['in_progress'] ?? 0;
                         $approved = $student->checklist_progress['approved'] ?? 0;
-                        $percentage = $total > 0 ? (int)(($approved / $total) * 100) : 0;
+                        $submitted = $student->checklist_progress['submitted'] ?? 0;
+                        $percentage = $total > 0 ? (int)(($inProgress / $total) * 100) : 0;
                         $progressColor = $percentage >= 75 ? 'success' : ($percentage >= 50 ? 'warning' : 'danger');
                     @endphp
                     <div class="progress" style="height: 24px;">
@@ -415,7 +420,7 @@
                              style="width: {{ $percentage }}%;"
                              aria-valuenow="{{ $percentage }}"
                              aria-valuemin="0" aria-valuemax="100">
-                            <span class="fw-bold">{{ $approved }} of {{ $total }} completed ({{ $percentage }}%)</span>
+                            <span class="fw-bold">{{ $inProgress }} of {{ $total }} in progress ({{ $percentage }}%)</span>
                         </div>
                     </div>
                     <div class="mt-2">

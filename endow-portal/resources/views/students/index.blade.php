@@ -210,19 +210,24 @@
                         </td>
                         <td class="d-none d-md-table-cell">
                             @php
+                                $inProgress = $student->checklist_progress['in_progress'] ?? 0;
                                 $approved = $student->checklist_progress['approved'] ?? 0;
+                                $submitted = $student->checklist_progress['submitted'] ?? 0;
                                 $total = $student->checklist_progress['total'] ?? 0;
-                                $progress = $total > 0 ? (int)(($approved / $total) * 100) : 0;
+                                $progress = $total > 0 ? (int)(($inProgress / $total) * 100) : 0;
                                 $progressColor = $progress >= 75 ? 'success' : ($progress >= 50 ? 'warning' : 'danger');
                             @endphp
                             <div class="d-flex align-items-center gap-2">
                                 <div class="progress student-progress" style="width: 70px; height: 6px;">
                                     <div class="progress-bar bg-{{ $progressColor }}" role="progressbar"
                                          style="width: {{ $progress }}%;"
-                                         aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100">
+                                         aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"
+                                         title="{{ $approved }} approved, {{ $submitted }} pending review">
                                     </div>
                                 </div>
-                                <small class="text-muted student-progress-text">{{ $approved }}/{{ $total }}</small>
+                                <small class="text-muted student-progress-text" title="{{ $approved }} approved, {{ $submitted }} pending review">
+                                    {{ $inProgress }}/{{ $total }}
+                                </small>
                             </div>
                         </td>
                         <td class="text-end">
