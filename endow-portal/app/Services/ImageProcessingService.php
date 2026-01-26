@@ -308,7 +308,6 @@ class ImageProcessingService
         </head>
         <body>
             <div class='container'>
-                <div class='document-title'>{$originalFilename}</div>
                 <div class='image-container'>
                     <img src='{$imageSrc}' style='width: {$scaledWidth}px; height: {$scaledHeight}px;' />
                 </div>
