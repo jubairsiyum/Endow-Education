@@ -106,7 +106,7 @@ class ImageProcessingService
         // Use string-based class resolution to avoid import errors when package not installed
         $imageClass = '\Intervention\Image\Facades\Image';
         $image = $imageClass::make($file);
-        
+
         // Resize image maintaining aspect ratio
         $image->fit($width, $height, function ($constraint) {
             $constraint->aspectRatio();
@@ -158,7 +158,7 @@ class ImageProcessingService
 
         // Create new image
         $newImage = imagecreatetruecolor($newWidth, $newHeight);
-        
+
         // Handle transparency for PNG
         if ($mimeType === 'image/png') {
             imagealphablending($newImage, false);
@@ -238,7 +238,7 @@ class ImageProcessingService
     /**
      * Convert image (PNG/JPG) to PDF format for document viewing.
      * Returns array with PDF file data and metadata.
-     * 
+     *
      * @param UploadedFile $file The image file to convert
      * @param string $originalFilename Original filename to preserve
      * @return array ['content' => base64_encoded_pdf, 'filename' => new_filename, 'mime_type' => 'application/pdf', 'size' => file_size]
@@ -247,11 +247,11 @@ class ImageProcessingService
     {
         // Get original filename or use provided one
         $originalFilename = $originalFilename ?? $file->getClientOriginalName();
-        
+
         // Check if file is an image
         $mimeType = $file->getMimeType();
         $isImage = in_array($mimeType, ['image/jpeg', 'image/jpg', 'image/png']);
-        
+
         if (!$isImage) {
             throw new \Exception('File must be an image (JPG, JPEG, or PNG)');
         }
@@ -262,11 +262,11 @@ class ImageProcessingService
 
         // Get image dimensions
         list($width, $height) = getimagesize($file->getRealPath());
-        
+
         // Calculate PDF dimensions (A4 page with margins)
         $maxWidth = 550; // A4 width with margins
         $maxHeight = 750; // A4 height with margins
-        
+
         // Calculate scaled dimensions maintaining aspect ratio
         $ratio = min($maxWidth / $width, $maxHeight / $height);
         $scaledWidth = $width * $ratio;
@@ -348,7 +348,7 @@ class ImageProcessingService
 
     /**
      * Check if file should be converted to PDF (is it an image?)
-     * 
+     *
      * @param UploadedFile $file
      * @return bool
      */
