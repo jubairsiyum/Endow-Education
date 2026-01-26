@@ -70,7 +70,7 @@ class StudentVisitController extends Controller
                 $query->whereDate('created_at', '<=', $request->date_to);
             }
 
-            $visits = $query->latest()->paginate(15);
+            $visits = $query->latest()->paginate(15)->appends($request->except('page'));
 
             // Get employees for filter dropdown (for admins)
             $employees = collect();
@@ -248,8 +248,8 @@ class StudentVisitController extends Controller
             ['student_name' => $studentVisit->student_name, 'phone' => $studentVisit->phone]
         );
 
-        // Preserve pagination page in redirect
-        $redirectParams = $request->only(['page']);
+        // Preserve all filter parameters in redirect
+        $redirectParams = $request->only(['page', 'search', 'employee_id', 'prospective_status', 'date_from', 'date_to']);
         return redirect()->route('student-visits.index', $redirectParams)
             ->with('success', 'Student visit record updated successfully.');
     }
@@ -274,8 +274,8 @@ class StudentVisitController extends Controller
 
         $studentVisit->delete();
 
-        // Preserve pagination page in redirect
-        $redirectParams = request()->only(['page']);
+        // Preserve all filter parameters in redirect
+        $redirectParams = request()->only(['page', 'search', 'employee_id', 'prospective_status', 'date_from', 'date_to']);
         return redirect()->route('student-visits.index', $redirectParams)
             ->with('success', 'Student visit record deleted successfully.');
     }
