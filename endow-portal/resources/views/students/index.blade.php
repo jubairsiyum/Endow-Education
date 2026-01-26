@@ -274,10 +274,12 @@
         </div>
 
         @if($students->hasPages())
-        <div class="d-flex justify-content-between align-items-center px-3 py-3 border-top bg-white">
-            <div class="d-flex align-items-center gap-3">
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center px-3 py-3 border-top bg-white gap-3">
+            <div class="d-flex align-items-center gap-3 flex-wrap justify-content-center justify-content-md-start">
                 <span class="text-muted small">
-                    Showing {{ $students->firstItem() }} to {{ $students->lastItem() }} of {{ $students->total() }} students
+                    Showing <span class="fw-semibold text-dark">{{ $students->firstItem() }}</span>
+                    to <span class="fw-semibold text-dark">{{ $students->lastItem() }}</span>
+                    of <span class="fw-semibold text-dark">{{ $students->total() }}</span> students
                 </span>
                 <form method="GET" action="{{ route('students.index') }}" class="d-flex align-items-center gap-2">
                     @foreach(request()->except(['page', 'per_page']) as $key => $value)
@@ -292,7 +294,7 @@
                     </select>
                 </form>
             </div>
-            <div>
+            <div class="pagination-wrapper">
                 {{ $students->links() }}
             </div>
         </div>
@@ -345,6 +347,49 @@
             transform: scale(1.1);
         }
 
+        /* Professional Pagination Styling */
+        .pagination-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .pagination-wrapper .pagination {
+            margin-bottom: 0;
+        }
+
+        .pagination .page-link {
+            color: #dc143c;
+            border: 1px solid #dee2e6;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .pagination .page-link:hover {
+            color: #fff;
+            background-color: #dc143c;
+            border-color: #dc143c;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #dc143c;
+            border-color: #dc143c;
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            background-color: #fff;
+            border-color: #dee2e6;
+        }
+
+        .pagination .page-link:focus {
+            box-shadow: 0 0 0 0.2rem rgba(220, 20, 60, 0.25);
+        }
+
         /* Mobile Responsive Styles */
         @media (max-width: 767.98px) {
             .table-responsive {
@@ -381,6 +426,16 @@
 
             .card-body.p-3 {
                 padding: 1rem !important;
+            }
+
+            .pagination .page-link {
+                padding: 0.25rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            .pagination-wrapper {
+                width: 100%;
+                overflow-x: auto;
             }
         }
 
