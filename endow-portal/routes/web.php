@@ -307,7 +307,20 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
         Route::get('/{dailyReport}/edit', [DailyReportController::class, 'edit'])->name('edit');
         Route::put('/{dailyReport}', [DailyReportController::class, 'update'])->name('update');
         Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
+        
+        // New workflow actions
+        Route::post('/{dailyReport}/submit', [DailyReportController::class, 'submit'])->name('submit');
+        Route::post('/{dailyReport}/approve', [DailyReportController::class, 'approve'])->name('approve');
+        Route::post('/{dailyReport}/reject', [DailyReportController::class, 'reject'])->name('reject');
         Route::post('/{dailyReport}/review', [DailyReportController::class, 'review'])->name('review');
+        
+        // Comments and attachments
+        Route::post('/{dailyReport}/comments', [DailyReportController::class, 'addComment'])->name('comments');
+        Route::post('/{dailyReport}/attachments', [DailyReportController::class, 'uploadAttachment'])->name('attachments');
+        
+        // PDF Export (Super Admin Only)
+        Route::get('/export/pdf-form', [DailyReportController::class, 'showExportForm'])->name('export-form');
+        Route::post('/export/pdf', [DailyReportController::class, 'exportPDF'])->name('export-pdf');
     });
 
     // Department Management Module (Super Admin Only)

@@ -4,73 +4,81 @@
 @section('breadcrumb', 'Home / Office / Daily Reports')
 
 @section('content')
-<div class="container-fluid px-4">
+<link rel="stylesheet" href="{{ asset('css/daily-reports-compact.css') }}">
+<div class="container-fluid daily-reports-container">
     <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
-            <h2 class="page-title mb-2" style="color: #000000;">
+            <h4 class="mb-1 fw-bold" style="color: #000000;">
                 <i class="fas fa-file-alt me-2" style="color: #DC143C;"></i>
                 Daily Reports
-            </h2>
-            <p class="text-muted mb-0">Track and review daily department reports</p>
+            </h4>
+            <p class="text-muted mb-0 small">Track and review daily department reports</p>
         </div>
-        @can('create', App\Models\DailyReport::class)
-        <a href="{{ route('office.daily-reports.create') }}" class="btn" style="background-color: #DC143C; color: #FFFFFF; border: none;">
-            <i class="fas fa-plus me-2"></i>Submit Report
-        </a>
-        @endcan
+        <div class="d-flex gap-2">
+            @if(auth()->user()->hasRole('Super Admin'))
+            <a href="{{ route('office.daily-reports.export-form') }}" class="btn btn-sm" style="background-color: #28a745; color: #FFFFFF; border: none; padding: 0.4rem 1rem; border-radius: 0.375rem; font-weight: 600;">
+                <i class="fas fa-file-pdf me-1"></i>Export PDF
+            </a>
+            @endif
+            @can('create', App\Models\DailyReport::class)
+            <a href="{{ route('office.daily-reports.create') }}" class="btn btn-sm" style="background-color: #DC143C; color: #FFFFFF; border: none; padding: 0.4rem 1rem; border-radius: 0.375rem; font-weight: 600;">
+                <i class="fas fa-plus me-1"></i>Submit Report
+            </a>
+            @endcan
+        </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row g-3 mb-4">
+    <div class="row g-2 mb-3">
         <div class="col-md-3">
             <div class="stat-card shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;">
-                <div class="stat-card-header d-flex justify-content-between align-items-center p-3">
+                <div class="stat-card-header d-flex justify-content-between align-items-center p-2">
                     <div>
-                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.875rem;">Total Reports</div>
-                        <div class="stat-value" style="color: #000000; font-size: 2rem; font-weight: bold;">{{ $statistics['total'] }}</div>
+                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.7rem;">Total Reports</div>
+                        <div class="stat-value" style="color: #000000; font-size: 1.5rem; font-weight: bold;">{{ $statistics['total'] }}</div>
                     </div>
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(255, 0, 0, 0.1); width: 40px; height: 40px;">
-                        <i class="fas fa-file-alt" style="color: #DC143C;"></i>
+                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(255, 0, 0, 0.1); width: 35px; height: 35px;">
+                        <i class="fas fa-file-alt" style="color: #DC143C; font-size: 0.9rem;"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;">
-                <div class="stat-card-header d-flex justify-content-between align-items-center p-3">
+                <div class="stat-card-header d-flex justify-content-between align-items-center p-2">
                     <div>
-                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.875rem;">In Progress</div>
-                        <div class="stat-value" style="color: #000000; font-size: 2rem; font-weight: bold;">{{ $statistics['in_progress'] ?? 0 }}</div>
+                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.7rem;">In Progress</div>
+                        <div class="stat-value" style="color: #000000; font-size: 1.5rem; font-weight: bold;">{{ $statistics['in_progress'] ?? 0 }}</div>
                     </div>
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(0, 0, 0, 0.1); width: 40px; height: 40px;">
-                        <i class="fas fa-tasks" style="color: #000000;"></i>
+                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(0, 0, 0, 0.1); width: 35px; height: 35px;">
+                        <i class="fas fa-tasks" style="color: #000000; font-size: 0.9rem;"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;">
-                <div class="stat-card-header d-flex justify-content-between align-items-center p-3">
+                <div class="stat-card-header d-flex justify-content-between align-items-center p-2">
                     <div>
-                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.875rem;">In Review</div>
-                        <div class="stat-value" style="color: #000000; font-size: 2rem; font-weight: bold;">{{ $statistics['review'] ?? 0 }}</div>
+                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.7rem;">In Review</div>
+                        <div class="stat-value" style="color: #000000; font-size: 1.5rem; font-weight: bold;">{{ $statistics['review'] ?? 0 }}</div>
                     </div>
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(255, 0, 0, 0.1); width: 40px; height: 40px;">
-                        <i class="fas fa-clock" style="color: #DC143C;"></i>
+                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(255, 0, 0, 0.1); width: 35px; height: 35px;">
+                        <i class="fas fa-clock" style="color: #DC143C; font-size: 0.9rem;"></i>
                     </div>
                 </div>
             </div>
         </div>
         <div class="col-md-3">
             <div class="stat-card shadow-sm rounded" style="background-color: #FFFFFF; border: 1px solid #E0E0E0;">
-                <div class="stat-card-header d-flex justify-content-between align-items-center p-3">
+                <div class="stat-card-header d-flex justify-content-between align-items-center p-2">
                     <div>
-                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.875rem;">Completed</div>
-                        <div class="stat-value" style="color: #000000; font-size: 2rem; font-weight: bold;">{{ $statistics['completed'] ?? 0 }}</div>
+                        <div class="stat-label text-uppercase fw-semibold" style="color: #6C757D; font-size: 0.7rem;">Completed</div>
+                        <div class="stat-value" style="color: #000000; font-size: 1.5rem; font-weight: bold;">{{ $statistics['completed'] ?? 0 }}</div>
                     </div>
-                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(0, 0, 0, 0.1); width: 40px; height: 40px;">
-                        <i class="fas fa-check-circle" style="color: #000000;"></i>
+                    <div class="stat-icon rounded-circle d-flex align-items-center justify-content-center" style="background-color: rgba(0, 0, 0, 0.1); width: 35px; height: 35px;">
+                        <i class="fas fa-check-circle" style="color: #000000; font-size: 0.9rem;"></i>
                     </div>
                 </div>
             </div>
@@ -146,6 +154,17 @@
                             </td>
                             <td class="px-3 py-2">
                                 <div class="fw-semibold" style="color: #000000;">{{ Str::limit($report->title, 80) }}</div>
+                                @if($report->priority && $report->priority !== 'normal')
+                                    <span class="badge badge-{{ $report->priority_badge }} mt-1" style="font-size: 10px;">
+                                        @if($report->priority === 'urgent')
+                                            <i class="fas fa-exclamation-circle"></i> URGENT
+                                        @elseif($report->priority === 'high')
+                                            <i class="fas fa-arrow-up"></i> HIGH
+                                        @else
+                                            {{ strtoupper($report->priority) }}
+                                        @endif
+                                    </span>
+                                @endif
                             </td>
                             <td class="px-3 py-2">
                                 <div class="d-flex align-items-center gap-2">
@@ -159,7 +178,29 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2">
-                                @if($report->status === 'in_progress')
+                                @php
+                                    $needsYourReview = false;
+                                    // Check if this report needs review from the current user
+                                    if ($report->submitted_by !== auth()->id() && 
+                                        $report->isAwaitingReview() && 
+                                        auth()->user()->can('review', $report)) {
+                                        $needsYourReview = true;
+                                    }
+                                @endphp
+                                
+                                @if($needsYourReview)
+                                    <span class="badge rounded-pill pulse-badge" style="background-color: #DC143C; color: #FFFFFF; animation: pulse 2s infinite;">
+                                        <i class="fas fa-bell"></i> Needs Your Review
+                                    </span>
+                                @elseif($report->status === 'draft')
+                                    <span class="badge rounded-pill bg-secondary">
+                                        <i class="fas fa-edit"></i> Draft
+                                    </span>
+                                @elseif($report->status === 'submitted' || $report->status === 'pending_review')
+                                    <span class="badge rounded-pill bg-info text-dark">
+                                        <i class="fas fa-paper-plane"></i> Submitted
+                                    </span>
+                                @elseif($report->status === 'in_progress')
                                     <span class="badge rounded-pill" style="background-color: #000000; color: #FFFFFF;">
                                         <i class="fas fa-tasks"></i> In Progress
                                     </span>
@@ -167,10 +208,26 @@
                                     <span class="badge rounded-pill" style="background-color: #DC143C; color: #FFFFFF;">
                                         <i class="fas fa-clock"></i> In Review
                                     </span>
-                                @else
+                                @elseif($report->status === 'approved')
+                                    <span class="badge rounded-pill bg-success">
+                                        <i class="fas fa-check-circle"></i> Approved
+                                    </span>
+                                @elseif($report->status === 'rejected')
+                                    <span class="badge rounded-pill bg-danger">
+                                        <i class="fas fa-times-circle"></i> Rejected
+                                    </span>
+                                @elseif($report->status === 'completed')
                                     <span class="badge rounded-pill" style="background-color: #FFFFFF; color: #000000; border: 1px solid #000000;">
                                         <i class="fas fa-check-circle"></i> Completed
                                     </span>
+                                @else
+                                    <span class="badge rounded-pill bg-dark">
+                                        {{ ucfirst($report->status) }}
+                                    </span>
+                                @endif
+                                
+                                @if($report->submitted_by === auth()->id() && $report->isAwaitingReview())
+                                    <br><small class="text-muted" style="font-size: 0.7rem;"><i class="fas fa-info-circle"></i> Your report</small>
                                 @endif
                             </td>
                             <td class="px-3 py-2">

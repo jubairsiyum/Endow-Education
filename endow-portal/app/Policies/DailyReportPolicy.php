@@ -102,19 +102,104 @@ class DailyReportPolicy
 
     /**
      * Determine if user can review reports
-     * Only superiors (Super Admin, Admin, HR, office_admin) can review
-     * Users cannot review their own reports
+     * 
+     * ORGANIZATIONAL HIERARCHY:
+     * - Managers/Supervisors review reports from their team members
+     * - Users CANNOT review their own reports (conflict of interest)
+     * - Super Admin, Admin, HR, office admins can review all reports
+     * - Department managers can review reports from their department
      */
     public function review(User $user, DailyReport $report): bool
     {
-        // Cannot review own reports
+        // CRITICAL: Users cannot review their own reports
         if ($report->submitted_by === $user->id) {
             return false;
         }
 
-        // Super Admin, Admin, HR, and office admins can review
-        return $user->hasAnyRole(['Super Admin', 'Admin', 'HR', 'office_admin']) ||
-               $user->hasPermission('review daily reports');
+        // Only submitted reports (not drafts) can be reviewed
+        if ($report->isDraft()) {
+            return false;
+        }
+
+        // Super Admin, Admin, HR, office admins can review any submitted report
+        if ($user->hasAnyRole(['Super Admin', 'Admin', 'HR', 'office_admin'])) {
+            return true;
+        }
+
+        // Department managers can review reports from their department
+        if ($user->hasRole('department_manager') && $user->department_id === $report->department_id) {
+            return true;
+        }
+
+        // Check explicit permission
+        if ($user->hasPermission('review daily reports')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if user can submit a report
+     */
+    public function submit(User $user, DailyReport $report): bool
+    {
+        // Can only submit own drafts or rejected reports
+        if ($report->submitted_by !== $user->id) {
+            return false;
+        }
+
+        // Can submit if draft or rejected
+        return in_array($report->status, [
+            DailyReport::STATUS_DRAFT,
+            DailyReport::STATUS_REJECTED,
+        ]);
+    }
+
+    /**
+     * Determine if user can approve a report
+     */
+    public function approve(User $user, DailyReport $report): bool
+    {
+        // Cannot approve own reports
+        if ($report->submitted_by === $user->id) {
+            return false;
+        }
+
+        // Must be in appropriate status
+        if (!in_array($report->status, [
+            DailyReport::STATUS_SUBMITTED,
+            DailyReport::STATUS_PENDING_REVIEW,
+            DailyReport::STATUS_REVIEW,
+        ])) {
+            return false;
+        }
+
+        // Check role-based access
+        if ($user->hasAnyRole(['Super Admin', 'Admin', 'office_admin'])) {
+            return true;
+        }
+
+        // Department managers can approve reports from their department
+        if ($user->hasRole('department_manager') && $user->department_id === $report->department_id) {
+            return true;
+        }
+
+        // Check if user is in approval chain
+        if (app(\App\Services\DailyReportApprovalService::class)->canApprove($report, $user)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Determine if user can reject a report
+     */
+    public function reject(User $user, DailyReport $report): bool
+    {
+        // Same rules as approve
+        return $this->approve($user, $report);
     }
 
     /**
@@ -128,5 +213,59 @@ class DailyReportPolicy
             'office_admin',
             'department_manager',
         ]);
+    }
+
+    /**
+     * Determine if user can view attachments
+     */
+    public function viewAttachments(User $user, DailyReport $report): bool
+    {
+        // Can view if can view the report
+        return $this->view($user, $report);
+    }
+
+    /**
+     * Determine if user can add attachments
+     */
+    public function addAttachments(User $user, DailyReport $report): bool
+    {
+        // Report owner can add while in editable status
+        if ($report->submitted_by === $user->id && $report->canBeEdited()) {
+            return true;
+        }
+
+        // Reviewers can add supporting documents
+        return $this->review($user, $report);
+    }
+
+    /**
+     * Determine if user can view comments
+     */
+    public function viewComments(User $user, DailyReport $report): bool
+    {
+        // Can view if can view the report
+        return $this->view($user, $report);
+    }
+
+    /**
+     * Determine if user can add comments
+     */
+    public function addComments(User $user, DailyReport $report): bool
+    {
+        // Can comment if can view
+        return $this->view($user, $report);
+    }
+
+    /**
+     * Determine if user can view activity logs
+     */
+    public function viewActivityLog(User $user, DailyReport $report): bool
+    {
+        // Only admins and report owner
+        if ($report->submitted_by === $user->id) {
+            return true;
+        }
+
+        return $user->hasAnyRole(['Super Admin', 'Admin', 'office_admin', 'department_manager']);
     }
 }

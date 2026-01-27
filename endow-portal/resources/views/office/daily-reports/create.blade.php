@@ -4,7 +4,8 @@
 @section('breadcrumb', 'Home / Office / Daily Reports / Create')
 
 @section('content')
-<div class="container-fluid px-4">
+<link rel="stylesheet" href="{{ asset('css/daily-reports-compact.css') }}">
+<div class="container-fluid daily-reports-container">
     <!-- Modern Header -->
     <div class="page-header-modern mb-4" style="background: linear-gradient(135deg, #DC143C 0%, #A52A2A 100%); padding: 2rem; border-radius: 1rem; color: #FFFFFF; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);">
         <a href="{{ route('office.daily-reports.index') }}" class="btn shadow-sm" style="background-color: #FFFFFF; color: #000000; border: 1px solid #E0E0E0;">
@@ -30,7 +31,7 @@
                     </h5>
                 </div>
                 <div class="card-body p-4">
-                    <form action="{{ route('office.daily-reports.store') }}" method="POST">
+                    <form action="{{ route('office.daily-reports.store') }}" method="POST" enctype="multipart/form-data">
                         @csrf
 
                         <!-- Department (Auto-assigned) -->
@@ -107,12 +108,98 @@
                             <small class="text-muted">Include achievements, challenges, meetings attended, tasks completed, etc.</small>
                         </div>
 
+                        <!-- Priority -->
+                        <div class="mb-4">
+                            <label for="priority" class="form-label fw-semibold" style="color: #000000;">
+                                <i class="fas fa-flag me-2" style="color: #DC143C;"></i>
+                                Priority Level
+                            </label>
+                            <select name="priority" id="priority" class="form-select @error('priority') is-invalid @enderror" style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;">
+                                <option value="normal" {{ old('priority', 'normal') == 'normal' ? 'selected' : '' }}>
+                                    Normal - Standard priority
+                                </option>
+                                <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>
+                                    High - Requires attention
+                                </option>
+                                <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>
+                                    Urgent - Immediate action needed
+                                </option>
+                                <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>
+                                    Low - Can wait
+                                </option>
+                            </select>
+                            @error('priority')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Select priority level to help managers prioritize reviews</small>
+                        </div>
+
                         <!-- Status -->
                         <div class="mb-4">
                             <label for="status" class="form-label fw-semibold" style="color: #000000;">
                                 <i class="fas fa-tasks me-2" style="color: #DC143C;"></i>
-                                Status <span style="color: #DC143C;">*</span>
+                                Submission Type <span style="color: #DC143C;">*</span>
                             </label>
+                            <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;" required>
+                                <option value="draft" {{ old('status', 'draft') == 'draft' ? 'selected' : '' }}>
+                                    Save as Draft - Continue later
+                                </option>
+                                <option value="submitted" {{ old('status') == 'submitted' ? 'selected' : '' }}>
+                                    Submit for Approval - Ready for review
+                                </option>
+                            </select>
+                            @error('status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Save as draft to continue working, or submit for manager approval</small>
+                        </div>
+
+                        <!-- Tags (Optional) -->
+                        <div class="mb-4">
+                            <label for="tags" class="form-label fw-semibold" style="color: #000000;">
+                                <i class="fas fa-tags me-2" style="color: #DC143C;"></i>
+                                Tags <span class="text-muted">(Optional)</span>
+                            </label>
+                            <input type="text" 
+                                   name="tags" 
+                                   id="tags" 
+                                   class="form-control @error('tags') is-invalid @enderror"
+                                   placeholder="e.g., meeting, client, urgent"
+                                   value="{{ old('tags') }}"
+                                   style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;">
+                            @error('tags')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Separate tags with commas for better organization</small>
+                        </div>
+
+                        <!-- Attachments -->
+                        <div class="mb-4">
+                            <label for="attachments" class="form-label fw-semibold" style="color: #000000;">
+                                <i class="fas fa-paperclip me-2" style="color: #DC143C;"></i>
+                                Attachments <span class="text-muted">(Optional)</span>
+                            </label>
+                            <input type="file" 
+                                   name="attachments[]" 
+                                   id="attachments" 
+                                   class="form-control @error('attachments') is-invalid @enderror @error('attachments.*') is-invalid @enderror"
+                                   multiple
+                                   accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt"
+                                   style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;">
+                            @error('attachments')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            @error('attachments.*')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                You can select multiple files. Supported: PDF, Word, Excel, Images (Max: 10MB each)
+                            </small>
+                            <div id="file-preview" class="mt-3"></div>
+                        </div>
+
+                        <!-- Guidelines Box -->
                             <select name="status" id="status" class="form-select @error('status') is-invalid @enderror" style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;" required>
                                 <option value="in_progress" {{ old('status', 'in_progress') == 'in_progress' ? 'selected' : '' }}>
                                     In Progress
@@ -120,14 +207,11 @@
                                 <option value="review" {{ old('status') == 'review' ? 'selected' : '' }}>
                                     Ready for Review
                                 </option>
-                                <option value="completed" {{ old('status') == 'completed' ? 'selected' : '' }}>
-                                    Completed
-                                </option>
                             </select>
                             @error('status')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <small class="text-muted">Set the current status of your tasks</small>
+                            <small class="text-muted">Set as "Ready for Review" when you want your manager to review it. Only managers can mark reports as completed.</small>
                         </div>
 
                         <!-- Guidelines Box -->
@@ -141,7 +225,8 @@
                                 <li>Mention any challenges faced and how they were addressed</li>
                                 <li>Include key metrics or results achieved (if applicable)</li>
                                 <li>List any action items or follow-ups required</li>
-                                <li>Reports cannot be edited once reviewed by admin</li>
+                                <li>You can save as draft and continue editing later</li>
+                                <li>Submitted reports will be sent to your manager for approval</li>
                             </ul>
                         </div>
 
@@ -151,7 +236,7 @@
                                 <i class="fas fa-times me-2"></i>Cancel
                             </a>
                             <button type="submit" class="btn btn-lg" style="background-color: #DC143C; color: #FFFFFF; border: none; padding: 0.75rem 2rem; border-radius: 0.5rem; font-weight: 600;">
-                                <i class="fas fa-paper-plane me-2"></i>Submit Report
+                                <i class="fas fa-save me-2"></i>Save Report
                             </button>
                         </div>
                     </form>
@@ -218,6 +303,35 @@
     // Real-time sync for validation
     quill.on('text-change', function() {
         document.getElementById('description').value = quill.root.innerHTML;
+    });
+
+    // File preview
+    document.getElementById('attachments').addEventListener('change', function(e) {
+        const previewDiv = document.getElementById('file-preview');
+        previewDiv.innerHTML = '';
+        
+        if (this.files.length > 0) {
+            const fileList = document.createElement('div');
+            fileList.className = 'mt-2';
+            
+            Array.from(this.files).forEach((file, index) => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'alert alert-info d-flex justify-content-between align-items-center mb-2';
+                fileItem.style.padding = '0.5rem 1rem';
+                
+                const fileInfo = document.createElement('div');
+                fileInfo.innerHTML = `
+                    <i class="fas fa-file me-2"></i>
+                    <strong>${file.name}</strong>
+                    <small class="text-muted ms-2">(${(file.size / 1024).toFixed(2)} KB)</small>
+                `;
+                
+                fileItem.appendChild(fileInfo);
+                fileList.appendChild(fileItem);
+            });
+            
+            previewDiv.appendChild(fileList);
+        }
     });
 </script>
 @endsection
