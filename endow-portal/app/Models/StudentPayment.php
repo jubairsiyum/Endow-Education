@@ -16,12 +16,21 @@ class StudentPayment extends Model
         'payment_method',
         'payment_type',
         'payment_date',
-        'transaction_id',
+        'transaction_id', // Mobile banking transaction ID
+        'accounting_transaction_id', // Link to accounting transactions table
         'notes',
         'status',
         'received_by',
         'created_by',
     ];
+
+    /**
+     * Get the accounting transaction.
+     */
+    public function accountingTransaction()
+    {
+        return $this->belongsTo(Transaction::class, 'accounting_transaction_id');
+    }
 
     protected $casts = [
         'payment_date' => 'date',

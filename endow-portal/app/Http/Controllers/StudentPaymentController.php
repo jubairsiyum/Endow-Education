@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Student;
 use App\Models\StudentPayment;
+use App\Models\Transaction;
+use App\Models\AccountCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -34,7 +36,13 @@ class StudentPaymentController extends Controller
     {
         $this->authorize('update', $student);
 
-        return view('students.payments.create', compact('student'));
+        // Get active income categories for payment types
+        $paymentTypes = AccountCategory::active()
+            ->where('type', 'income')
+            ->orderBy('name')
+            ->get();
+
+        return view('students.payments.create', compact('student', 'paymentTypes'));
     }
 
     /**
@@ -44,10 +52,16 @@ class StudentPaymentController extends Controller
     {
         $this->authorize('update', $student);
 
+        // Get active income category IDs for validation
+        $validCategoryIds = AccountCategory::active()
+            ->where('type', 'income')
+            ->pluck('id')
+            ->toArray();
+
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|in:Cash,Bank Transfer,bKash,Rocket,Nagad,Other',
-            'payment_type' => 'required|in:Tuition Fee,Service Fee,Processing Fee,Consultation Fee,Document Fee,Other',
+            'payment_type_id' => 'required|exists:account_categories,id|in:' . implode(',', $validCategoryIds),
             'payment_date' => 'required|date',
             'transaction_id' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
@@ -57,11 +71,15 @@ class StudentPaymentController extends Controller
         DB::beginTransaction();
 
         try {
+            // Get the selected category
+            $accountCategory = AccountCategory::findOrFail($validated['payment_type_id']);
+
+            // Create student payment record
             $payment = StudentPayment::create([
                 'student_id' => $student->id,
                 'amount' => $validated['amount'],
                 'payment_method' => $validated['payment_method'],
-                'payment_type' => $validated['payment_type'],
+                'payment_type' => $accountCategory->name, // Store category name
                 'payment_date' => $validated['payment_date'],
                 'transaction_id' => $validated['transaction_id'],
                 'notes' => $validated['notes'],
@@ -70,11 +88,28 @@ class StudentPaymentController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
+            // Create corresponding accounting transaction (pending approval)
+            $accountingTransaction = Transaction::create([
+                'account_category_id' => $accountCategory->id,
+                'amount' => $validated['amount'],
+                'entry_date' => $validated['payment_date'],
+                'remarks' => "Student payment from {$student->name} - {$accountCategory->name}" . 
+                             ($validated['notes'] ? "\nNotes: {$validated['notes']}" : ''),
+                'student_name' => $student->name,
+                'payment_method' => $validated['payment_method'],
+                'type' => 'income',
+                'status' => 'pending', // Always pending for accountant approval
+                'created_by' => Auth::id(),
+            ]);
+
+            // Link payment to accounting transaction
+            $payment->update(['accounting_transaction_id' => $accountingTransaction->id]);
+
             DB::commit();
 
             return redirect()
                 ->route('students.payments.index', $student)
-                ->with('success', 'Payment recorded successfully!');
+                ->with('success', 'Payment recorded successfully and submitted for accounting approval!');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -95,7 +130,13 @@ class StudentPaymentController extends Controller
             abort(404);
         }
 
-        return view('students.payments.edit', compact('student', 'payment'));
+        // Get active income categories for payment types
+        $paymentTypes = AccountCategory::active()
+            ->where('type', 'income')
+            ->orderBy('name')
+            ->get();
+
+        return view('students.payments.edit', compact('student', 'payment', 'paymentTypes'));
     }
 
     /**
@@ -109,10 +150,16 @@ class StudentPaymentController extends Controller
             abort(404);
         }
 
+        // Get active income category IDs for validation
+        $validCategoryIds = AccountCategory::active()
+            ->where('type', 'income')
+            ->pluck('id')
+            ->toArray();
+
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',
             'payment_method' => 'required|in:Cash,Bank Transfer,bKash,Rocket,Nagad,Other',
-            'payment_type' => 'required|in:Tuition Fee,Service Fee,Processing Fee,Consultation Fee,Document Fee,Other',
+            'payment_type_id' => 'required|exists:account_categories,id|in:' . implode(',', $validCategoryIds),
             'payment_date' => 'required|date',
             'transaction_id' => 'nullable|string|max:255',
             'notes' => 'nullable|string',
@@ -122,7 +169,18 @@ class StudentPaymentController extends Controller
         DB::beginTransaction();
 
         try {
-            $payment->update($validated);
+            // Get the selected category
+            $accountCategory = AccountCategory::findOrFail($validated['payment_type_id']);
+
+            $payment->update([
+                'amount' => $validated['amount'],
+                'payment_method' => $validated['payment_method'],
+                'payment_type' => $accountCategory->name, // Store category name
+                'payment_date' => $validated['payment_date'],
+                'transaction_id' => $validated['transaction_id'],
+                'notes' => $validated['notes'],
+                'status' => $validated['status'],
+            ]);
 
             DB::commit();
 

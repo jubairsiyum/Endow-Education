@@ -1177,6 +1177,52 @@
                 </a>
                 @endhasanyrole
 
+                {{-- ACCOUNTING MODULE --}}
+                @canany(['view-accounting', 'view-transaction', 'approve-transaction'])
+                <div class="menu-section-title">Accounting</div>
+
+                @can('view-accounting-summary')
+                <a href="{{ route('office.accounting.summary') }}" class="menu-item {{ request()->routeIs('office.accounting.summary') ? 'active' : '' }}">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Summary Dashboard</span>
+                </a>
+                @endcan
+
+                @can('view-transaction')
+                <a href="{{ route('office.accounting.transactions.index') }}" class="menu-item {{ request()->routeIs('office.accounting.transactions.index') ? 'active' : '' }}">
+                    <i class="fas fa-list-alt"></i>
+                    <span>All Transactions</span>
+                </a>
+                @endcan
+
+                @can('create-transaction')
+                <a href="{{ route('office.accounting.transactions.create') }}" class="menu-item {{ request()->routeIs('office.accounting.transactions.create') ? 'active' : '' }}">
+                    <i class="fas fa-plus-circle"></i>
+                    <span>Add Transaction</span>
+                </a>
+                @endcan
+
+                @can('create-transaction')
+                <a href="{{ route('office.accounting.categories.index') }}" class="menu-item {{ request()->routeIs('office.accounting.categories.*') ? 'active' : '' }}">
+                    <i class="fas fa-tags"></i>
+                    <span>Categories</span>
+                </a>
+                @endcan
+
+                @can('approve-transaction')
+                <a href="{{ route('office.accounting.transactions.pending') }}" class="menu-item {{ request()->routeIs('office.accounting.transactions.pending') ? 'active' : '' }}">
+                    <i class="fas fa-clock"></i>
+                    <span>Pending Approvals</span>
+                    @php
+                        $pendingTransactionsCount = \App\Models\Transaction::pending()->count();
+                    @endphp
+                    @if($pendingTransactionsCount > 0)
+                        <span class="menu-badge">{{ $pendingTransactionsCount }}</span>
+                    @endif
+                </a>
+                @endcan
+                @endcanany
+
                 @canany(['view reports'])
                 <div class="menu-section-title">Analytics</div>
 
@@ -1185,20 +1231,6 @@
                     <span>Reports</span>
                 </a>
                 @endcanany
-
-                @can('manage roles')
-                <div class="menu-section-title">System</div>
-
-                <a href="#" class="menu-item">
-                    <i class="fas fa-users-cog"></i>
-                    <span>User Management</span>
-                </a>
-
-                <a href="#" class="menu-item">
-                    <i class="fas fa-cog"></i>
-                    <span>Settings</span>
-                </a>
-                @endcan
             </div>
         </aside>
 
@@ -1288,6 +1320,9 @@
             </div>
         </main>
     </div>
+
+    <!-- jQuery (Required for Select2 and other plugins) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 

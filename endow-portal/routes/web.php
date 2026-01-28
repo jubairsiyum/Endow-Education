@@ -23,6 +23,8 @@ use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Office\DailyReportController;
 use App\Http\Controllers\Office\DepartmentController;
 use App\Http\Controllers\Admin\RoleManagementController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AccountCategoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -335,6 +337,37 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
         Route::post('/{department}/assign-user', [DepartmentController::class, 'assignUser'])->name('assign-user');
         Route::delete('/{department}/remove-user', [DepartmentController::class, 'removeUser'])->name('remove-user');
         Route::put('/{department}/update-manager', [DepartmentController::class, 'updateManager'])->name('update-manager');
+    });
+
+    // Accounting Module (Accountant Role Only)
+    Route::prefix('accounting')->name('accounting.')->middleware('role:Super Admin|Accountant')->group(function () {
+        // Summary/Dashboard
+        Route::get('/summary', [TransactionController::class, 'summary'])->name('summary');
+        
+        // Account Categories Management
+        Route::resource('categories', AccountCategoryController::class)->except(['show']);
+        Route::patch('/categories/{category}/toggle-status', [AccountCategoryController::class, 'toggleStatus'])
+            ->name('categories.toggle-status');
+        
+        // Pending Transactions (Approval)
+        Route::get('/pending', [TransactionController::class, 'pending'])
+            ->name('transactions.pending')
+            ->middleware('permission:approve-transaction');
+        
+        // Student search for autocomplete
+        Route::get('/transactions/search-students', [TransactionController::class, 'searchStudents'])
+            ->name('transactions.searchStudents');
+        
+        Route::patch('/transactions/{transaction}/approve', [TransactionController::class, 'approve'])
+            ->name('transactions.approve')
+            ->middleware('permission:approve-transaction');
+        
+        Route::patch('/transactions/{transaction}/reject', [TransactionController::class, 'reject'])
+            ->name('transactions.reject')
+            ->middleware('permission:approve-transaction');
+        
+        // Transaction CRUD
+        Route::resource('transactions', TransactionController::class)->except(['pending']);
     });
 });
 

@@ -197,6 +197,22 @@ return [
                 'manage evaluation questions' => 'Manage Evaluation Questions',
             ],
         ],
+
+        'accounting' => [
+            'name' => 'Accounting & Finance',
+            'icon' => 'fas fa-money-bill-wave',
+            'description' => 'Manage financial transactions and accounting',
+            'permissions' => [
+                'view-accounting' => 'View Accounting Module',
+                'view-accounting-summary' => 'View Accounting Summary/Dashboard',
+                'view-transaction' => 'View Transactions',
+                'create-transaction' => 'Create Transactions',
+                'edit-transaction' => 'Edit Transactions',
+                'delete-transaction' => 'Delete Transactions',
+                'approve-transaction' => 'Approve/Reject Transactions',
+                'manage-account-categories' => 'Manage Account Categories',
+            ],
+        ],
     ],
 
     /*
