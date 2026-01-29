@@ -14,17 +14,35 @@ class AccountCategoryController extends Controller
      */
     public function index()
     {
-        $categories = AccountCategory::orderBy('type')->orderBy('name')->get();
-        
-        $stats = [
-            'total' => AccountCategory::count(),
-            'active' => AccountCategory::where('is_active', true)->count(),
-            'inactive' => AccountCategory::where('is_active', false)->count(),
-            'income' => AccountCategory::where('type', 'income')->count(),
-            'expense' => AccountCategory::where('type', 'expense')->count(),
-        ];
+        try {
+            // Check if table exists
+            if (!\Schema::hasTable('account_categories')) {
+                return back()->with('error', 'Account categories table not found. Please run migrations: php artisan migrate');
+            }
 
-        return view('accounting.categories.index', compact('categories', 'stats'));
+            $categories = AccountCategory::orderBy('type')->orderBy('name')->get();
+            
+            $stats = [
+                'total' => AccountCategory::count(),
+                'active' => AccountCategory::where('is_active', true)->count(),
+                'inactive' => AccountCategory::where('is_active', false)->count(),
+                'income' => AccountCategory::where('type', 'income')->count(),
+                'expense' => AccountCategory::where('type', 'expense')->count(),
+            ];
+
+            return view('accounting.categories.index', compact('categories', 'stats'));
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Account Categories Index Error: ' . $e->getMessage());
+            
+            if (str_contains($e->getMessage(), "Table") && str_contains($e->getMessage(), "doesn't exist")) {
+                return back()->with('error', 'Account categories table missing. Run: php artisan migrate');
+            }
+            
+            return back()->with('error', 'Database error: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Account Categories Index Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while loading categories: ' . $e->getMessage());
+        }
     }
 
     /**

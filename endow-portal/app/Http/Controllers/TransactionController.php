@@ -389,62 +389,81 @@ class TransactionController extends Controller
      */
     public function summary(Request $request)
     {
-        // Default to current month
-        $startDate = $request->filled('start_date') 
-            ? $request->start_date 
-            : now()->startOfMonth()->format('Y-m-d');
-        
-        $endDate = $request->filled('end_date') 
-            ? $request->end_date 
-            : now()->endOfMonth()->format('Y-m-d');
+        try {
+            // Check if transactions table exists
+            if (!\Schema::hasTable('transactions')) {
+                return back()->with('error', 'Accounting tables not found. Please run migrations: php artisan migrate');
+            }
 
-        // Get approved transactions only
-        $query = Transaction::approved()->dateRange($startDate, $endDate);
+            // Default to current month
+            $startDate = $request->filled('start_date') 
+                ? $request->start_date 
+                : now()->startOfMonth()->format('Y-m-d');
+            
+            $endDate = $request->filled('end_date') 
+                ? $request->end_date 
+                : now()->endOfMonth()->format('Y-m-d');
 
-        // Calculate totals
-        $totalIncome = (clone $query)->income()->sum('amount');
-        $totalExpense = (clone $query)->expense()->sum('amount');
-        $netProfit = $totalIncome - $totalExpense;
+            // Get approved transactions only
+            $query = Transaction::approved()->dateRange($startDate, $endDate);
 
-        // Get income by category with optimized query
-        $incomeByCategory = Transaction::approved()
-            ->income()
-            ->dateRange($startDate, $endDate)
-            ->select('account_category_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('account_category_id')
-            ->with('category:id,name,type')
-            ->get();
+            // Calculate totals
+            $totalIncome = (clone $query)->income()->sum('amount') ?? 0;
+            $totalExpense = (clone $query)->expense()->sum('amount') ?? 0;
+            $netProfit = $totalIncome - $totalExpense;
 
-        // Get expense by category with optimized query
-        $expenseByCategory = Transaction::approved()
-            ->expense()
-            ->dateRange($startDate, $endDate)
-            ->select('account_category_id', DB::raw('SUM(amount) as total'))
-            ->groupBy('account_category_id')
-            ->with('category:id,name,type')
-            ->get();
+            // Get income by category with optimized query
+            $incomeByCategory = Transaction::approved()
+                ->income()
+                ->dateRange($startDate, $endDate)
+                ->select('account_category_id', DB::raw('SUM(amount) as total'))
+                ->groupBy('account_category_id')
+                ->with('category:id,name,type')
+                ->get();
 
-        // Get recent transactions with selective column loading
-        $recentTransactions = Transaction::approved()
-            ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'account_category_id', 'created_by')
-            ->with([
-                'category:id,name',
-                'creator:id,name'
-            ])
-            ->dateRange($startDate, $endDate)
-            ->orderBy('entry_date', 'desc')
-            ->limit(10)
-            ->get();
+            // Get expense by category with optimized query
+            $expenseByCategory = Transaction::approved()
+                ->expense()
+                ->dateRange($startDate, $endDate)
+                ->select('account_category_id', DB::raw('SUM(amount) as total'))
+                ->groupBy('account_category_id')
+                ->with('category:id,name,type')
+                ->get();
 
-        return view('accounting.summary', compact(
-            'totalIncome',
-            'totalExpense',
-            'netProfit',
-            'incomeByCategory',
-            'expenseByCategory',
-            'recentTransactions',
-            'startDate',
-            'endDate'
-        ));
+            // Get recent transactions with selective column loading
+            $recentTransactions = Transaction::approved()
+                ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'account_category_id', 'created_by')
+                ->with([
+                    'category:id,name',
+                    'creator:id,name'
+                ])
+                ->dateRange($startDate, $endDate)
+                ->orderBy('entry_date', 'desc')
+                ->limit(10)
+                ->get();
+
+            return view('accounting.summary', compact(
+                'totalIncome',
+                'totalExpense',
+                'netProfit',
+                'incomeByCategory',
+                'expenseByCategory',
+                'recentTransactions',
+                'startDate',
+                'endDate'
+            ));
+        } catch (\Illuminate\Database\QueryException $e) {
+            \Log::error('Accounting Summary Error: ' . $e->getMessage());
+            
+            // Check for specific error codes
+            if (str_contains($e->getMessage(), "Table") && str_contains($e->getMessage(), "doesn't exist")) {
+                return back()->with('error', 'Accounting tables missing. Run: php artisan migrate');
+            }
+            
+            return back()->with('error', 'Database error: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            \Log::error('Accounting Summary Error: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while loading summary: ' . $e->getMessage());
+        }
     }
 }
