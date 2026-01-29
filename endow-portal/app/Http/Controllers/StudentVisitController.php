@@ -248,9 +248,7 @@ class StudentVisitController extends Controller
             ['student_name' => $studentVisit->student_name, 'phone' => $studentVisit->phone]
         );
 
-        // Preserve all filter parameters in redirect
-        $redirectParams = $request->only(['page', 'search', 'employee_id', 'prospective_status', 'date_from', 'date_to']);
-        return redirect()->route('student-visits.index', $redirectParams)
+        return redirect()->route('student-visits.index')
             ->with('success', 'Student visit record updated successfully.');
     }
 
@@ -274,9 +272,7 @@ class StudentVisitController extends Controller
 
         $studentVisit->delete();
 
-        // Preserve all filter parameters in redirect
-        $redirectParams = request()->only(['page', 'search', 'employee_id', 'prospective_status', 'date_from', 'date_to']);
-        return redirect()->route('student-visits.index', $redirectParams)
+        return redirect()->route('student-visits.index')
             ->with('success', 'Student visit record deleted successfully.');
     }
 }
