@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\AccountCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class AccountCategoryController extends Controller
 {
@@ -55,6 +56,9 @@ class AccountCategoryController extends Controller
 
             DB::commit();
 
+            // Clear categories cache
+            Cache::forget('active_account_categories');
+
             return redirect()
                 ->route('office.accounting.categories.index')
                 ->with('success', 'Category created successfully!');
@@ -96,6 +100,9 @@ class AccountCategoryController extends Controller
 
             DB::commit();
 
+            // Clear categories cache
+            Cache::forget('active_account_categories');
+
             return redirect()
                 ->route('office.accounting.categories.index')
                 ->with('success', 'Category updated successfully!');
@@ -121,6 +128,9 @@ class AccountCategoryController extends Controller
         try {
             $category->delete();
 
+            // Clear categories cache
+            Cache::forget('active_account_categories');
+
             return redirect()
                 ->route('office.accounting.categories.index')
                 ->with('success', 'Category deleted successfully!');
@@ -139,6 +149,9 @@ class AccountCategoryController extends Controller
             $category->update(['is_active' => !$category->is_active]);
 
             $status = $category->is_active ? 'activated' : 'deactivated';
+
+            // Clear categories cache
+            Cache::forget('active_account_categories');
 
             return back()->with('success', "Category {$status} successfully!");
 

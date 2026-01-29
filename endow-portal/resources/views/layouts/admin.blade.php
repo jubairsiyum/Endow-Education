@@ -1214,7 +1214,10 @@
                     <i class="fas fa-clock"></i>
                     <span>Pending Approvals</span>
                     @php
-                        $pendingTransactionsCount = \App\Models\Transaction::pending()->count();
+                        // Cache pending count for 1 minute to reduce database load
+                        $pendingTransactionsCount = Cache::remember('pending_transactions_count', 60, function () {
+                            return \App\Models\Transaction::pending()->count();
+                        });
                     @endphp
                     @if($pendingTransactionsCount > 0)
                         <span class="menu-badge">{{ $pendingTransactionsCount }}</span>

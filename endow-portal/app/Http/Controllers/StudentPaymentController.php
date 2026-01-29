@@ -9,6 +9,7 @@ use App\Models\AccountCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class StudentPaymentController extends Controller
 {
@@ -36,11 +37,13 @@ class StudentPaymentController extends Controller
     {
         $this->authorize('update', $student);
 
-        // Get active income categories for payment types
-        $paymentTypes = AccountCategory::active()
-            ->where('type', 'income')
-            ->orderBy('name')
-            ->get();
+        // Cache active income categories for payment types (1 hour)
+        $paymentTypes = Cache::remember('income_payment_types', 3600, function () {
+            return AccountCategory::active()
+                ->where('type', 'income')
+                ->orderBy('name')
+                ->get();
+        });
 
         return view('students.payments.create', compact('student', 'paymentTypes'));
     }
@@ -52,11 +55,13 @@ class StudentPaymentController extends Controller
     {
         $this->authorize('update', $student);
 
-        // Get active income category IDs for validation
-        $validCategoryIds = AccountCategory::active()
-            ->where('type', 'income')
-            ->pluck('id')
-            ->toArray();
+        // Get active income category IDs for validation (cached)
+        $validCategoryIds = Cache::remember('valid_income_category_ids', 3600, function () {
+            return AccountCategory::active()
+                ->where('type', 'income')
+                ->pluck('id')
+                ->toArray();
+        });
 
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',
@@ -107,6 +112,9 @@ class StudentPaymentController extends Controller
 
             DB::commit();
 
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
+
             return redirect()
                 ->route('students.payments.index', $student)
                 ->with('success', 'Payment recorded successfully and submitted for accounting approval!');
@@ -130,11 +138,13 @@ class StudentPaymentController extends Controller
             abort(404);
         }
 
-        // Get active income categories for payment types
-        $paymentTypes = AccountCategory::active()
-            ->where('type', 'income')
-            ->orderBy('name')
-            ->get();
+        // Cache active income categories for payment types (1 hour)
+        $paymentTypes = Cache::remember('income_payment_types', 3600, function () {
+            return AccountCategory::active()
+                ->where('type', 'income')
+                ->orderBy('name')
+                ->get();
+        });
 
         return view('students.payments.edit', compact('student', 'payment', 'paymentTypes'));
     }
@@ -150,11 +160,13 @@ class StudentPaymentController extends Controller
             abort(404);
         }
 
-        // Get active income category IDs for validation
-        $validCategoryIds = AccountCategory::active()
-            ->where('type', 'income')
-            ->pluck('id')
-            ->toArray();
+        // Get active income category IDs for validation (cached)
+        $validCategoryIds = Cache::remember('valid_income_category_ids', 3600, function () {
+            return AccountCategory::active()
+                ->where('type', 'income')
+                ->pluck('id')
+                ->toArray();
+        });
 
         $validated = $request->validate([
             'amount' => 'required|numeric|min:0',

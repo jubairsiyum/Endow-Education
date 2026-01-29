@@ -8,6 +8,7 @@ use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class TransactionController extends Controller
 {
@@ -16,7 +17,8 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Transaction::with(['category', 'creator', 'approver']);
+        // Eager load relationships to prevent N+1 queries
+        $query = Transaction::with(['category', 'creator', 'approver', 'employee']);
 
         // Filter by type
         if ($request->filled('type')) {
@@ -43,7 +45,10 @@ class TransactionController extends Controller
                              ->orderBy('created_at', 'desc')
                              ->paginate(20);
 
-        $categories = AccountCategory::active()->orderBy('type')->orderBy('name')->get();
+        // Cache active categories for 1 hour since they rarely change
+        $categories = Cache::remember('active_account_categories', 3600, function () {
+            return AccountCategory::active()->orderBy('type')->orderBy('name')->get();
+        });
 
         return view('accounting.transactions.index', compact('transactions', 'categories'));
     }
@@ -53,12 +58,17 @@ class TransactionController extends Controller
      */
     public function create()
     {
-        $categories = AccountCategory::active()->orderBy('type')->orderBy('name')->get();
+        // Cache active categories for 1 hour
+        $categories = Cache::remember('active_account_categories', 3600, function () {
+            return AccountCategory::active()->orderBy('type')->orderBy('name')->get();
+        });
         
-        // Get all office employees (users in the system)
-        $employees = \App\Models\User::select('id', 'name', 'email')
-            ->orderBy('name')
-            ->get();
+        // Cache employees list for 30 minutes
+        $employees = Cache::remember('office_employees_list', 1800, function () {
+            return \App\Models\User::select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get();
+        });
             
         return view('accounting.transactions.create', compact('categories', 'employees'));
     }
@@ -136,6 +146,9 @@ class TransactionController extends Controller
 
             DB::commit();
 
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
+
             return redirect()
                 ->route('office.accounting.transactions.index')
                 ->with('success', 'Transaction created successfully and pending approval.');
@@ -167,7 +180,8 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction)
     {
-        $transaction->load(['category', 'creator', 'approver']);
+        // Eager load all relationships at once
+        $transaction->load(['category', 'creator', 'approver', 'employee', 'studentPayment']);
         return view('accounting.transactions.show', compact('transaction'));
     }
 
@@ -183,12 +197,17 @@ class TransactionController extends Controller
                 ->with('error', 'Only pending transactions can be edited.');
         }
 
-        $categories = AccountCategory::active()->orderBy('type')->orderBy('name')->get();
+        // Use cached categories
+        $categories = Cache::remember('active_account_categories', 3600, function () {
+            return AccountCategory::active()->orderBy('type')->orderBy('name')->get();
+        });
         
-        // Get all office employees
-        $employees = \App\Models\User::select('id', 'name', 'email')
-            ->orderBy('name')
-            ->get();
+        // Use cached employees list
+        $employees = Cache::remember('office_employees_list', 1800, function () {
+            return \App\Models\User::select('id', 'name', 'email')
+                ->orderBy('name')
+                ->get();
+        });
             
         return view('accounting.transactions.edit', compact('transaction', 'categories', 'employees'));
     }
@@ -237,6 +256,9 @@ class TransactionController extends Controller
 
             DB::commit();
 
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
+
             return redirect()
                 ->route('office.accounting.transactions.index')
                 ->with('success', 'Transaction updated successfully.');
@@ -262,6 +284,10 @@ class TransactionController extends Controller
 
         try {
             $transaction->delete();
+            
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
+            
             return redirect()
                 ->route('accounting.transactions.index')
                 ->with('success', 'Transaction deleted successfully.');
@@ -275,7 +301,8 @@ class TransactionController extends Controller
      */
     public function pending()
     {
-        $transactions = Transaction::with(['category', 'creator'])
+        // Eager load all necessary relationships
+        $transactions = Transaction::with(['category', 'creator', 'employee'])
             ->pending()
             ->orderBy('entry_date', 'desc')
             ->orderBy('created_at', 'desc')
@@ -305,6 +332,9 @@ class TransactionController extends Controller
             ]);
 
             DB::commit();
+
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
 
             return redirect()
                 ->route('office.accounting.transactions.pending')
@@ -342,6 +372,9 @@ class TransactionController extends Controller
 
             DB::commit();
 
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
+
             return redirect()
                 ->route('office.accounting.transactions.pending')
                 ->with('success', 'Transaction rejected successfully.');
@@ -373,27 +406,31 @@ class TransactionController extends Controller
         $totalExpense = (clone $query)->expense()->sum('amount');
         $netProfit = $totalIncome - $totalExpense;
 
-        // Get income by category
+        // Get income by category with optimized query
         $incomeByCategory = Transaction::approved()
             ->income()
             ->dateRange($startDate, $endDate)
             ->select('account_category_id', DB::raw('SUM(amount) as total'))
             ->groupBy('account_category_id')
-            ->with('category')
+            ->with('category:id,name,type')
             ->get();
 
-        // Get expense by category
+        // Get expense by category with optimized query
         $expenseByCategory = Transaction::approved()
             ->expense()
             ->dateRange($startDate, $endDate)
             ->select('account_category_id', DB::raw('SUM(amount) as total'))
             ->groupBy('account_category_id')
-            ->with('category')
+            ->with('category:id,name,type')
             ->get();
 
-        // Get recent transactions
+        // Get recent transactions with selective column loading
         $recentTransactions = Transaction::approved()
-            ->with(['category', 'creator'])
+            ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'account_category_id', 'created_by')
+            ->with([
+                'category:id,name',
+                'creator:id,name'
+            ])
             ->dateRange($startDate, $endDate)
             ->orderBy('entry_date', 'desc')
             ->limit(10)
