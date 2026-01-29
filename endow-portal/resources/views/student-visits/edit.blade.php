@@ -37,8 +37,14 @@
                         @csrf
                         @method('PUT')
 
-                        <!-- Hidden field to preserve pagination page -->
-                        <input type="hidden" name="page" value="{{ request('page', 1) }}">
+                        <!-- Hidden fields to preserve filters -->
+                        @if(isset($filters))
+                            @foreach($filters as $key => $value)
+                                @if($value !== null && $value !== '')
+                                    <input type="hidden" name="filter_{{ $key }}" value="{{ $value }}">
+                                @endif
+                            @endforeach
+                        @endif
 
                         <div class="row g-3">
                             <!-- Student Name -->
