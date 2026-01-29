@@ -162,10 +162,10 @@
                             <div><i class="fas fa-phone text-muted me-1"></i>{{ $student->phone }}</div>
                         </td>
                         <td class="d-none d-lg-table-cell student-university">
-                            {{ $student->targetUniversity->name ?? 'N/A' }}
+                            {{ optional($student->targetUniversity)->name ?? 'N/A' }}
                         </td>
                         <td class="d-none d-lg-table-cell student-program">
-                            {{ Str::limit($student->targetProgram->name ?? 'N/A', 25) }}
+                            {{ Str::limit(optional($student->targetProgram)->name ?? 'N/A', 25) }}
                         </td>
                         <td>
                             @php

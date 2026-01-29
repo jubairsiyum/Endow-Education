@@ -185,9 +185,9 @@
                         </td>
                         <td style="padding: 12px; vertical-align: middle;">
                             @if($student->targetUniversity)
-                                <div style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ Str::limit($student->targetUniversity->name, 25) }}</div>
+                                <div style="font-size: 13px; font-weight: 600; color: #1e293b;">{{ Str::limit(optional($student->targetUniversity)->name ?? '', 25) }}</div>
                                 @if($student->targetProgram)
-                                    <div style="font-size: 12px; color: #64748b;">{{ Str::limit($student->targetProgram->name, 30) }}</div>
+                                    <div style="font-size: 12px; color: #64748b;">{{ Str::limit(optional($student->targetProgram)->name ?? '', 30) }}</div>
                                 @endif
                             @else
                                 <span style="font-size: 12px; color: #94a3b8;">Not assigned</span>
