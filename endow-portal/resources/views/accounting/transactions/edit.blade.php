@@ -81,14 +81,14 @@
                                 <option value="">Select Category</option>
                                 <optgroup label="Income Categories" id="income-categories" style="display: none;">
                                     @foreach($categories->where('type', 'income') as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id', $transaction->account_category_id) == $category->id ? 'selected' : '' }}>
+                                        <option value="{{ $category->id }}" {{ old('category_id', $transaction->category_id) == $category->id ? 'selected' : '' }}>
                                             {{ $category->name }}
                                         </option>
                                     @endforeach
                                 </optgroup>
                                 <optgroup label="Expense Categories" id="expense-categories" style="display: none;">
                                     @foreach($categories->where('type', 'expense') as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id', $transaction->account_category_id) == $category->id ? 'selected' : '' }}>
+                                        <option value="{{ $category->id }}" {{ old('category_id', $transaction->category_id) == $category->id ? 'selected' : '' }}>
                                             {{ $category->name }}
                                         </option>
                                     @endforeach

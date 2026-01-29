@@ -16,7 +16,7 @@ class Transaction extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'account_category_id',
+        'category_id',
         'headline',
         'amount',
         'currency',
@@ -53,7 +53,7 @@ class Transaction extends Model
      */
     public function category()
     {
-        return $this->belongsTo(AccountCategory::class, 'account_category_id');
+        return $this->belongsTo(AccountCategory::class, 'category_id');
     }
 
     /**

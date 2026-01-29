@@ -95,7 +95,7 @@ class StudentPaymentController extends Controller
 
             // Create corresponding accounting transaction (pending approval)
             $accountingTransaction = Transaction::create([
-                'account_category_id' => $accountCategory->id,
+                'category_id' => $accountCategory->id,
                 'amount' => $validated['amount'],
                 'entry_date' => $validated['payment_date'],
                 'remarks' => "Student payment from {$student->name} - {$accountCategory->name}" . 

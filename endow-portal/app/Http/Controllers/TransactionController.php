@@ -37,7 +37,7 @@ class TransactionController extends Controller
 
         // Filter by category
         if ($request->filled('category_id')) {
-            $query->where('account_category_id', $request->category_id);
+            $query->where('category_id', $request->category_id);
         }
 
         // Order by entry date descending
@@ -128,7 +128,7 @@ class TransactionController extends Controller
             }
 
             $transaction = Transaction::create([
-                'account_category_id' => $request->category_id,
+                'category_id' => $request->category_id,
                 'headline' => $request->headline,
                 'employee_id' => $request->employee_id,
                 'amount' => $amountInBDT, // Store in BDT
@@ -240,7 +240,7 @@ class TransactionController extends Controller
             }
 
             $transaction->update([
-                'account_category_id' => $request->category_id,
+                'category_id' => $request->category_id,
                 'headline' => $request->headline,
                 'employee_id' => $request->employee_id,
                 'amount' => $amountInBDT, // Store in BDT
@@ -416,8 +416,8 @@ class TransactionController extends Controller
             $incomeByCategory = Transaction::approved()
                 ->income()
                 ->dateRange($startDate, $endDate)
-                ->select('account_category_id', DB::raw('SUM(amount) as total'))
-                ->groupBy('account_category_id')
+                ->select('category_id', DB::raw('SUM(amount) as total'))
+                ->groupBy('category_id')
                 ->with('category:id,name,type')
                 ->get();
 
@@ -425,14 +425,14 @@ class TransactionController extends Controller
             $expenseByCategory = Transaction::approved()
                 ->expense()
                 ->dateRange($startDate, $endDate)
-                ->select('account_category_id', DB::raw('SUM(amount) as total'))
-                ->groupBy('account_category_id')
+                ->select('category_id', DB::raw('SUM(amount) as total'))
+                ->groupBy('category_id')
                 ->with('category:id,name,type')
                 ->get();
 
             // Get recent transactions with selective column loading
             $recentTransactions = Transaction::approved()
-                ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'account_category_id', 'created_by')
+                ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'category_id', 'created_by')
                 ->with([
                     'category:id,name',
                     'creator:id,name'

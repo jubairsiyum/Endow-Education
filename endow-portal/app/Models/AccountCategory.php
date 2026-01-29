@@ -36,7 +36,7 @@ class AccountCategory extends Model
      */
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'account_category_id');
+        return $this->hasMany(Transaction::class, 'category_id');
     }
 
     /**
