@@ -1134,11 +1134,24 @@
         const submitBtn = document.getElementById(`${prefix === 'resubmit' ? 'resubmit-btn' : 'upload-btn'}-${itemId}`);
 
         // Validate file size (15MB limit)
-        if (file.size > 15 * 1024 * 1024) {
+        const maxSize = 15 * 1024 * 1024;
+        if (file.size > maxSize) {
             Swal.fire({
                 icon: 'error',
                 title: 'File Too Large',
-                text: 'File size exceeds 15MB limit. Please choose a smaller file.',
+                text: `File size (${(file.size / (1024 * 1024)).toFixed(2)}MB) exceeds 15MB limit. Please choose a smaller file.`,
+                confirmButtonColor: '#DC143C'
+            });
+            input.value = '';
+            return;
+        }
+
+        // Validate file size is not zero
+        if (file.size === 0) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Invalid File',
+                text: 'The selected file is empty. Please choose a valid file.',
                 confirmButtonColor: '#DC143C'
             });
             input.value = '';
@@ -1159,11 +1172,61 @@
             return;
         }
 
-        // Show selected file and upload button
-        selectedFileDiv.style.display = 'flex';
-        selectedFileDiv.querySelector('.filename').textContent = file.name;
-        if (label) label.style.display = 'none';
-        if (submitBtn) submitBtn.style.display = 'flex';
+        // Additional validation: Check file name length
+        if (file.name.length > 255) {
+            Swal.fire({
+                icon: 'error',
+                title: 'File Name Too Long',
+                text: 'File name must be less than 255 characters. Please rename the file.',
+                confirmButtonColor: '#DC143C'
+            });
+            input.value = '';
+            return;
+        }
+
+        // Check for special characters that might cause issues
+        const invalidChars = /[<>:"|?*\\x00-\\x1f]/;
+        if (invalidChars.test(file.name)) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Invalid Characters in File Name',
+                text: 'File name contains special characters. It may be renamed during upload.',
+                confirmButtonColor: '#DC143C'
+            });
+        }
+
+        // Verify file is readable by attempting to read a small portion
+        const reader = new FileReader();
+        reader.onerror = function() {
+            Swal.fire({
+                icon: 'error',
+                title: 'Cannot Read File',
+                text: 'Unable to read the selected file. The file may be corrupted or in use.',
+                confirmButtonColor: '#DC143C'
+            });
+            input.value = '';
+        };
+        
+        reader.onload = function() {
+            // File is readable, proceed to show selection
+            if (selectedFileDiv && label && submitBtn) {
+                selectedFileDiv.style.display = 'flex';
+                const filenameSpan = selectedFileDiv.querySelector('.filename');
+                if (filenameSpan) {
+                    // Truncate long filenames for display
+                    const displayName = file.name.length > 40 
+                        ? file.name.substring(0, 37) + '...' 
+                        : file.name;
+                    filenameSpan.textContent = displayName;
+                    filenameSpan.title = file.name; // Show full name on hover
+                }
+                label.style.display = 'none';
+                submitBtn.style.display = 'flex';
+            }
+        };
+        
+        // Read first 1KB to verify file is accessible
+        reader.readAsArrayBuffer(file.slice(0, 1024));
     };
 
     window.clearFileSelection = function(itemId) {
@@ -1192,10 +1255,10 @@
         if (submitBtn) submitBtn.style.display = 'none';
     };
 
-    // Form submission with loading state
-    document.querySelectorAll('.modern-upload-form').forEach(form => {
+    // Form submission with loading state and timeout handling
+    document.querySelectorAll('.modern-upload-form, .compact-resubmit-form').forEach(form => {
         form.addEventListener('submit', function(e) {
-            const submitBtn = this.querySelector('.btn-upload');
+            const submitBtn = this.querySelector('.btn-upload, .btn-resubmit-compact');
             const fileInput = this.querySelector('.file-input');
 
             if (!fileInput.files.length) {
@@ -1209,9 +1272,60 @@
                 return;
             }
 
+            const file = fileInput.files[0];
+
+            // Final validation before submit
+            if (file.size > 15 * 1024 * 1024) {
+                e.preventDefault();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Too Large',
+                    text: 'File size exceeds 15MB. Please choose a smaller file.',
+                    confirmButtonColor: '#DC143C'
+                });
+                return;
+            }
+
+            // Show upload progress
             submitBtn.classList.add('loading');
             submitBtn.disabled = true;
             submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Uploading...';
+
+            // Show a timeout warning for large files
+            let uploadWarningTimeout;
+            const fileSize = file.size / (1024 * 1024); // Size in MB
+            
+            if (fileSize > 5) {
+                // For files larger than 5MB, show a patience message after 10 seconds
+                uploadWarningTimeout = setTimeout(() => {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Upload in Progress',
+                        html: '<p>Uploading large file (' + fileSize.toFixed(2) + 'MB)...</p><p class="text-muted small">Please keep this page open.</p>',
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        timer: 5000,
+                        timerProgressBar: true
+                    });
+                }, 10000);
+            }
+
+            // Set a maximum timeout (2 minutes for very large files)
+            const maxTimeout = setTimeout(() => {
+                if (uploadWarningTimeout) clearTimeout(uploadWarningTimeout);
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Upload Taking Too Long',
+                    html: '<p>The upload is taking longer than expected.</p><p>This might be due to slow internet connection.</p><p class="text-muted small">Please wait or try again later with a better connection.</p>',
+                    confirmButtonColor: '#DC143C'
+                });
+            }, 120000); // 2 minutes
+
+            // Clean up on page unload
+            window.addEventListener('beforeunload', function() {
+                if (uploadWarningTimeout) clearTimeout(uploadWarningTimeout);
+                clearTimeout(maxTimeout);
+            });
         });
     });
 
