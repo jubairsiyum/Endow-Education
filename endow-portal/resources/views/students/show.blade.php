@@ -312,12 +312,22 @@
             <div class="tab-pane fade show active" id="profile" role="tabpanel">
                 <div class="row">
                     <div class="col-md-6">
-                        <h5 class="mb-3">Personal Information</h5>
-                        <table class="table">
+                        <h5 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
+                        <table class="table table-borderless">
                             <tr>
                                 <th width="40%">Full Name</th>
                                 <td>{{ $student->name }}</td>
                             </tr>
+                            @if($student->surname || $student->given_names)
+                            <tr>
+                                <th>Surname</th>
+                                <td>{{ $student->surname ?: 'Not provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Given Names</th>
+                                <td>{{ $student->given_names ?: 'Not provided' }}</td>
+                            </tr>
+                            @endif
                             <tr>
                                 <th>Email</th>
                                 <td>{{ $student->email }}</td>
@@ -327,25 +337,154 @@
                                 <td>{{ $student->phone }}</td>
                             </tr>
                             <tr>
+                                <th>Date of Birth</th>
+                                <td>{{ $student->date_of_birth ? $student->date_of_birth->format('M d, Y') : 'Not provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Gender</th>
+                                <td>{{ $student->gender ? ucfirst($student->gender) : 'Not specified' }}</td>
+                            </tr>
+                            <tr>
                                 <th>Country</th>
                                 <td>{{ $student->country }}</td>
                             </tr>
+                            @if($student->nationality)
+                            <tr>
+                                <th>Nationality</th>
+                                <td>{{ $student->nationality }}</td>
+                            </tr>
+                            @endif
+                            @if($student->address)
+                            <tr>
+                                <th>Address</th>
+                                <td>{{ $student->address }}</td>
+                            </tr>
+                            @endif
+                            @if($student->city || $student->postal_code)
+                            <tr>
+                                <th>City / Postal Code</th>
+                                <td>{{ $student->city }} {{ $student->postal_code }}</td>
+                            </tr>
+                            @endif
                         </table>
+
+                        @if($student->father_name || $student->mother_name)
+                        <h5 class="mb-3 mt-4"><i class="fas fa-users me-2"></i>Family Information</h5>
+                        <table class="table table-borderless">
+                            @if($student->father_name)
+                            <tr>
+                                <th width="40%">Father's Name</th>
+                                <td>{{ $student->father_name }}</td>
+                            </tr>
+                            @endif
+                            @if($student->mother_name)
+                            <tr>
+                                <th>Mother's Name</th>
+                                <td>{{ $student->mother_name }}</td>
+                            </tr>
+                            @endif
+                        </table>
+                        @endif
+
+                        @if($student->emergency_contact_name)
+                        <h5 class="mb-3 mt-4"><i class="fas fa-phone-alt me-2"></i>Emergency Contact</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Contact Name</th>
+                                <td>{{ $student->emergency_contact_name }}</td>
+                            </tr>
+                            @if($student->emergency_contact_phone)
+                            <tr>
+                                <th>Contact Phone</th>
+                                <td>{{ $student->emergency_contact_phone }}</td>
+                            </tr>
+                            @endif
+                            @if($student->emergency_contact_relationship)
+                            <tr>
+                                <th>Relationship</th>
+                                <td>{{ ucfirst($student->emergency_contact_relationship) }}</td>
+                            </tr>
+                            @endif
+                        </table>
+                        @endif
                     </div>
 
                     <div class="col-md-6">
-                        <h5 class="mb-3">Academic & System Information</h5>
-                        <table class="table">
+                        <h5 class="mb-3"><i class="fas fa-passport me-2"></i>Passport Information</h5>
+                        <table class="table table-borderless">
                             <tr>
-                                <th width="40%">Course/Program</th>
-                                <td>{{ $student->course ?: (optional($student->targetProgram)->name ?? 'Not specified') }}</td>
+                                <th width="40%">Passport Number</th>
+                                <td>{{ $student->passport_number ?: 'Not provided' }}</td>
                             </tr>
                             <tr>
-                                <th>Target University</th>
+                                <th>Passport Expiry Date</th>
+                                <td>{{ $student->passport_expiry_date ? $student->passport_expiry_date->format('M d, Y') : 'Not provided' }}</td>
+                            </tr>
+                        </table>
+
+                        <h5 class="mb-3 mt-4"><i class="fas fa-graduation-cap me-2"></i>Academic Background</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">SSC Year</th>
+                                <td>{{ $student->ssc_year ?: 'Not provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th>SSC Result</th>
+                                <td>{{ $student->ssc_result ?: 'Not provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th>HSC Year</th>
+                                <td>{{ $student->hsc_year ?: 'Not provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th>HSC Result</th>
+                                <td>{{ $student->hsc_result ?: 'Not provided' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Highest Qualification</th>
+                                <td>{{ $student->highest_qualification ? ucwords(str_replace('_', ' ', $student->highest_qualification)) : 'Not specified' }}</td>
+                            </tr>
+                            @if($student->previous_institution)
+                            <tr>
+                                <th>Previous Institution</th>
+                                <td>{{ $student->previous_institution }}</td>
+                            </tr>
+                            @endif
+                            @if($student->has_ielts)
+                            <tr>
+                                <th>IELTS Score</th>
+                                <td><span class="badge bg-success">{{ $student->ielts_score ?: 'Score not provided' }}</span></td>
+                            </tr>
+                            @else
+                            <tr>
+                                <th>IELTS</th>
+                                <td><span class="badge bg-secondary">Not taken</span></td>
+                            </tr>
+                            @endif
+                        </table>
+
+                        <h5 class="mb-3 mt-4"><i class="fas fa-university me-2"></i>Program Information</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Target University</th>
                                 <td>{{ optional($student->targetUniversity)->name ?? 'Not selected' }}</td>
                             </tr>
                             <tr>
-                                <th>Assigned Counselor</th>
+                                <th>Target Program</th>
+                                <td>{{ optional($student->targetProgram)->name ?? ($student->course ?: 'Not specified') }}</td>
+                            </tr>
+                            @if($student->applying_program)
+                            <tr>
+                                <th>Applying Program</th>
+                                <td>{{ $student->applying_program }}</td>
+                            </tr>
+                            @endif
+                        </table>
+
+                        <h5 class="mb-3 mt-4"><i class="fas fa-cog me-2"></i>System Information</h5>
+                        <table class="table table-borderless">
+                            <tr>
+                                <th width="40%">Assigned Counselor</th>
                                 <td>{{ $student->assignedUser->name ?? 'Not assigned' }}</td>
                             </tr>
                             <tr>
@@ -360,8 +499,8 @@
                     </div>
 
                     @if($student->notes)
-                    <div class="col-12 mt-3">
-                        <h5 class="mb-3">Additional Notes</h5>
+                    <div class="col-12 mt-4">
+                        <h5 class="mb-3"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h5>
                         <div class="p-3 bg-light rounded">
                             {{ $student->notes }}
                         </div>
