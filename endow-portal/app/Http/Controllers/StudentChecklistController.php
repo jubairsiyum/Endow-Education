@@ -573,7 +573,7 @@ class StudentChecklistController extends Controller
             ['checklist_item_id' => $studentChecklist->checklist_item_id]
         );
 
-        return back()->with('success', 'Document approved successfully!');
+        return redirect()->to(url()->previous() . '#checklist')->with('success', 'Document approved successfully!');
     }
 
     /**
@@ -645,7 +645,7 @@ class StudentChecklistController extends Controller
             ]);
         }
 
-        return back()->with('success', 'Document rejected. Feedback has been sent to the student.');
+        return redirect()->to(url()->previous() . '#checklist')->with('success', 'Document rejected. Feedback has been sent to the student.');
     }
 
     /**

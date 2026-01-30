@@ -896,6 +896,24 @@
     @push('scripts')
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script>
+        // Activate correct tab based on URL hash
+        document.addEventListener('DOMContentLoaded', function() {
+            const hash = window.location.hash;
+            if (hash === '#checklist') {
+                const checklistTab = document.getElementById('checklist-tab');
+                if (checklistTab) {
+                    const tab = new bootstrap.Tab(checklistTab);
+                    tab.show();
+                }
+            } else if (hash === '#followups') {
+                const followupsTab = document.getElementById('followups-tab');
+                if (followupsTab) {
+                    const tab = new bootstrap.Tab(followupsTab);
+                    tab.show();
+                }
+            }
+        });
+
         // Initialize Quill Editor for Add Follow-up
         document.addEventListener('DOMContentLoaded', function() {
             const followupModal = document.getElementById('followupModal');
