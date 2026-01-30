@@ -123,15 +123,14 @@ class ConsultantEvaluationController extends Controller
                 );
             }
 
-            // Log activity
-            activity('consultant_evaluation')
-                ->performedOn($student)
-                ->causedBy($user)
-                ->withProperties([
-                    'consultant_id' => $student->assigned_to,
-                    'questions_evaluated' => count($validated['evaluations']),
-                ])
-                ->log('Student submitted consultant evaluation');
+            // Log activity to standard log
+            Log::info('Consultant Evaluation Submitted', [
+                'student_id' => $student->id,
+                'student_name' => $student->full_name ?? $user->name,
+                'consultant_id' => $student->assigned_to,
+                'questions_evaluated' => count($validated['evaluations']),
+                'user_id' => $user->id,
+            ]);
 
             DB::commit();
 
