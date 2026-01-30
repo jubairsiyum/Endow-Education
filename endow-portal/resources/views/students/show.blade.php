@@ -307,202 +307,270 @@
             </li>
         </ul>
 
-        <div class="tab-content p-4">
+        <div class="tab-content p-3">
             <!-- Profile Tab -->
             <div class="tab-pane fade show active" id="profile" role="tabpanel">
-                <div class="row">
-                    <div class="col-md-6">
-                        <h5 class="mb-3"><i class="fas fa-user me-2"></i>Personal Information</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">Full Name</th>
-                                <td>{{ $student->name }}</td>
-                            </tr>
-                            @if($student->surname || $student->given_names)
-                            <tr>
-                                <th>Surname</th>
-                                <td>{{ $student->surname ?: 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Given Names</th>
-                                <td>{{ $student->given_names ?: 'Not provided' }}</td>
-                            </tr>
-                            @endif
-                            <tr>
-                                <th>Email</th>
-                                <td>{{ $student->email }}</td>
-                            </tr>
-                            <tr>
-                                <th>Phone</th>
-                                <td>{{ $student->phone }}</td>
-                            </tr>
-                            <tr>
-                                <th>Date of Birth</th>
-                                <td>{{ $student->date_of_birth ? $student->date_of_birth->format('M d, Y') : 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Gender</th>
-                                <td>{{ $student->gender ? ucfirst($student->gender) : 'Not specified' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Country</th>
-                                <td>{{ $student->country }}</td>
-                            </tr>
-                            @if($student->nationality)
-                            <tr>
-                                <th>Nationality</th>
-                                <td>{{ $student->nationality }}</td>
-                            </tr>
-                            @endif
-                            @if($student->address)
-                            <tr>
-                                <th>Address</th>
-                                <td>{{ $student->address }}</td>
-                            </tr>
-                            @endif
-                            @if($student->city || $student->postal_code)
-                            <tr>
-                                <th>City / Postal Code</th>
-                                <td>{{ $student->city }} {{ $student->postal_code }}</td>
-                            </tr>
-                            @endif
-                        </table>
+                <div class="row g-3">
+                    <!-- Left Column -->
+                    <div class="col-lg-6">
+                        <!-- Personal Information -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-user me-2"></i>Personal Information</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>Full Name</small></td>
+                                            <td class="fw-semibold py-2">{{ $student->name }}</td>
+                                        </tr>
+                                        @if($student->surname || $student->given_names)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Surname</small></td>
+                                            <td class="py-2">{{ $student->surname ?: '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Given Names</small></td>
+                                            <td class="py-2">{{ $student->given_names ?: '-' }}</td>
+                                        </tr>
+                                        @endif
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Email</small></td>
+                                            <td class="py-2"><a href="mailto:{{ $student->email }}" class="text-decoration-none">{{ $student->email }}</a></td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Phone</small></td>
+                                            <td class="py-2"><a href="tel:{{ $student->phone }}" class="text-decoration-none">{{ $student->phone }}</a></td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Date of Birth</small></td>
+                                            <td class="py-2">{{ $student->date_of_birth ? $student->date_of_birth->format('M d, Y') : '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Gender</small></td>
+                                            <td class="py-2">{{ $student->gender ? ucfirst($student->gender) : '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Country</small></td>
+                                            <td class="py-2">{{ $student->country }}</td>
+                                        </tr>
+                                        @if($student->nationality)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Nationality</small></td>
+                                            <td class="py-2">{{ $student->nationality }}</td>
+                                        </tr>
+                                        @endif
+                                        @if($student->address)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Address</small></td>
+                                            <td class="py-2">{{ $student->address }}</td>
+                                        </tr>
+                                        @endif
+                                        @if($student->city || $student->postal_code)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>City / Postal</small></td>
+                                            <td class="py-2">{{ $student->city }} {{ $student->postal_code }}</td>
+                                        </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
                         @if($student->father_name || $student->mother_name)
-                        <h5 class="mb-3 mt-4"><i class="fas fa-users me-2"></i>Family Information</h5>
-                        <table class="table table-borderless">
-                            @if($student->father_name)
-                            <tr>
-                                <th width="40%">Father's Name</th>
-                                <td>{{ $student->father_name }}</td>
-                            </tr>
-                            @endif
-                            @if($student->mother_name)
-                            <tr>
-                                <th>Mother's Name</th>
-                                <td>{{ $student->mother_name }}</td>
-                            </tr>
-                            @endif
-                        </table>
+                        <!-- Family Information -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-users me-2"></i>Family Information</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        @if($student->father_name)
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>Father's Name</small></td>
+                                            <td class="py-2">{{ $student->father_name }}</td>
+                                        </tr>
+                                        @endif
+                                        @if($student->mother_name)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Mother's Name</small></td>
+                                            <td class="py-2">{{ $student->mother_name }}</td>
+                                        </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                         @endif
 
                         @if($student->emergency_contact_name)
-                        <h5 class="mb-3 mt-4"><i class="fas fa-phone-alt me-2"></i>Emergency Contact</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">Contact Name</th>
-                                <td>{{ $student->emergency_contact_name }}</td>
-                            </tr>
-                            @if($student->emergency_contact_phone)
-                            <tr>
-                                <th>Contact Phone</th>
-                                <td>{{ $student->emergency_contact_phone }}</td>
-                            </tr>
-                            @endif
-                            @if($student->emergency_contact_relationship)
-                            <tr>
-                                <th>Relationship</th>
-                                <td>{{ ucfirst($student->emergency_contact_relationship) }}</td>
-                            </tr>
-                            @endif
-                        </table>
+                        <!-- Emergency Contact -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-phone-alt me-2"></i>Emergency Contact</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>Contact Name</small></td>
+                                            <td class="py-2">{{ $student->emergency_contact_name }}</td>
+                                        </tr>
+                                        @if($student->emergency_contact_phone)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Contact Phone</small></td>
+                                            <td class="py-2"><a href="tel:{{ $student->emergency_contact_phone }}" class="text-decoration-none">{{ $student->emergency_contact_phone }}</a></td>
+                                        </tr>
+                                        @endif
+                                        @if($student->emergency_contact_relationship)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Relationship</small></td>
+                                            <td class="py-2">{{ ucfirst($student->emergency_contact_relationship) }}</td>
+                                        </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                         @endif
                     </div>
 
-                    <div class="col-md-6">
-                        <h5 class="mb-3"><i class="fas fa-passport me-2"></i>Passport Information</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">Passport Number</th>
-                                <td>{{ $student->passport_number ?: 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Passport Expiry Date</th>
-                                <td>{{ $student->passport_expiry_date ? $student->passport_expiry_date->format('M d, Y') : 'Not provided' }}</td>
-                            </tr>
-                        </table>
+                    <!-- Right Column -->
+                    <div class="col-lg-6">
+                        <!-- Passport Information -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-passport me-2"></i>Passport Information</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>Passport Number</small></td>
+                                            <td class="py-2 fw-semibold">{{ $student->passport_number ?: '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Expiry Date</small></td>
+                                            <td class="py-2">{{ $student->passport_expiry_date ? $student->passport_expiry_date->format('M d, Y') : '-' }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                        <h5 class="mb-3 mt-4"><i class="fas fa-graduation-cap me-2"></i>Academic Background</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">SSC Year</th>
-                                <td>{{ $student->ssc_year ?: 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>SSC Result</th>
-                                <td>{{ $student->ssc_result ?: 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>HSC Year</th>
-                                <td>{{ $student->hsc_year ?: 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>HSC Result</th>
-                                <td>{{ $student->hsc_result ?: 'Not provided' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Highest Qualification</th>
-                                <td>{{ $student->highest_qualification ? ucwords(str_replace('_', ' ', $student->highest_qualification)) : 'Not specified' }}</td>
-                            </tr>
-                            @if($student->previous_institution)
-                            <tr>
-                                <th>Previous Institution</th>
-                                <td>{{ $student->previous_institution }}</td>
-                            </tr>
-                            @endif
-                            @if($student->has_ielts)
-                            <tr>
-                                <th>IELTS Score</th>
-                                <td><span class="badge bg-success">{{ $student->ielts_score ?: 'Score not provided' }}</span></td>
-                            </tr>
-                            @else
-                            <tr>
-                                <th>IELTS</th>
-                                <td><span class="badge bg-secondary">Not taken</span></td>
-                            </tr>
-                            @endif
-                        </table>
+                        <!-- Academic Background -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-graduation-cap me-2"></i>Academic Background</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>SSC Year</small></td>
+                                            <td class="py-2 fw-semibold">{{ $student->ssc_year ?: '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>SSC Result</small></td>
+                                            <td class="py-2">{{ $student->ssc_result ?: '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>HSC Year</small></td>
+                                            <td class="py-2 fw-semibold">{{ $student->hsc_year ?: '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>HSC Result</small></td>
+                                            <td class="py-2">{{ $student->hsc_result ?: '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Highest Qualification</small></td>
+                                            <td class="py-2">{{ $student->highest_qualification ? ucwords(str_replace('_', ' ', $student->highest_qualification)) : '-' }}</td>
+                                        </tr>
+                                        @if($student->previous_institution)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Previous Institution</small></td>
+                                            <td class="py-2">{{ $student->previous_institution }}</td>
+                                        </tr>
+                                        @endif
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>IELTS</small></td>
+                                            <td class="py-2">
+                                                @if($student->has_ielts)
+                                                    <span class="badge bg-success">Score: {{ $student->ielts_score ?: 'Not provided' }}</span>
+                                                @else
+                                                    <span class="badge bg-secondary">Not taken</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                        <h5 class="mb-3 mt-4"><i class="fas fa-university me-2"></i>Program Information</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">Target University</th>
-                                <td>{{ optional($student->targetUniversity)->name ?? 'Not selected' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Target Program</th>
-                                <td>{{ optional($student->targetProgram)->name ?? ($student->course ?: 'Not specified') }}</td>
-                            </tr>
-                            @if($student->applying_program)
-                            <tr>
-                                <th>Applying Program</th>
-                                <td>{{ $student->applying_program }}</td>
-                            </tr>
-                            @endif
-                        </table>
+                        <!-- Program Information -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-university me-2"></i>Program Information</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>Target University</small></td>
+                                            <td class="py-2 fw-semibold">{{ optional($student->targetUniversity)->name ?? '-' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Target Program</small></td>
+                                            <td class="py-2">{{ optional($student->targetProgram)->name ?? ($student->course ?: '-') }}</td>
+                                        </tr>
+                                        @if($student->applying_program)
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Applying Program</small></td>
+                                            <td class="py-2">{{ $student->applying_program }}</td>
+                                        </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
 
-                        <h5 class="mb-3 mt-4"><i class="fas fa-cog me-2"></i>System Information</h5>
-                        <table class="table table-borderless">
-                            <tr>
-                                <th width="40%">Assigned Counselor</th>
-                                <td>{{ $student->assignedUser->name ?? 'Not assigned' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Created By</th>
-                                <td>{{ $student->creator->name ?? 'System' }}</td>
-                            </tr>
-                            <tr>
-                                <th>Registration Date</th>
-                                <td>{{ $student->created_at->format('M d, Y g:i A') }}</td>
-                            </tr>
-                        </table>
+                        <!-- System Information -->
+                        <div class="card border-0 shadow-sm mb-3">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-cog me-2"></i>System Information</h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table table-sm table-borderless mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <td width="40%" class="text-muted ps-3 py-2"><small>Assigned Counselor</small></td>
+                                            <td class="py-2 fw-semibold">{{ $student->assignedUser->name ?? 'Not assigned' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Created By</small></td>
+                                            <td class="py-2">{{ $student->creator->name ?? 'System' }}</td>
+                                        </tr>
+                                        <tr class="border-top">
+                                            <td class="text-muted ps-3 py-2"><small>Registration Date</small></td>
+                                            <td class="py-2">{{ $student->created_at->format('M d, Y g:i A') }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     @if($student->notes)
-                    <div class="col-12 mt-4">
-                        <h5 class="mb-3"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h5>
-                        <div class="p-3 bg-light rounded">
-                            {{ $student->notes }}
+                    <div class="col-12">
+                        <div class="card border-0 shadow-sm">
+                            <div class="card-header bg-white border-0 py-2">
+                                <h6 class="mb-0 text-danger fw-bold"><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                            </div>
+                            <div class="card-body p-3 bg-light">
+                                <p class="mb-0 text-muted">{{ $student->notes }}</p>
+                            </div>
                         </div>
                     </div>
                     @endif
