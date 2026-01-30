@@ -1184,17 +1184,6 @@
             return;
         }
 
-        // Check for special characters that might cause issues
-        const invalidChars = /[<>:"|?*\\x00-\\x1f]/;
-        if (invalidChars.test(file.name)) {
-            Swal.fire({
-                icon: 'warning',
-                title: 'Invalid Characters in File Name',
-                text: 'File name contains special characters. It may be renamed during upload.',
-                confirmButtonColor: '#DC143C'
-            });
-        }
-
         // Verify file is readable by attempting to read a small portion
         const reader = new FileReader();
         reader.onerror = function() {
