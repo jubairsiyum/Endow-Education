@@ -74,7 +74,7 @@
                         </td>
                         <td class="text-end">
                             <div class="btn-group btn-group-sm" role="group">
-                                @can('update checklists')
+                                @can('edit checklists')
                                 <button class="btn btn-outline-primary" title="Edit"
                                         onclick="editItem({{ $item->id }}, '{{ addslashes($item->title) }}', '{{ addslashes($item->description ?? '') }}', {{ $item->is_required ? 'true' : 'false' }}, {{ $item->is_active ? 'true' : 'false' }})">
                                     <i class="fas fa-edit"></i>
