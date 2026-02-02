@@ -29,13 +29,13 @@ class AdminLoginController extends Controller
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
 
-            // Check if user has admin/employee roles
+            // Check if user is NOT a student (allow all non-student roles)
             $user = Auth::user();
-            if ($user->hasRole(['Super Admin', 'Admin', 'Employee'])) {
+            if (!$user->hasRole('Student')) {
                 return redirect()->intended(route('dashboard'));
             }
 
-            // If not admin/employee, logout and show error
+            // If student, logout and show error
             Auth::logout();
             return back()->withErrors([
                 'email' => 'These credentials do not have admin access.',

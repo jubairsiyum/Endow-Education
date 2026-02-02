@@ -8,6 +8,7 @@ use App\Models\ChecklistItem;
 use App\Models\StudentDocument;
 use App\Services\ActivityLogService;
 use App\Services\ImageProcessingService;
+use App\Notifications\DocumentRejectedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Log;
 
 class StudentChecklistController extends Controller
 {
@@ -133,114 +135,198 @@ class StudentChecklistController extends Controller
      */
     public function uploadDocument(Request $request, ChecklistItem $checklistItem)
     {
-        $user = Auth::user();
-        $student = Student::where('user_id', $user->id)->firstOrFail();
+        try {
+            $user = Auth::user();
+            $student = Student::where('user_id', $user->id)->firstOrFail();
 
-        $request->validate([
-            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
-        ]);
+            $request->validate([
+                'document' => 'required|file|max:15360|mimes:pdf,jpg,jpeg,png', // Increased to 15MB
+            ]);
 
-        // Delete old file if exists
-        $existingChecklist = StudentChecklist::where('student_id', $student->id)
-            ->where('checklist_item_id', $checklistItem->id)
-            ->first();
+            $file = $request->file('document');
 
-        if ($existingChecklist && $existingChecklist->document_path) {
-            Storage::disk('public')->delete($existingChecklist->document_path);
-            // Delete old document records
-            StudentDocument::where('student_checklist_id', $existingChecklist->id)->delete();
-        }
+            // Validate file exists and is valid before processing
+            if (!$file || !$file->isValid()) {
+                Log::error('Invalid file upload', [
+                    'student_id' => $student->id,
+                    'error' => $file ? $file->getError() : 'No file',
+                    'error_message' => $file ? $file->getErrorMessage() : 'File not found'
+                ]);
+                return back()->with('error', 'The uploaded file is invalid or corrupted. Please try again.');
+            }
 
-        $file = $request->file('document');
+            // Check if file still exists in temp location (prevent err_upload_file_changed)
+            $tempPath = $file->getRealPath();
+            if (!file_exists($tempPath) || !is_readable($tempPath)) {
+                Log::error('File disappeared during upload', [
+                    'student_id' => $student->id,
+                    'temp_path' => $tempPath,
+                    'original_name' => $file->getClientOriginalName()
+                ]);
+                return back()->with('error', 'File upload was interrupted. Please try uploading again.');
+            }
 
-        // Check if the file is an image and convert to PDF
-        $shouldConvert = $this->imageProcessingService->shouldConvertToPdf($file);
+            // Read file content ONCE at the beginning to avoid multiple reads and race conditions
+            $originalFileName = $file->getClientOriginalName();
+            $originalMimeType = $file->getMimeType();
+            $originalFileSize = $file->getSize();
+            
+            // Read file content immediately to prevent it from being cleaned up
+            $fileContent = @file_get_contents($tempPath);
+            if ($fileContent === false) {
+                Log::error('Failed to read uploaded file content', [
+                    'student_id' => $student->id,
+                    'original_name' => $originalFileName,
+                    'temp_path' => $tempPath
+                ]);
+                return back()->with('error', 'Unable to read the uploaded file. Please try again.');
+            }
 
-        if ($shouldConvert) {
-            // Convert image to PDF
-            $pdfData = $this->imageProcessingService->convertImageToPdf($file, $file->getClientOriginalName());
+            // Verify file size consistency (detect err_upload_file_changed)
+            $actualSize = strlen($fileContent);
+            if ($actualSize !== $originalFileSize) {
+                Log::error('File size mismatch during upload', [
+                    'student_id' => $student->id,
+                    'original_name' => $originalFileName,
+                    'expected_size' => $originalFileSize,
+                    'actual_size' => $actualSize
+                ]);
+                return back()->with('error', 'File upload error: File size changed during transfer. Please try again.');
+            }
 
-            // Use PDF data for storage
-            $fileContent = base64_decode($pdfData['content']);
-            $fileName = $pdfData['filename'];
-            $mimeType = $pdfData['mime_type'];
-            $fileSize = $pdfData['size'];
-            $base64Content = $pdfData['content'];
+            // Delete old file if exists
+            $existingChecklist = StudentChecklist::where('student_id', $student->id)
+                ->where('checklist_item_id', $checklistItem->id)
+                ->first();
 
-            // Store PDF file
-            $path = 'student-documents/' . $student->id . '/' . $fileName;
-            Storage::disk('public')->put($path, $fileContent);
-        } else {
-            // Store original PDF file
-            $path = $file->store('student-documents/' . $student->id, 'public');
-            $fileContent = file_get_contents($file->getRealPath());
-            $base64Content = base64_encode($fileContent);
-            $fileName = $file->getClientOriginalName();
-            $mimeType = $file->getMimeType();
-            $fileSize = $file->getSize();
-        }
+            if ($existingChecklist && $existingChecklist->document_path) {
+                Storage::disk('public')->delete($existingChecklist->document_path);
+                // Delete old document records
+                StudentDocument::where('student_checklist_id', $existingChecklist->id)->delete();
+            }
 
-        // Create or update student checklist entry
-        $studentChecklist = StudentChecklist::updateOrCreate(
-            [
+            // Check if the file is an image and convert to PDF
+            $shouldConvert = in_array($originalMimeType, ['image/jpeg', 'image/jpg', 'image/png']);
+
+            if ($shouldConvert) {
+                try {
+                    // Convert image to PDF using in-memory content
+                    $pdfData = $this->imageProcessingService->convertImageToPdfFromContent(
+                        $fileContent,
+                        $originalFileName,
+                        $originalMimeType
+                    );
+
+                    // Use PDF data for storage
+                    $storageContent = base64_decode($pdfData['content']);
+                    $fileName = $pdfData['filename'];
+                    $mimeType = $pdfData['mime_type'];
+                    $fileSize = $pdfData['size'];
+                    $base64Content = $pdfData['content'];
+                } catch (\Exception $e) {
+                    Log::error('Image to PDF conversion failed', [
+                        'student_id' => $student->id,
+                        'original_name' => $originalFileName,
+                        'error' => $e->getMessage()
+                    ]);
+                    return back()->with('error', 'Failed to process image file. Please ensure the image is valid and try again.');
+                }
+            } else {
+                // Use original PDF file content
+                $storageContent = $fileContent;
+                $base64Content = base64_encode($fileContent);
+                $fileName = $originalFileName;
+                $mimeType = $originalMimeType;
+                $fileSize = $originalFileSize;
+            }
+
+            // Store file
+            $path = 'student-documents/' . $student->id . '/' . uniqid() . '_' . $fileName;
+            $stored = Storage::disk('public')->put($path, $storageContent);
+            
+            if (!$stored) {
+                Log::error('Failed to store file', [
+                    'student_id' => $student->id,
+                    'path' => $path,
+                    'size' => strlen($storageContent)
+                ]);
+                return back()->with('error', 'Failed to save the uploaded file. Please try again.');
+            }
+
+            // Create or update student checklist entry
+            $studentChecklist = StudentChecklist::updateOrCreate(
+                [
+                    'student_id' => $student->id,
+                    'checklist_item_id' => $checklistItem->id,
+                ],
+                [
+                    'status' => 'submitted',
+                    'document_path' => $path,
+                    'submitted_at' => now(),
+                ]
+            );
+
+            // Build document data with only essential fields to avoid column errors
+            $documentData = [
                 'student_id' => $student->id,
                 'checklist_item_id' => $checklistItem->id,
-            ],
-            [
-                'status' => 'submitted',
-                'document_path' => $path,
-                'submitted_at' => now(),
-            ]
-        );
+                'student_checklist_id' => $studentChecklist->id,
+                'filename' => $fileName,
+                'file_size' => $fileSize,
+                'mime_type' => $mimeType,
+                'file_data' => $base64Content,
+                'uploaded_by' => $user->id,
+            ];
 
-        // Build document data with only essential fields to avoid column errors
-        $documentData = [
-            'student_id' => $student->id,
-            'checklist_item_id' => $checklistItem->id,
-            'student_checklist_id' => $studentChecklist->id,
-            'filename' => $fileName,
-            'file_size' => $fileSize,
-            'mime_type' => $mimeType,
-            'file_data' => $base64Content,
-            'uploaded_by' => $user->id,
-        ];
+            // Add optional fields only if column exists (avoid migration errors)
+            if (Schema::hasColumn('student_documents', 'document_type')) {
+                $documentData['document_type'] = 'student_document';
+            }
+            if (Schema::hasColumn('student_documents', 'file_name')) {
+                $documentData['file_name'] = $fileName;
+            }
+            if (Schema::hasColumn('student_documents', 'original_name')) {
+                $documentData['original_name'] = $shouldConvert ? $originalFileName : $fileName;
+            }
+            if (Schema::hasColumn('student_documents', 'file_path')) {
+                $documentData['file_path'] = $path;
+            }
+            if (Schema::hasColumn('student_documents', 'status')) {
+                $documentData['status'] = 'submitted';
+            }
 
-        // Add optional fields only if column exists (avoid migration errors)
-        if (Schema::hasColumn('student_documents', 'document_type')) {
-            $documentData['document_type'] = 'student_document';
+            StudentDocument::create($documentData);
+
+            // Log activity
+            $logMessage = $shouldConvert
+                ? "Uploaded image document (converted to PDF) for: {$checklistItem->title}"
+                : "Uploaded document for: {$checklistItem->title}";
+
+            $this->activityLogService->log(
+                'student',
+                $logMessage,
+                $student,
+                ['checklist_item_id' => $checklistItem->id, 'document_path' => $path, 'file_size' => $fileSize]
+            );
+
+            $successMessage = $shouldConvert
+                ? 'Image uploaded and converted to PDF successfully! Your document is now under review.'
+                : 'Document uploaded successfully! Your document is now under review.';
+
+            return back()->with('success', $successMessage);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Re-throw validation exceptions
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Document upload failed', [
+                'student_id' => $student->id ?? null,
+                'checklist_item_id' => $checklistItem->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return back()->with('error', 'An error occurred while uploading your document. Please try again. If the problem persists, contact support.');
         }
-        if (Schema::hasColumn('student_documents', 'file_name')) {
-            $documentData['file_name'] = $fileName;
-        }
-        if (Schema::hasColumn('student_documents', 'original_name')) {
-            $documentData['original_name'] = $shouldConvert ? $file->getClientOriginalName() : $fileName;
-        }
-        if (Schema::hasColumn('student_documents', 'file_path')) {
-            $documentData['file_path'] = $path;
-        }
-        if (Schema::hasColumn('student_documents', 'status')) {
-            $documentData['status'] = 'submitted';
-        }
-
-        StudentDocument::create($documentData);
-
-        // Log activity
-        $logMessage = $shouldConvert
-            ? "Uploaded image document (converted to PDF) for: {$checklistItem->title}"
-            : "Uploaded document for: {$checklistItem->title}";
-
-        $this->activityLogService->log(
-            'student',
-            $logMessage,
-            $student,
-            ['checklist_item_id' => $checklistItem->id, 'document_path' => $path]
-        );
-
-        $successMessage = $shouldConvert
-            ? 'Image uploaded and converted to PDF successfully! Your document is now under review.'
-            : 'Document uploaded successfully! Your document is now under review.';
-
-        return back()->with('success', $successMessage);
     }
 
     /**
@@ -487,7 +573,7 @@ class StudentChecklistController extends Controller
             ['checklist_item_id' => $studentChecklist->checklist_item_id]
         );
 
-        return back()->with('success', 'Document approved successfully!');
+        return redirect()->to(url()->previous() . '#checklist')->with('success', 'Document approved successfully!');
     }
 
     /**
@@ -542,7 +628,24 @@ class StudentChecklistController extends Controller
             ]
         );
 
-        return back()->with('success', 'Document rejected. Feedback has been sent to the student.');
+        // Send email notification to student
+        try {
+            if ($student->user) {
+                $student->user->notify(new DocumentRejectedNotification($studentChecklist, $student, $request->feedback));
+                Log::info('Document rejection email sent successfully', [
+                    'student_id' => $student->id,
+                    'student_email' => $student->email,
+                    'document' => $studentChecklist->checklistItem->title
+                ]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send document rejection email', [
+                'student_email' => $student->email,
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        return redirect()->to(url()->previous() . '#checklist')->with('success', 'Document rejected. Feedback has been sent to the student.');
     }
 
     /**
@@ -564,7 +667,7 @@ class StudentChecklistController extends Controller
         }
 
         $request->validate([
-            'document' => 'required|file|max:10240|mimes:pdf,jpg,jpeg,png',
+            'document' => 'required|file|max:15360|mimes:pdf,jpg,jpeg,png', // Increased to 15MB
         ]);
 
         // Delete old file if exists

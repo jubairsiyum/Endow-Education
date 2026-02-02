@@ -15,12 +15,24 @@ class ActivityLogController extends Controller
      */
     public function index(Request $request)
     {
-        // Check if user has permission to view activity logs
-        if (!Auth::user()->hasRole(['Super Admin', 'Admin'])) {
+        // Check if user has permission to view activity logs - Super Admin only
+        if (!Auth::user()->hasRole('Super Admin')) {
             abort(403, 'Unauthorized action.');
         }
 
+        $currentUserId = Auth::id();
+
         $query = ActivityLog::with(['causer', 'subject'])
+            ->where(function($q) use ($currentUserId) {
+                // Exclude actions performed by the current user (self-actions)
+                $q->where(function($subq) use ($currentUserId) {
+                    $subq->where('causer_type', '!=', 'App\\Models\\User')
+                         ->orWhereNull('causer_id')
+                         ->orWhere('causer_id', '!=', $currentUserId);
+                });
+            })
+            // Exclude login/authentication activities, only show modification actions
+            ->whereNotIn('log_name', ['authentication', 'login', 'logout'])
             ->orderBy('created_at', 'desc');
 
         // Filter by log name/type
@@ -58,7 +70,7 @@ class ActivityLogController extends Controller
             $query->where('description', 'like', '%' . $request->search . '%');
         }
 
-        $logs = $query->paginate(20);
+        $logs = $query->paginate(25);
 
         // Get filter options
         $logTypes = ActivityLog::distinct()->pluck('log_name');
@@ -72,8 +84,8 @@ class ActivityLogController extends Controller
      */
     public function show(ActivityLog $activityLog)
     {
-        // Check if user has permission
-        if (!Auth::user()->hasRole(['Super Admin', 'Admin'])) {
+        // Check if user has permission - Super Admin only
+        if (!Auth::user()->hasRole('Super Admin')) {
             abort(403, 'Unauthorized action.');
         }
 

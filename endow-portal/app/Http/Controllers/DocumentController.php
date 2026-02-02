@@ -69,7 +69,7 @@ class DocumentController extends Controller
             'student_id' => 'required|exists:students,id',
             'checklist_item_id' => 'required|exists:checklist_items,id',
             'student_checklist_id' => 'required|exists:student_checklists,id',
-            'document' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120', // 5MB max
+            'document' => 'required|file|mimes:pdf,doc,docx,jpg,jpeg,png|max:15360', // Increased to 15MB
             'notes' => 'nullable|string|max:500',
         ]);
 

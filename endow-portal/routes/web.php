@@ -20,6 +20,11 @@ use App\Http\Controllers\Auth\StudentRegisterController;
 use App\Http\Controllers\Auth\StudentPasswordResetController;
 use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\Office\DailyReportController;
+use App\Http\Controllers\Office\DepartmentController;
+use App\Http\Controllers\Admin\RoleManagementController;
+use App\Http\Controllers\TransactionController;
+use App\Http\Controllers\AccountCategoryController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -167,6 +172,21 @@ Route::middleware(['auth', 'role:Super Admin'])->prefix('users')->group(function
     Route::patch('/{user}/toggle-status', [UserManagementController::class, 'toggleStatus'])->name('users.toggle-status');
 });
 
+// Role & Permission Management Routes (Super Admin only)
+Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/roles')->name('admin.roles.')->group(function () {
+    Route::get('/', [RoleManagementController::class, 'index'])->name('index');
+    Route::get('/create', [RoleManagementController::class, 'create'])->name('create');
+    Route::post('/', [RoleManagementController::class, 'store'])->name('store');
+    Route::get('/{role}', [RoleManagementController::class, 'show'])->name('show');
+    Route::get('/{role}/edit', [RoleManagementController::class, 'edit'])->name('edit');
+    Route::put('/{role}', [RoleManagementController::class, 'update'])->name('update');
+    Route::delete('/{role}', [RoleManagementController::class, 'destroy'])->name('destroy');
+    Route::post('/{role}/clone', [RoleManagementController::class, 'clone'])->name('clone');
+    Route::post('/sync-permissions', [RoleManagementController::class, 'syncPermissions'])->name('sync-permissions');
+    Route::get('/users/{user}/permissions', [RoleManagementController::class, 'userPermissions'])->name('user-permissions');
+    Route::put('/users/{user}/permissions', [RoleManagementController::class, 'updateUserPermissions'])->name('update-user-permissions');
+});
+
 // Email Settings Routes (Super Admin only)
 Route::middleware(['auth', 'role:Super Admin'])->prefix('admin/email-settings')->group(function () {
     Route::get('/', [\App\Http\Controllers\Admin\EmailSettingsController::class, 'index'])->name('admin.email-settings.index');
@@ -273,6 +293,82 @@ Route::middleware(['auth'])->group(function () {
     // Student Checklist Document Approval/Rejection
     Route::post('/student-checklist/{studentChecklist}/approve', [StudentChecklistController::class, 'approveDocument'])->name('student.checklist.approve');
     Route::post('/student-checklist/{studentChecklist}/reject', [StudentChecklistController::class, 'rejectDocument'])->name('student.checklist.reject');
+});
+
+// ========================================
+// OFFICE MANAGEMENT SYSTEM ROUTES
+// ========================================
+Route::middleware(['auth'])->prefix('office')->name('office.')->group(function () {
+
+    // Daily Reports Module
+    Route::prefix('daily-reports')->name('daily-reports.')->group(function () {
+        Route::get('/', [DailyReportController::class, 'index'])->name('index');
+        Route::get('/create', [DailyReportController::class, 'create'])->name('create');
+        Route::post('/', [DailyReportController::class, 'store'])->name('store');
+        Route::get('/{dailyReport}', [DailyReportController::class, 'show'])->name('show');
+        Route::get('/{dailyReport}/edit', [DailyReportController::class, 'edit'])->name('edit');
+        Route::put('/{dailyReport}', [DailyReportController::class, 'update'])->name('update');
+        Route::delete('/{dailyReport}', [DailyReportController::class, 'destroy'])->name('destroy');
+        
+        // New workflow actions
+        Route::post('/{dailyReport}/submit', [DailyReportController::class, 'submit'])->name('submit');
+        Route::post('/{dailyReport}/approve', [DailyReportController::class, 'approve'])->name('approve');
+        Route::post('/{dailyReport}/reject', [DailyReportController::class, 'reject'])->name('reject');
+        Route::post('/{dailyReport}/review', [DailyReportController::class, 'review'])->name('review');
+        
+        // Comments and attachments
+        Route::post('/{dailyReport}/comments', [DailyReportController::class, 'addComment'])->name('comments');
+        Route::post('/{dailyReport}/attachments', [DailyReportController::class, 'uploadAttachment'])->name('attachments');
+        
+        // PDF Export (Super Admin Only)
+        Route::get('/export/pdf-form', [DailyReportController::class, 'showExportForm'])->name('export-form');
+        Route::post('/export/pdf', [DailyReportController::class, 'exportPDF'])->name('export-pdf');
+    });
+
+    // Department Management Module (Super Admin Only)
+    Route::prefix('departments')->name('departments.')->group(function () {
+        Route::get('/', [DepartmentController::class, 'index'])->name('index');
+        Route::get('/create', [DepartmentController::class, 'create'])->name('create');
+        Route::post('/', [DepartmentController::class, 'store'])->name('store');
+        Route::get('/{department}', [DepartmentController::class, 'show'])->name('show');
+        Route::get('/{department}/edit', [DepartmentController::class, 'edit'])->name('edit');
+        Route::put('/{department}', [DepartmentController::class, 'update'])->name('update');
+        Route::delete('/{department}', [DepartmentController::class, 'destroy'])->name('destroy');
+        Route::post('/{department}/assign-user', [DepartmentController::class, 'assignUser'])->name('assign-user');
+        Route::delete('/{department}/remove-user', [DepartmentController::class, 'removeUser'])->name('remove-user');
+        Route::put('/{department}/update-manager', [DepartmentController::class, 'updateManager'])->name('update-manager');
+    });
+
+    // Accounting Module (Accountant Role Only)
+    Route::prefix('accounting')->name('accounting.')->middleware('role:Super Admin|Accountant')->group(function () {
+        // Summary/Dashboard
+        Route::get('/summary', [TransactionController::class, 'summary'])->name('summary');
+        
+        // Account Categories Management
+        Route::resource('categories', AccountCategoryController::class)->except(['show']);
+        Route::patch('/categories/{category}/toggle-status', [AccountCategoryController::class, 'toggleStatus'])
+            ->name('categories.toggle-status');
+        
+        // Pending Transactions (Approval)
+        Route::get('/pending', [TransactionController::class, 'pending'])
+            ->name('transactions.pending')
+            ->middleware('permission:approve-transaction');
+        
+        // Student search for autocomplete
+        Route::get('/transactions/search-students', [TransactionController::class, 'searchStudents'])
+            ->name('transactions.searchStudents');
+        
+        Route::patch('/transactions/{transaction}/approve', [TransactionController::class, 'approve'])
+            ->name('transactions.approve')
+            ->middleware('permission:approve-transaction');
+        
+        Route::patch('/transactions/{transaction}/reject', [TransactionController::class, 'reject'])
+            ->name('transactions.reject')
+            ->middleware('permission:approve-transaction');
+        
+        // Transaction CRUD
+        Route::resource('transactions', TransactionController::class)->except(['pending']);
+    });
 });
 
 // Home route redirect to dashboard

@@ -165,16 +165,17 @@
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm" role="group">
-                                <a href="{{ route('student-visits.show', $visit) }}?page={{ request('page', 1) }}"
+                                <a href="{{ route('student-visits.show', $visit) }}?{{ http_build_query(array_merge(request()->all(), ['page' => request('page', 1)])) }}"
                                    class="btn btn-sm btn-outline-primary" title="View">
                                     <i class="fas fa-eye"></i>
                                 </a>
                                 @can('update', $visit)
-                                <a href="{{ route('student-visits.edit', $visit) }}?page={{ request('page', 1) }}"
+                                <a href="{{ route('student-visits.edit', $visit) }}?{{ http_build_query(array_merge(request()->all(), ['page' => request('page', 1)])) }}"
                                    class="btn btn-sm btn-outline-warning" title="Edit">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 @endcan
+                                @if(Auth::user()->hasRole('Super Admin'))
                                 @can('delete', $visit)
                                 <form action="{{ route('student-visits.destroy', $visit) }}"
                                       method="POST"
@@ -182,13 +183,18 @@
                                       id="delete-visit-form-{{ $visit->id }}">
                                     @csrf
                                     @method('DELETE')
-                                    <input type="hidden" name="page" value="{{ request('page', 1) }}">
+                                    @foreach(request()->all() as $key => $value)
+                                        @if($key !== '_token' && $key !== '_method')
+                                            <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                        @endif
+                                    @endforeach
                                     <button type="button" class="btn btn-sm btn-outline-danger" title="Delete"
                                             onclick="confirmDeleteVisitIndex({{ $visit->id }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </form>
                                 @endcan
+                                @endif
                             </div>
                         </td>
                     </tr>
@@ -214,7 +220,7 @@
                     Showing {{ $visits->firstItem() }} to {{ $visits->lastItem() }} of {{ $visits->total() }} visits
                 </div>
                 <div class="pagination-wrapper">
-                    {{ $visits->links('pagination::bootstrap-5') }}
+                    {{ $visits->links() }}
                 </div>
             </div>
         </div>

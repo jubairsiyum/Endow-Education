@@ -106,7 +106,7 @@ class ImageProcessingService
         // Use string-based class resolution to avoid import errors when package not installed
         $imageClass = '\Intervention\Image\Facades\Image';
         $image = $imageClass::make($file);
-        
+
         // Resize image maintaining aspect ratio
         $image->fit($width, $height, function ($constraint) {
             $constraint->aspectRatio();
@@ -158,7 +158,7 @@ class ImageProcessingService
 
         // Create new image
         $newImage = imagecreatetruecolor($newWidth, $newHeight);
-        
+
         // Handle transparency for PNG
         if ($mimeType === 'image/png') {
             imagealphablending($newImage, false);
@@ -238,20 +238,20 @@ class ImageProcessingService
     /**
      * Convert image (PNG/JPG) to PDF format for document viewing.
      * Returns array with PDF file data and metadata.
-     * 
+     *
      * @param UploadedFile $file The image file to convert
-     * @param string $originalFilename Original filename to preserve
+     * @param string|null $originalFilename Original filename to preserve
      * @return array ['content' => base64_encoded_pdf, 'filename' => new_filename, 'mime_type' => 'application/pdf', 'size' => file_size]
      */
-    public function convertImageToPdf(UploadedFile $file, string $originalFilename = null): array
+    public function convertImageToPdf(UploadedFile $file, ?string $originalFilename = null): array
     {
         // Get original filename or use provided one
         $originalFilename = $originalFilename ?? $file->getClientOriginalName();
-        
+
         // Check if file is an image
         $mimeType = $file->getMimeType();
         $isImage = in_array($mimeType, ['image/jpeg', 'image/jpg', 'image/png']);
-        
+
         if (!$isImage) {
             throw new \Exception('File must be an image (JPG, JPEG, or PNG)');
         }
@@ -262,11 +262,11 @@ class ImageProcessingService
 
         // Get image dimensions
         list($width, $height) = getimagesize($file->getRealPath());
-        
+
         // Calculate PDF dimensions (A4 page with margins)
         $maxWidth = 550; // A4 width with margins
         $maxHeight = 750; // A4 height with margins
-        
+
         // Calculate scaled dimensions maintaining aspect ratio
         $ratio = min($maxWidth / $width, $maxHeight / $height);
         $scaledWidth = $width * $ratio;
@@ -308,7 +308,6 @@ class ImageProcessingService
         </head>
         <body>
             <div class='container'>
-                <div class='document-title'>{$originalFilename}</div>
                 <div class='image-container'>
                     <img src='{$imageSrc}' style='width: {$scaledWidth}px; height: {$scaledHeight}px;' />
                 </div>
@@ -349,7 +348,7 @@ class ImageProcessingService
 
     /**
      * Check if file should be converted to PDF (is it an image?)
-     * 
+     *
      * @param UploadedFile $file
      * @return bool
      */
@@ -357,5 +356,142 @@ class ImageProcessingService
     {
         $mimeType = $file->getMimeType();
         return in_array($mimeType, ['image/jpeg', 'image/jpg', 'image/png']);
+    }
+
+    /**
+     * Convert image to PDF from in-memory content to avoid file read errors.
+     * This method prevents err_upload_file_changed errors by working with content already in memory.
+     *
+     * @param string $fileContent The file content in binary
+     * @param string $originalFilename Original filename to preserve
+     * @param string $mimeType The MIME type of the file
+     * @return array ['content' => base64_encoded_pdf, 'filename' => new_filename, 'mime_type' => 'application/pdf', 'size' => file_size]
+     */
+    public function convertImageToPdfFromContent(string $fileContent, string $originalFilename, string $mimeType): array
+    {
+        // Validate it's an image type
+        $allowedMimeTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!in_array($mimeType, $allowedMimeTypes)) {
+            throw new \Exception('File must be an image (JPG, JPEG, or PNG)');
+        }
+
+        try {
+            // Save content to a temporary file for image processing
+            $tempFile = tempnam(sys_get_temp_dir(), 'img_');
+            file_put_contents($tempFile, $fileContent);
+
+            // Verify the temporary file was created
+            if (!file_exists($tempFile)) {
+                throw new \Exception('Failed to create temporary file for image processing');
+            }
+
+            // Get image dimensions from the temporary file
+            $imageInfo = @getimagesize($tempFile);
+            if ($imageInfo === false) {
+                unlink($tempFile);
+                throw new \Exception('Invalid or corrupted image file');
+            }
+
+            list($width, $height) = $imageInfo;
+
+            // Convert content to base64 for embedding in HTML
+            $imageData = base64_encode($fileContent);
+            $imageSrc = "data:{$mimeType};base64,{$imageData}";
+
+            // Calculate PDF dimensions (A4 page with margins)
+            $maxWidth = 550; // A4 width with margins
+            $maxHeight = 750; // A4 height with margins
+
+            // Calculate scaled dimensions maintaining aspect ratio
+            $ratio = min($maxWidth / $width, $maxHeight / $height);
+            $scaledWidth = $width * $ratio;
+            $scaledHeight = $height * $ratio;
+
+            // Create HTML for PDF with centered image
+            $html = "
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset='utf-8'>
+                <style>
+                    body {
+                        margin: 0;
+                        padding: 20px;
+                        font-family: Arial, sans-serif;
+                    }
+                    .container {
+                        text-align: center;
+                        page-break-inside: avoid;
+                    }
+                    .image-container {
+                        display: inline-block;
+                        max-width: 100%;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                        border: 1px solid #ddd;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }
+                </style>
+            </head>
+            <body>
+                <div class='container'>
+                    <div class='image-container'>
+                        <img src='{$imageSrc}' style='width: {$scaledWidth}px; height: {$scaledHeight}px;' />
+                    </div>
+                </div>
+            </body>
+            </html>
+            ";
+
+            // Configure DomPDF
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isPhpEnabled', true);
+            $options->set('isRemoteEnabled', true);
+            $options->set('defaultFont', 'Arial');
+            $options->set('chroot', sys_get_temp_dir());
+
+            // Create PDF
+            $dompdf = new Dompdf($options);
+            $dompdf->loadHtml($html);
+            $dompdf->setPaper('A4', 'portrait');
+            $dompdf->render();
+
+            // Get PDF output
+            $pdfContent = $dompdf->output();
+
+            // Clean up temporary file
+            if (file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+
+            // Verify PDF was created successfully
+            if (empty($pdfContent)) {
+                throw new \Exception('Failed to generate PDF content');
+            }
+
+            $base64Pdf = base64_encode($pdfContent);
+
+            // Generate new filename with .pdf extension
+            $newFilename = pathinfo($originalFilename, PATHINFO_FILENAME) . '.pdf';
+
+            return [
+                'content' => $base64Pdf,
+                'filename' => $newFilename,
+                'mime_type' => 'application/pdf',
+                'size' => strlen($pdfContent),
+                'original_filename' => $originalFilename,
+                'converted_from' => $mimeType,
+            ];
+
+        } catch (\Exception $e) {
+            // Clean up temporary file if it exists
+            if (isset($tempFile) && file_exists($tempFile)) {
+                unlink($tempFile);
+            }
+            throw new \Exception('Image to PDF conversion failed: ' . $e->getMessage());
+        }
     }
 }

@@ -60,6 +60,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Performance Monitoring
+    |--------------------------------------------------------------------------
+    |
+    | Enable slow query logging to identify performance bottlenecks.
+    |
+    */
+
+    'log_slow_queries' => env('LOG_SLOW_QUERIES', false),
+
+    'slow_query_threshold' => env('SLOW_QUERY_THRESHOLD', 1000), // milliseconds
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

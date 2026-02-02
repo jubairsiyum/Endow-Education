@@ -92,24 +92,24 @@
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label for="payment_type" class="form-label">
+                                <label for="payment_type_id" class="form-label">
                                     Payment Type <span class="text-danger">*</span>
                                 </label>
-                                <select name="payment_type" 
-                                        id="payment_type" 
-                                        class="form-select @error('payment_type') is-invalid @enderror" 
+                                <select name="payment_type_id" 
+                                        id="payment_type_id" 
+                                        class="form-select @error('payment_type_id') is-invalid @enderror" 
                                         required>
                                     <option value="">-- Select Payment Type --</option>
-                                    <option value="Tuition Fee" {{ old('payment_type') == 'Tuition Fee' ? 'selected' : '' }}>Tuition Fee</option>
-                                    <option value="Service Fee" {{ old('payment_type') == 'Service Fee' ? 'selected' : '' }}>Service Fee</option>
-                                    <option value="Processing Fee" {{ old('payment_type') == 'Processing Fee' ? 'selected' : '' }}>Processing Fee</option>
-                                    <option value="Consultation Fee" {{ old('payment_type') == 'Consultation Fee' ? 'selected' : '' }}>Consultation Fee</option>
-                                    <option value="Document Fee" {{ old('payment_type') == 'Document Fee' ? 'selected' : '' }}>Document Fee</option>
-                                    <option value="Other" {{ old('payment_type') == 'Other' ? 'selected' : '' }}>Other</option>
+                                    @foreach($paymentTypes as $type)
+                                        <option value="{{ $type->id }}" {{ old('payment_type_id') == $type->id ? 'selected' : '' }}>
+                                            {{ $type->name }}
+                                        </option>
+                                    @endforeach
                                 </select>
-                                @error('payment_type')
+                                @error('payment_type_id')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <small class="text-muted">Payment types are managed by accounting department</small>
                             </div>
 
                             <div class="col-md-6 mb-3">

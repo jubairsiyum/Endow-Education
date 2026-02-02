@@ -37,9 +37,21 @@ class ConsultantEvaluationController extends Controller
                 ->with('error', 'Student profile not found.');
         }
 
+        // Check if student's application status is approved
+        if ($student->status !== 'approved') {
+            return view('student.consultant-evaluation.index', [
+                'isApproved' => false,
+                'hasConsultant' => false,
+                'consultant' => null,
+                'questions' => collect([]),
+                'existingEvaluations' => collect([]),
+            ]);
+        }
+
         // Check if student has an assigned consultant
         if (!$student->assigned_to) {
             return view('student.consultant-evaluation.index', [
+                'isApproved' => true,
                 'hasConsultant' => false,
                 'consultant' => null,
                 'questions' => collect([]),
@@ -60,7 +72,7 @@ class ConsultantEvaluationController extends Controller
             'consultant',
             'questions',
             'existingEvaluations'
-        ))->with('hasConsultant', true);
+        ))->with('hasConsultant', true)->with('isApproved', true);
     }
 
     /**
@@ -79,6 +91,12 @@ class ConsultantEvaluationController extends Controller
         if (!$student || !$student->assigned_to) {
             return redirect()->back()
                 ->with('error', 'You must have an assigned consultant to submit an evaluation.');
+        }
+
+        // Check if student's application status is approved
+        if ($student->status !== 'approved') {
+            return redirect()->back()
+                ->with('error', 'Your application must be approved before you can submit an evaluation.');
         }
 
         $validated = $request->validate([
@@ -105,15 +123,14 @@ class ConsultantEvaluationController extends Controller
                 );
             }
 
-            // Log activity
-            activity('consultant_evaluation')
-                ->performedOn($student)
-                ->causedBy($user)
-                ->withProperties([
-                    'consultant_id' => $student->assigned_to,
-                    'questions_evaluated' => count($validated['evaluations']),
-                ])
-                ->log('Student submitted consultant evaluation');
+            // Log activity to standard log
+            Log::info('Consultant Evaluation Submitted', [
+                'student_id' => $student->id,
+                'student_name' => $student->full_name ?? $user->name,
+                'consultant_id' => $student->assigned_to,
+                'questions_evaluated' => count($validated['evaluations']),
+                'user_id' => $user->id,
+            ]);
 
             DB::commit();
 

@@ -70,7 +70,7 @@ class StudentVisitController extends Controller
                 $query->whereDate('created_at', '<=', $request->date_to);
             }
 
-            $visits = $query->latest()->paginate(15);
+            $visits = $query->latest()->paginate(15)->appends($request->except('page'));
 
             // Get employees for filter dropdown (for admins)
             $employees = collect();
@@ -189,7 +189,7 @@ class StudentVisitController extends Controller
     /**
      * Show the form for editing the specified student visit.
      */
-    public function edit(StudentVisit $studentVisit)
+    public function edit(Request $request, StudentVisit $studentVisit)
     {
         try {
             $this->authorize('update', $studentVisit);
@@ -202,7 +202,10 @@ class StudentVisitController extends Controller
                     ->get();
             }
 
-            return view('student-visits.edit', compact('studentVisit', 'employees'));
+            // Capture current filter parameters to preserve them after update
+            $filters = $request->only(['page', 'search', 'employee_id', 'prospective_status', 'date_from', 'date_to']);
+
+            return view('student-visits.edit', compact('studentVisit', 'employees', 'filters'));
         } catch (\Exception $e) {
             \Log::error('Student Visit Edit Error: ' . $e->getMessage());
             return back()->with('error', 'Error loading edit form: ' . $e->getMessage());
@@ -248,8 +251,15 @@ class StudentVisitController extends Controller
             ['student_name' => $studentVisit->student_name, 'phone' => $studentVisit->phone]
         );
 
-        // Preserve pagination page in redirect
-        $redirectParams = $request->only(['page']);
+        // Restore the filters that were active before editing (passed through hidden form fields)
+        $redirectParams = [];
+        $filterKeys = ['page', 'search', 'employee_id', 'prospective_status', 'date_from', 'date_to'];
+        foreach ($filterKeys as $key) {
+            if ($request->has('filter_' . $key) && $request->input('filter_' . $key) !== '') {
+                $redirectParams[$key] = $request->input('filter_' . $key);
+            }
+        }
+
         return redirect()->route('student-visits.index', $redirectParams)
             ->with('success', 'Student visit record updated successfully.');
     }
@@ -274,9 +284,7 @@ class StudentVisitController extends Controller
 
         $studentVisit->delete();
 
-        // Preserve pagination page in redirect
-        $redirectParams = request()->only(['page']);
-        return redirect()->route('student-visits.index', $redirectParams)
+        return redirect()->route('student-visits.index')
             ->with('success', 'Student visit record deleted successfully.');
     }
 }

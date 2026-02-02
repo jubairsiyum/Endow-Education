@@ -45,7 +45,21 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
-        $query = Student::with(['assignedUser', 'creator', 'activeProfilePhoto', 'targetUniversity', 'targetProgram']);
+        // Check which columns exist before eager loading relationships
+        $eagerLoad = ['assignedUser', 'creator', 'activeProfilePhoto'];
+        
+        try {
+            if (DB::getSchemaBuilder()->hasColumn('students', 'target_university_id')) {
+                $eagerLoad[] = 'targetUniversity';
+            }
+            if (DB::getSchemaBuilder()->hasColumn('students', 'target_program_id')) {
+                $eagerLoad[] = 'targetProgram';
+            }
+        } catch (\Exception $e) {
+            Log::error('Error checking student columns: ' . $e->getMessage());
+        }
+
+        $query = Student::with($eagerLoad);
 
         // Filter by status
         if ($request->has('status') && $request->status != '') {
@@ -64,12 +78,24 @@ class StudentController extends Controller
 
         // Filter by university
         if ($request->has('university_id') && $request->university_id != '') {
-            $query->where('target_university_id', $request->university_id);
+            try {
+                if (DB::getSchemaBuilder()->hasColumn('students', 'target_university_id')) {
+                    $query->where('target_university_id', $request->university_id);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error filtering by university: ' . $e->getMessage());
+            }
         }
 
         // Filter by program
         if ($request->has('program_id') && $request->program_id != '') {
-            $query->where('target_program_id', $request->program_id);
+            try {
+                if (DB::getSchemaBuilder()->hasColumn('students', 'target_program_id')) {
+                    $query->where('target_program_id', $request->program_id);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error filtering by program: ' . $e->getMessage());
+            }
         }
 
         // If employee, show only assigned students
@@ -112,8 +138,27 @@ class StudentController extends Controller
         }
 
         // Get universities and programs for filters
-        $universities = \App\Models\University::active()->orderBy('name')->get();
-        $programs = \App\Models\Program::active()->orderBy('name')->get();
+        try {
+            if (DB::getSchemaBuilder()->hasTable('universities')) {
+                $universities = \App\Models\University::active()->orderBy('name')->get();
+            } else {
+                $universities = collect();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching universities: ' . $e->getMessage());
+            $universities = collect();
+        }
+
+        try {
+            if (DB::getSchemaBuilder()->hasTable('programs')) {
+                $programs = \App\Models\Program::active()->orderBy('name')->get();
+            } else {
+                $programs = collect();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching programs: ' . $e->getMessage());
+            $programs = collect();
+        }
 
         return view('students.index', compact('students', 'employees', 'universities', 'programs'));
     }
@@ -125,8 +170,22 @@ class StudentController extends Controller
     {
         $this->authorize('viewAny', Student::class);
 
+        // Check which columns exist before eager loading relationships
+        $eagerLoad = ['assignedUser', 'creator', 'activeProfilePhoto'];
+        
+        try {
+            if (DB::getSchemaBuilder()->hasColumn('students', 'target_university_id')) {
+                $eagerLoad[] = 'targetUniversity';
+            }
+            if (DB::getSchemaBuilder()->hasColumn('students', 'target_program_id')) {
+                $eagerLoad[] = 'targetProgram';
+            }
+        } catch (\Exception $e) {
+            Log::error('Error checking student columns: ' . $e->getMessage());
+        }
+
         // Get only students assigned to the logged-in user
-        $query = Student::with(['assignedUser', 'creator', 'activeProfilePhoto', 'targetUniversity', 'targetProgram'])
+        $query = Student::with($eagerLoad)
             ->where('assigned_to', Auth::id());
 
         // Filter by status
@@ -141,12 +200,24 @@ class StudentController extends Controller
 
         // Filter by university
         if ($request->has('university_id') && $request->university_id != '') {
-            $query->where('target_university_id', $request->university_id);
+            try {
+                if (DB::getSchemaBuilder()->hasColumn('students', 'target_university_id')) {
+                    $query->where('target_university_id', $request->university_id);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error filtering by university: ' . $e->getMessage());
+            }
         }
 
         // Filter by program
         if ($request->has('program_id') && $request->program_id != '') {
-            $query->where('target_program_id', $request->program_id);
+            try {
+                if (DB::getSchemaBuilder()->hasColumn('students', 'target_program_id')) {
+                    $query->where('target_program_id', $request->program_id);
+                }
+            } catch (\Exception $e) {
+                Log::error('Error filtering by program: ' . $e->getMessage());
+            }
         }
 
         // Search
@@ -175,8 +246,27 @@ class StudentController extends Controller
         $students = $query->orderBy('created_at', 'desc')->paginate($perPage)->appends(request()->except('page'));
 
         // Get universities and programs for filters
-        $universities = \App\Models\University::active()->orderBy('name')->get();
-        $programs = \App\Models\Program::active()->orderBy('name')->get();
+        try {
+            if (DB::getSchemaBuilder()->hasTable('universities')) {
+                $universities = \App\Models\University::active()->orderBy('name')->get();
+            } else {
+                $universities = collect();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching universities: ' . $e->getMessage());
+            $universities = collect();
+        }
+
+        try {
+            if (DB::getSchemaBuilder()->hasTable('programs')) {
+                $programs = \App\Models\Program::active()->orderBy('name')->get();
+            } else {
+                $programs = collect();
+            }
+        } catch (\Exception $e) {
+            Log::error('Error fetching programs: ' . $e->getMessage());
+            $programs = collect();
+        }
 
         return view('students.my-students', compact('students', 'universities', 'programs'));
     }
