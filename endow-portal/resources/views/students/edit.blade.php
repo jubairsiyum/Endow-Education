@@ -96,6 +96,40 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+
+                            <!-- Passport Information -->
+                            <div class="col-12">
+                                <div class="row g-3">
+                                    <div class="col-md-6">
+                                        <label for="passport_number" class="form-label fw-semibold">
+                                            <i class="fas fa-passport text-muted me-2"></i>Passport Number
+                                        </label>
+                                        <input type="text" class="form-control @error('passport_number') is-invalid @enderror"
+                                               id="passport_number" name="passport_number" value="{{ old('passport_number', $student->passport_number) }}"
+                                               placeholder="e.g., A12345678">
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>Student's passport number
+                                        </small>
+                                        @error('passport_number')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="passport_expiry_date" class="form-label fw-semibold">
+                                            <i class="fas fa-calendar-alt text-muted me-2"></i>Passport Expiry Date
+                                        </label>
+                                        <input type="date" class="form-control @error('passport_expiry_date') is-invalid @enderror"
+                                               id="passport_expiry_date" name="passport_expiry_date" value="{{ old('passport_expiry_date', $student->passport_expiry_date?->format('Y-m-d')) }}">
+                                        <small class="form-text text-muted">
+                                            <i class="fas fa-info-circle me-1"></i>Passport expiration date
+                                        </small>
+                                        @error('passport_expiry_date')
+                                            <div class="invalid-feedback">{{ $message }}</div>
+                                        @enderror
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

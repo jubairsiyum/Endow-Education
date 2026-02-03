@@ -44,6 +44,8 @@ class UpdateStudentRequest extends FormRequest
                     }
                 },
             ],
+            'passport_number' => ['nullable', 'string', 'max:50'],
+            'passport_expiry_date' => ['nullable', 'date', 'after:today'],
             'status' => ['nullable', 'in:new,contacted,processing,applied,approved,rejected'],
             'account_status' => ['nullable', 'in:pending,approved,rejected'],
             'assigned_to' => ['nullable', 'exists:users,id'],

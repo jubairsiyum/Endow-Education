@@ -564,6 +564,8 @@ class StudentController extends Controller
                 'target_program_id',
                 'country',
                 'course',
+                'passport_number',
+                'passport_expiry_date',
                 'status',
                 'notes',
             ]));
