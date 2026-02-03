@@ -46,13 +46,18 @@ class DailyReportController extends Controller
             'end_date' => $request->input('end_date'),
         ];
 
+        $user = auth()->user();
+
         // Get reports based on user role
-        if (auth()->user()->hasRole('Super Admin')) {
+        if ($user->hasRole('Super Admin')) {
             // Super Admin sees all reports
             $reports = $this->reportService->getReports($filters);
+        } elseif ($user->hasRole('department_manager') || $user->isManagerOfAnyDepartment()) {
+            // Department managers see reports from all their managed departments
+            $reports = $this->reportService->getManagerReports($user, $filters);
         } else {
-            // Everyone else (including regular Admin) sees only their own reports
-            $reports = $this->reportService->getMyReports(auth()->user(), $filters);
+            // Everyone else sees only their own reports
+            $reports = $this->reportService->getMyReports($user, $filters);
         }
 
         // Get statistics

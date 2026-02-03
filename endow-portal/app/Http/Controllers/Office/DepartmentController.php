@@ -156,7 +156,7 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Assign user to department
+     * Assign user to department (supports multiple departments)
      */
     public function assignUser(Request $request, Department $department)
     {
@@ -170,8 +170,20 @@ class DepartmentController extends Controller
 
         try {
             $user = User::findOrFail($validated['user_id']);
-            $user->department_id = $department->id;
-            $user->save();
+            
+            // Check if user is already in this department
+            if ($department->users()->where('user_id', $user->id)->exists()) {
+                return back()->with('info', "User {$user->name} is already a member of {$department->name}!");
+            }
+            
+            // Add user to department (many-to-many)
+            $department->users()->attach($user->id);
+            
+            // If user doesn't have any primary department_id set, set this as primary
+            if (!$user->department_id) {
+                $user->department_id = $department->id;
+                $user->save();
+            }
 
             return back()->with('success', "User {$user->name} assigned to {$department->name} successfully!");
         } catch (Exception $e) {
@@ -180,7 +192,7 @@ class DepartmentController extends Controller
     }
 
     /**
-     * Remove user from department
+     * Remove user from department (many-to-many)
      */
     public function removeUser(Request $request, Department $department)
     {
@@ -194,8 +206,16 @@ class DepartmentController extends Controller
 
         try {
             $user = User::findOrFail($validated['user_id']);
-            $user->department_id = null;
-            $user->save();
+            
+            // Remove user from department (detach from pivot table)
+            $department->users()->detach($user->id);
+            
+            // If this was the user's primary department, clear it or assign another
+            if ($user->department_id == $department->id) {
+                $otherDepartment = $user->departments()->first();
+                $user->department_id = $otherDepartment ? $otherDepartment->id : null;
+                $user->save();
+            }
 
             return back()->with('success', "User {$user->name} removed from {$department->name}!");
         } catch (Exception $e) {

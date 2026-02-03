@@ -33,9 +33,18 @@ class Department extends Model
     }
 
     /**
-     * Get all users in this department
+     * Get all users in this department (many-to-many)
      */
     public function users()
+    {
+        return $this->belongsToMany(User::class, 'department_user')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Get users with department_id set to this department (legacy)
+     */
+    public function usersLegacy()
     {
         return $this->hasMany(User::class, 'department_id');
     }

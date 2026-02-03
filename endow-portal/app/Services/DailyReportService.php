@@ -66,6 +66,44 @@ class DailyReportService
     }
 
     /**
+     * Get reports for departments managed by the user (manager view)
+     */
+    public function getManagerReports(User $user, array $filters = [], int $perPage = 15)
+    {
+        // Get all departments where this user is the manager
+        $managedDepartmentIds = $user->managedDepartments()->pluck('id')->toArray();
+        
+        if (empty($managedDepartmentIds)) {
+            // If user manages no departments, return empty result
+            return DailyReport::where('id', 0)->paginate($perPage);
+        }
+
+        $query = DailyReport::with(['submittedBy', 'reviewedBy', 'department'])
+            ->whereIn('department_id', $managedDepartmentIds)
+            ->latest('report_date')
+            ->latest('created_at');
+
+        // Apply filters
+        if (!empty($filters['department'])) {
+            $query->byDepartment($filters['department']);
+        }
+
+        if (!empty($filters['status'])) {
+            $query->byStatus($filters['status']);
+        }
+
+        if (!empty($filters['start_date']) && !empty($filters['end_date'])) {
+            $query->dateRange($filters['start_date'], $filters['end_date']);
+        }
+
+        if (!empty($filters['submitted_by'])) {
+            $query->bySubmitter($filters['submitted_by']);
+        }
+
+        return $query->paginate($perPage);
+    }
+
+    /**
      * Create a new daily report
      */
     public function createReport(array $data, User $submitter): DailyReport

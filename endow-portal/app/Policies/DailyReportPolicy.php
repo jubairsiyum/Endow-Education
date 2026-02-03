@@ -126,9 +126,12 @@ class DailyReportPolicy
             return true;
         }
 
-        // Department managers can review reports from their department
-        if ($user->hasRole('department_manager') && $user->department_id === $report->department_id) {
-            return true;
+        // Department managers can review reports from ANY of their managed departments
+        if ($user->hasRole('department_manager') || $user->isManagerOfAnyDepartment()) {
+            // Check if user is manager of the report's department
+            if ($user->isManagerOfDepartment($report->department_id)) {
+                return true;
+            }
         }
 
         // Check explicit permission
@@ -180,9 +183,12 @@ class DailyReportPolicy
             return true;
         }
 
-        // Department managers can approve reports from their department
-        if ($user->hasRole('department_manager') && $user->department_id === $report->department_id) {
-            return true;
+        // Department managers can approve reports from ANY of their managed departments
+        if ($user->hasRole('department_manager') || $user->isManagerOfAnyDepartment()) {
+            // Check if user is manager of the report's department
+            if ($user->isManagerOfDepartment($report->department_id)) {
+                return true;
+            }
         }
 
         // Check if user is in approval chain

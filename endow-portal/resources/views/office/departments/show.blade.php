@@ -112,6 +112,7 @@
                                     <th>Name</th>
                                     <th>Email</th>
                                     <th>Role</th>
+                                    <th>All Departments</th>
                                     <th>Status</th>
                                     <th class="text-center">Action</th>
                                 </tr>
@@ -138,6 +139,17 @@
                                         <span class="badge bg-info">{{ $user->roles->first()->name }}</span>
                                         @else
                                         <span class="text-muted">No Role</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($user->departments->count() > 1)
+                                            @foreach($user->departments as $dept)
+                                            <span class="badge bg-secondary mb-1" style="font-size: 0.75rem;">
+                                                {{ $dept->name }}
+                                            </span>
+                                            @endforeach
+                                        @else
+                                            <span class="text-muted">{{ $department->name }} only</span>
                                         @endif
                                     </td>
                                     <td>
@@ -201,14 +213,14 @@
                             @foreach($users as $user)
                             <option value="{{ $user->id }}">
                                 {{ $user->name }} - {{ $user->email }}
-                                @if($user->department_id && $user->department_id != $department->id)
-                                (Currently in {{ $user->department->name }})
+                                @if($user->departments->count() > 0)
+                                (Member of: {{ $user->departments->pluck('name')->join(', ') }})
                                 @endif
                             </option>
                             @endforeach
                         </select>
                         <small class="text-muted">
-                            Note: If user is already in another department, they will be moved to this department
+                            Note: Users can be members of multiple departments. This will add them to {{ $department->name }}.
                         </small>
                     </div>
                 </div>

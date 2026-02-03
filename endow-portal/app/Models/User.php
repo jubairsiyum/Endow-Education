@@ -58,11 +58,45 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the department this user belongs to.
+     * Get the department this user belongs to (legacy - single department).
+     * For backward compatibility. Use departments() for multi-department support.
      */
     public function department()
     {
         return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Get all departments this user belongs to (many-to-many).
+     */
+    public function departments()
+    {
+        return $this->belongsToMany(Department::class, 'department_user')
+                    ->withTimestamps();
+    }
+
+    /**
+     * Check if user is a manager of any department.
+     */
+    public function isManagerOfAnyDepartment(): bool
+    {
+        return Department::where('manager_id', $this->id)->exists();
+    }
+
+    /**
+     * Get all departments where this user is the manager.
+     */
+    public function managedDepartments()
+    {
+        return $this->hasMany(Department::class, 'manager_id');
+    }
+
+    /**
+     * Check if user is manager of a specific department.
+     */
+    public function isManagerOfDepartment($departmentId): bool
+    {
+        return $this->managedDepartments()->where('id', $departmentId)->exists();
     }
 
     /**
