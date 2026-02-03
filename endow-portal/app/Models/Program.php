@@ -53,7 +53,8 @@ class Program extends Model
      */
     public function checklistItems()
     {
-        return $this->belongsToMany(ChecklistItem::class, 'checklist_program');
+        return $this->belongsToMany(ChecklistItem::class, 'checklist_program')
+            ->orderBy('checklist_items.order');
     }
 
     /**
