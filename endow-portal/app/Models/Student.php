@@ -116,7 +116,10 @@ class Student extends Model
      */
     public function checklists()
     {
-        return $this->hasMany(StudentChecklist::class);
+        return $this->hasMany(StudentChecklist::class)
+            ->join('checklist_items', 'student_checklists.checklist_item_id', '=', 'checklist_items.id')
+            ->orderBy('checklist_items.order')
+            ->select('student_checklists.*');
     }
 
     /**
