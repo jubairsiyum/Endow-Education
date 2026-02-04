@@ -4,667 +4,746 @@
 @section('breadcrumb', 'Home / Office / Daily Reports / View')
 
 @section('content')
-<link rel="stylesheet" href="{{ asset('css/daily-reports-compact.css') }}">
-<div class="container-fluid daily-reports-container">
-    <div class="row justify-content-center">
-        <div class="col-lg-10">
-            <!-- Header -->
-            <div class="d-flex justify-content-between align-items-start mb-4">
-                <div>
-                    <h2 class="fw-bold mb-2" style="color: #000000;">
-                        <i class="fas fa-file-alt me-2" style="color: #DC143C;"></i>
-                        Daily Report Details
-                    </h2>
-                    <p class="text-muted mb-0">
-                        <i class="fas fa-clock me-1"></i>
-                        Submitted on {{ $dailyReport->created_at->format('M d, Y \a\t h:i A') }}
-                    </p>
-                </div>
-                <div class="d-flex gap-2">
-                    @can('update', $dailyReport)
-                        @if(in_array($dailyReport->status, ['draft', 'submitted']))
-                        <a href="{{ route('office.daily-reports.edit', $dailyReport) }}" class="btn" style="background-color: #DC143C; color: #FFFFFF; border: none; padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;">
-                            <i class="fas fa-edit me-2"></i>Edit
-                        </a>
-                        @endif
-                    @endcan
-                    <a href="{{ route('office.daily-reports.index') }}" class="btn" style="background-color: #F8F9FA; color: #000000; border: 2px solid #E0E0E0; padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;">
-                        <i class="fas fa-arrow-left me-2"></i>Back
-                    </a>
-                </div>
-            </div>
+<style>
+    /* Scoped Daily Report View Styles */
+    .dr-view-page {
+        padding: 1.5rem 0;
+    }
+    
+    .dr-view-page .dr-view-header {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        padding: 1.75rem;
+        border-radius: 12px;
+        color: white;
+        margin-bottom: 1.5rem;
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+    }
+    
+    .dr-view-page .dr-card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        border: 1px solid #e5e7eb;
+        margin-bottom: 1.25rem;
+        overflow: hidden;
+    }
+    
+    .dr-view-page .dr-card-header {
+        background: #f9fafb;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #e5e7eb;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .dr-view-page .dr-card-body {
+        padding: 1.25rem;
+    }
+    
+    .dr-view-page .dr-label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #6b7280;
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .dr-view-page .dr-value {
+        color: #1f2937;
+        font-weight: 500;
+    }
+    
+    .dr-view-page .dr-badge {
+        padding: 0.375rem 0.875rem;
+        border-radius: 6px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+    
+    .dr-view-page .dr-status-draft { background: #f3f4f6; color: #374151; }
+    .dr-view-page .dr-status-submitted { background: #dbeafe; color: #1d4ed8; }
+    .dr-view-page .dr-status-review { background: #fef3c7; color: #92400e; }
+    .dr-view-page .dr-status-approved { background: #d1fae5; color: #065f46; }
+    .dr-view-page .dr-status-rejected { background: #fee2e2; color: #991b1b; }
+    .dr-view-page .dr-status-completed { background: #d1fae5; color: #065f46; }
+    
+    .dr-view-page .dr-priority-urgent { background: #dc3545; color: white; }
+    .dr-view-page .dr-priority-high { background: #fd7e14; color: white; }
+    .dr-view-page .dr-priority-normal { background: #e5e7eb; color: #374151; }
+    .dr-view-page .dr-priority-low { background: #dbeafe; color: #1e40af; }
+    
+    .dr-view-page .dr-btn {
+        padding: 0.5rem 1.25rem;
+        border-radius: 7px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        border: none;
+    }
+    
+    .dr-view-page .dr-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .dr-view-page .dr-btn-primary {
+        background: #dc3545;
+        color: white;
+    }
+    
+    .dr-view-page .dr-btn-primary:hover {
+        background: #c82333;
+        color: white;
+    }
+    
+    .dr-view-page .dr-btn-success {
+        background: #10b981;
+        color: white;
+    }
+    
+    .dr-view-page .dr-btn-danger {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .dr-view-page .dr-btn-secondary {
+        background: #f3f4f6;
+        color: #374151;
+        border: 1px solid #d1d5db;
+    }
+    
+    .dr-view-page .dr-description-box {
+        background: #f9fafb;
+        border-left: 4px solid #dc3545;
+        border-radius: 8px;
+        padding: 1rem;
+        line-height: 1.6;
+    }
+    
+    .dr-view-page .dr-comment-item {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border-left: 3px solid #dc3545;
+    }
+    
+    .dr-view-page .dr-user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dc3545, #c82333);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .dr-view-page .dr-timeline-item {
+        display: flex;
+        gap: 0.75rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .dr-view-page .dr-timeline-item:last-child {
+        border-bottom: none;
+    }
+    
+    .dr-view-page .dr-timeline-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 0.75rem;
+    }
+    
+    .dr-view-page .dr-input,
+    .dr-view-page .dr-textarea {
+        border: 1px solid #d1d5db;
+        border-radius: 7px;
+        padding: 0.625rem 0.875rem;
+        font-size: 0.9375rem;
+        width: 100%;
+        transition: all 0.2s;
+    }
+    
+    .dr-view-page .dr-input:focus,
+    .dr-view-page .dr-textarea:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        outline: none;
+    }
+    
+    .dr-view-page .dr-approval-card {
+        border: 2px solid #10b981;
+        border-radius: 10px;
+        background: #f0fdf4;
+    }
+    
+    .dr-view-page .dr-attachment-item {
+        background: #f9fafb;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 0.875rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        transition: all 0.2s;
+    }
+    
+    .dr-view-page .dr-attachment-item:hover {
+        background: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    }
+    
+    @media (max-width: 768px) {
+        .dr-view-page .dr-view-header {
+            padding: 1.25rem;
+        }
+        .dr-view-page .dr-card-body {
+            padding: 1rem;
+        }
+    }
+</style>
 
-            <div class="row">
-                <!-- Main Content -->
-                <div class="col-lg-8">
-                    <!-- Report Info Card -->
-                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 1rem;">
-                        <div class="card-header border-0 p-4" style="background: linear-gradient(135deg, #DC143C 0%, #8B0000 100%); border-radius: 1rem 1rem 0 0;">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="mb-0 fw-bold" style="color: #FFFFFF;">
-                                    <i class="fas fa-info-circle me-2"></i>
-                                    Report Information
-                                </h5>
+<div class="dr-view-page">
+<div class="container-fluid px-3">
+    
+    <!-- Header -->
+    <div class="dr-view-header">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <h3 class="mb-2 fw-bold">📄 Daily Report Details</h3>
+                <p class="mb-0 opacity-90" style="font-size: 0.9rem;">
+                    <i class="fas fa-clock me-1"></i> Submitted {{ $dailyReport->created_at->diffForHumans() }}
+                </p>
+            </div>
+            <div class="d-flex gap-2 flex-wrap">
+                @can('update', $dailyReport)
+                    @if(in_array($dailyReport->status, ['draft', 'submitted']))
+                    <a href="{{ route('office.daily-reports.edit', $dailyReport) }}" class="dr-btn dr-btn-primary">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    @endif
+                @endcan
+                <a href="{{ route('office.daily-reports.index') }}" class="dr-btn dr-btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-lg-8">
+            
+            <!-- Report Info Card -->
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
+                        <i class="fas fa-file-alt me-2" style="color: #dc3545;"></i>
+                        Report Information
+                    </h6>
+                    @php
+                        $statusConfig = [
+                            'draft' => ['icon' => 'fa-file', 'class' => 'dr-status-draft', 'text' => 'Draft'],
+                            'submitted' => ['icon' => 'fa-paper-plane', 'class' => 'dr-status-submitted', 'text' => 'Submitted'],
+                            'pending_review' => ['icon' => 'fa-clock', 'class' => 'dr-status-review', 'text' => 'Pending Review'],
+                            'in_progress' => ['icon' => 'fa-tasks', 'class' => 'dr-status-review', 'text' => 'In Progress'],
+                            'review' => ['icon' => 'fa-search', 'class' => 'dr-status-review', 'text' => 'Under Review'],
+                            'approved' => ['icon' => 'fa-check-circle', 'class' => 'dr-status-approved', 'text' => 'Approved'],
+                            'rejected' => ['icon' => 'fa-times-circle', 'class' => 'dr-status-rejected', 'text' => 'Rejected'],
+                            'completed' => ['icon' => 'fa-check-double', 'class' => 'dr-status-completed', 'text' => 'Completed'],
+                            'cancelled' => ['icon' => 'fa-ban', 'class' => 'dr-status-draft', 'text' => 'Cancelled']
+                        ];
+                        $currentStatus = $statusConfig[$dailyReport->status] ?? $statusConfig['draft'];
+                    @endphp
+                    <span class="dr-badge {{ $currentStatus['class'] }}">
+                        <i class="fas {{ $currentStatus['icon'] }}"></i>{{ $currentStatus['text'] }}
+                    </span>
+                </div>
+                <div class="dr-card-body">
+                    <div class="row g-3">
+                        <!-- Department -->
+                        <div class="col-md-6">
+                            <span class="dr-label">Department</span>
+                            <div class="dr-value">
+                                <i class="fas fa-building me-2" style="color: #dc3545;"></i>
+                                {{ $dailyReport->department_name }}
+                            </div>
+                        </div>
+                        
+                        <!-- Report Date -->
+                        <div class="col-md-6">
+                            <span class="dr-label">Report Date</span>
+                            <div class="dr-value">
+                                <i class="fas fa-calendar me-2" style="color: #dc3545;"></i>
+                                {{ $dailyReport->report_date->format('M d, Y') }}
+                            </div>
+                        </div>
+                        
+                        <!-- Priority -->
+                        @if(isset($dailyReport->priority))
+                        <div class="col-md-6">
+                            <span class="dr-label">Priority Level</span>
+                            <div>
                                 @php
-                                    $statusConfig = [
-                                        'draft' => ['icon' => 'fa-file', 'color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.1)', 'text' => 'Draft'],
-                                        'submitted' => ['icon' => 'fa-paper-plane', 'color' => '#0d6efd', 'bg' => 'rgba(13, 110, 253, 0.1)', 'text' => 'Submitted'],
-                                        'pending_review' => ['icon' => 'fa-clock', 'color' => '#ffc107', 'bg' => 'rgba(255, 193, 7, 0.1)', 'text' => 'Pending Review'],
-                                        'in_progress' => ['icon' => 'fa-tasks', 'color' => '#17a2b8', 'bg' => 'rgba(23, 162, 184, 0.1)', 'text' => 'In Progress'],
-                                        'review' => ['icon' => 'fa-search', 'color' => '#fd7e14', 'bg' => 'rgba(253, 126, 20, 0.1)', 'text' => 'Under Review'],
-                                        'approved' => ['icon' => 'fa-check-circle', 'color' => '#28a745', 'bg' => 'rgba(40, 167, 69, 0.1)', 'text' => 'Approved'],
-                                        'rejected' => ['icon' => 'fa-times-circle', 'color' => '#dc3545', 'bg' => 'rgba(220, 53, 69, 0.1)', 'text' => 'Rejected'],
-                                        'completed' => ['icon' => 'fa-check-double', 'color' => '#198754', 'bg' => 'rgba(25, 135, 84, 0.1)', 'text' => 'Completed'],
-                                        'cancelled' => ['icon' => 'fa-ban', 'color' => '#6c757d', 'bg' => 'rgba(108, 117, 125, 0.1)', 'text' => 'Cancelled']
+                                    $priorityConfig = [
+                                        'urgent' => ['icon' => 'fa-exclamation-circle', 'class' => 'dr-priority-urgent', 'text' => 'URGENT'],
+                                        'high' => ['icon' => 'fa-arrow-up', 'class' => 'dr-priority-high', 'text' => 'HIGH'],
+                                        'normal' => ['icon' => 'fa-equals', 'class' => 'dr-priority-normal', 'text' => 'NORMAL'],
+                                        'low' => ['icon' => 'fa-arrow-down', 'class' => 'dr-priority-low', 'text' => 'LOW']
                                     ];
-                                    $currentStatus = $statusConfig[$dailyReport->status] ?? $statusConfig['draft'];
+                                    $priorityBadge = $priorityConfig[$dailyReport->priority] ?? $priorityConfig['normal'];
                                 @endphp
-                                <span class="badge px-3 py-2" style="background-color: {{ $currentStatus['bg'] }}; color: {{ $currentStatus['color'] }}; border: 2px solid {{ $currentStatus['color'] }}; font-size: 0.9rem; font-weight: 600;">
-                                    <i class="fas {{ $currentStatus['icon'] }} me-2"></i>{{ $currentStatus['text'] }}
+                                <span class="dr-badge {{ $priorityBadge['class'] }}">
+                                    <i class="fas {{ $priorityBadge['icon'] }}"></i>{{ $priorityBadge['text'] }}
                                 </span>
                             </div>
                         </div>
-                        <div class="card-body p-4">
-                            <!-- Priority Badge -->
-                            @if(isset($dailyReport->priority))
-                            <div class="mb-4">
-                                <label class="text-muted small fw-semibold mb-2">PRIORITY LEVEL</label>
-                                <div>
-                                    @php
-                                        $priorityConfig = [
-                                            'urgent' => ['icon' => 'fa-exclamation-circle', 'color' => '#FFFFFF', 'bg' => '#dc3545', 'text' => 'URGENT'],
-                                            'high' => ['icon' => 'fa-arrow-up', 'color' => '#FFFFFF', 'bg' => '#fd7e14', 'text' => 'HIGH'],
-                                            'normal' => ['icon' => 'fa-equals', 'color' => '#000000', 'bg' => '#E0E0E0', 'text' => 'NORMAL'],
-                                            'low' => ['icon' => 'fa-arrow-down', 'color' => '#000000', 'bg' => '#cfe2ff', 'text' => 'LOW']
-                                        ];
-                                        $priorityBadge = $priorityConfig[$dailyReport->priority] ?? $priorityConfig['normal'];
-                                    @endphp
-                                    <span class="badge px-3 py-2" style="background-color: {{ $priorityBadge['bg'] }}; color: {{ $priorityBadge['color'] }}; font-size: 0.85rem; font-weight: 700; border-radius: 0.5rem;">
-                                        <i class="fas {{ $priorityBadge['icon'] }} me-2"></i>{{ $priorityBadge['text'] }}
-                                    </span>
-                                </div>
-                            </div>
-                            @endif
-
-                            <!-- Department -->
-                            <div class="mb-4">
-                                <label class="text-muted small fw-semibold mb-2">DEPARTMENT</label>
-                                <div>
-                                    <span class="badge px-3 py-2" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; font-size: 0.9rem; border-radius: 0.5rem;">
-                                        <i class="fas fa-building me-2"></i>
-                                        {{ $dailyReport->department_name }}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Report Date -->
-                            <div class="mb-4">
-                                <label class="text-muted small fw-semibold mb-2">REPORT DATE</label>
-                                <div class="fw-semibold" style="color: #000000;">
-                                    <i class="fas fa-calendar me-2" style="color: #DC143C;"></i>
-                                    {{ $dailyReport->report_date->format('l, F d, Y') }}
-                                </div>
-                            </div>
-
-                            <!-- Title -->
-                            <div class="mb-4">
-                                <label class="text-muted small fw-semibold mb-2">TITLE</label>
-                                <div class="fw-semibold fs-5" style="color: #000000;">
-                                    {{ $dailyReport->title }}
-                                </div>
-                            </div>
-
-                            <!-- Description -->
-                            <div class="mb-0">
-                                <label class="text-muted small fw-semibold mb-2">DESCRIPTION</label>
-                                <div class="p-4 rounded" style="background-color: #F8F9FA; border-left: 4px solid #DC143C;">
-                                    {!! $dailyReport->description !!}
-                                </div>
-                            </div>
-
-                            <!-- Tags -->
-                            @if(isset($dailyReport->tags) && !empty($dailyReport->tags))
-                            <div class="mt-4">
-                                <label class="text-muted small fw-semibold mb-2">TAGS</label>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @foreach(explode(',', $dailyReport->tags) as $tag)
-                                    <span class="badge px-3 py-2" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; font-size: 0.85rem; border-radius: 1rem;">
-                                        <i class="fas fa-tag me-1"></i>{{ trim($tag) }}
-                                    </span>
-                                    @endforeach
-                                </div>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
-
-                    <!-- Approval/Rejection Actions -->
-                    @if($dailyReport->status === 'pending_review' || $dailyReport->status === 'submitted')
-                        @can('approve', $dailyReport)
-                        <div class="card border-0 shadow-sm mb-4" style="border-radius: 1rem; border-left: 4px solid #28a745 !important;">
-                            <div class="card-body p-4">
-                                <h5 class="fw-bold mb-3" style="color: #000000;">
-                                    <i class="fas fa-user-check me-2" style="color: #28a745;"></i>
-                                    Approval Actions
-                                </h5>
-                                <p class="text-muted mb-4">Review this report and take appropriate action</p>
-                                
-                                <div class="row g-3">
-                                    <div class="col-md-6">
-                                        <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST" class="h-100">
-                                            @csrf
-                                            <div class="form-group mb-3">
-                                                <label class="form-label fw-semibold">Approval Comment <span class="text-muted">(Optional)</span></label>
-                                                <textarea name="comment" class="form-control" rows="3" placeholder="Add approval comments..." style="border: 2px solid #E0E0E0; border-radius: 0.5rem;"></textarea>
-                                            </div>
-                                            <button type="submit" class="btn w-100" style="background-color: #28a745; color: #FFFFFF; border: none; padding: 0.75rem; border-radius: 0.5rem; font-weight: 600;">
-                                                <i class="fas fa-check-circle me-2"></i>Approve Report
-                                            </button>
-                                        </form>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST" class="h-100">
-                                            @csrf
-                                            <div class="form-group mb-3">
-                                                <label class="form-label fw-semibold">Rejection Reason <span style="color: #dc3545;">*</span></label>
-                                                <textarea name="comment" class="form-control" rows="3" placeholder="Explain why this report is rejected..." required style="border: 2px solid #E0E0E0; border-radius: 0.5rem;"></textarea>
-                                            </div>
-                                            <button type="submit" class="btn w-100" style="background-color: #dc3545; color: #FFFFFF; border: none; padding: 0.75rem; border-radius: 0.5rem; font-weight: 600;">
-                                                <i class="fas fa-times-circle me-2"></i>Reject Report
-                                            </button>
-                                        </form>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        @endcan
-                    @endif
-
-                    <!-- Comments Section -->
-                    @if(isset($dailyReport->comments))
-                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 1rem;">
-                        <div class="card-header border-0 p-4" style="background-color: #F8F9FA; border-radius: 1rem 1rem 0 0;">
-                            <h5 class="mb-0 fw-bold" style="color: #000000;">
-                                <i class="fas fa-comments me-2" style="color: #DC143C;"></i>
-                                Comments <span class="badge" style="background-color: #DC143C; color: #FFFFFF;">{{ $dailyReport->comments->count() }}</span>
-                            </h5>
-                        </div>
-                        <div class="card-body p-4">
-                            @if($dailyReport->comments->count() > 0)
-                                @foreach($dailyReport->comments as $comment)
-                                <div class="d-flex gap-3 mb-4 pb-4 border-bottom">
-                                    <div>
-                                        <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold" style="width: 45px; height: 45px; background-color: #DC143C; color: #FFFFFF;">
-                                            {{ strtoupper(substr($comment->user->name ?? 'U', 0, 1)) }}
-                                        </div>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="d-flex justify-content-between align-items-start mb-2">
-                                            <div>
-                                                <h6 class="mb-0 fw-semibold" style="color: #000000;">{{ $comment->user->name ?? 'Unknown User' }}</h6>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-clock me-1"></i>
-                                                    {{ $comment->created_at->diffForHumans() }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <div class="p-3 rounded" style="background-color: #F8F9FA; border-left: 3px solid #DC143C;">
-                                            {{ $comment->comment }}
-                                        </div>
-                                    </div>
-                                </div>
+                        @endif
+                        
+                        <!-- Tags -->
+                        @if(isset($dailyReport->tags) && !empty($dailyReport->tags))
+                        <div class="col-md-6">
+                            <span class="dr-label">Tags</span>
+                            <div class="d-flex flex-wrap gap-1">
+                                @foreach(explode(',', $dailyReport->tags) as $tag)
+                                <span class="badge" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.625rem; border-radius: 4px;">
+                                    <i class="fas fa-tag me-1"></i>{{ trim($tag) }}
+                                </span>
                                 @endforeach
-                            @else
-                                <p class="text-muted text-center mb-0">
-                                    <i class="fas fa-inbox me-2"></i>No comments yet
-                                </p>
-                            @endif
-
-                            <!-- Add Comment Form -->
-                            @if(in_array($dailyReport->status, ['submitted', 'pending_review', 'in_progress', 'review']))
-                            <form action="{{ route('office.daily-reports.comments', $dailyReport) }}" method="POST" class="mt-4">
-                                @csrf
-                                <div class="form-group">
-                                    <label class="form-label fw-semibold">Add a Comment</label>
-                                    <textarea name="comment" class="form-control mb-3" rows="3" placeholder="Share your thoughts..." required style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;"></textarea>
-                                </div>
-                                <button type="submit" class="btn" style="background-color: #DC143C; color: #FFFFFF; border: none; padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;">
-                                    <i class="fas fa-paper-plane me-2"></i>Post Comment
-                                </button>
-                            </form>
-                            @endif
+                            </div>
+                        </div>
+                        @endif
+                        
+                        <!-- Title -->
+                        <div class="col-12">
+                            <span class="dr-label">Title</span>
+                            <div class="dr-value fs-5 fw-bold">
+                                {{ $dailyReport->title }}
+                            </div>
+                        </div>
+                        
+                        <!-- Description -->
+                        <div class="col-12">
+                            <span class="dr-label">Description</span>
+                            <div class="dr-description-box">
+                                {!! $dailyReport->description !!}
+                            </div>
                         </div>
                     </div>
-                    @endif
+                </div>
+            </div>
 
-                    <!-- Attachments Section -->
-                    @if(isset($dailyReport->attachments))
-                    <div class="card border-0 shadow-sm mb-4" style="border-radius: 1rem;">
-                        <div class="card-header border-0 p-4" style="background-color: #F8F9FA; border-radius: 1rem 1rem 0 0;">
-                            <h5 class="mb-0 fw-bold" style="color: #000000;">
-                                <i class="fas fa-paperclip me-2" style="color: #DC143C;"></i>
-                                Attachments <span class="badge" style="background-color: #DC143C; color: #FFFFFF;">{{ $dailyReport->attachments->count() }}</span>
-                            </h5>
-                        </div>
-                        <div class="card-body p-4">
-                            @if($dailyReport->attachments->count() > 0)
-                                <div class="list-group list-group-flush">
-                                    @foreach($dailyReport->attachments as $attachment)
-                                    <div class="list-group-item border-0 px-0 py-3 d-flex justify-content-between align-items-center">
-                                        <div class="d-flex align-items-center gap-3">
-                                            <div class="text-center" style="width: 50px;">
-                                                <i class="fas fa-file-alt fa-2x" style="color: #DC143C;"></i>
-                                            </div>
-                                            <div>
-                                                <h6 class="mb-1 fw-semibold" style="color: #000000;">{{ $attachment->file_name ?? 'Document' }}</h6>
-                                                <small class="text-muted">
-                                                    <i class="fas fa-hdd me-1"></i>{{ $attachment->file_size ?? 'N/A' }}
-                                                    <span class="mx-2">•</span>
-                                                    <i class="fas fa-clock me-1"></i>{{ $attachment->created_at->diffForHumans() }}
-                                                </small>
-                                            </div>
-                                        </div>
-                                        <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="btn btn-sm" style="background-color: rgba(220, 20, 60, 0.1); color: #DC143C; border: none; padding: 0.4rem 1rem; border-radius: 0.5rem; font-weight: 600;">
-                                            <i class="fas fa-download me-1"></i>Download
-                                        </a>
-                                    </div>
-                                    @endforeach
-                                </div>
-                            @else
-                                <p class="text-muted text-center mb-0">
-                                    <i class="fas fa-inbox me-2"></i>No attachments
-                                </p>
-                            @endif
-
-                            <!-- Upload Attachment Form -->
-                            @if(in_array($dailyReport->status, ['draft', 'submitted', 'pending_review']))
-                                @can('update', $dailyReport)
-                                <form action="{{ route('office.daily-reports.attachments', $dailyReport) }}" method="POST" enctype="multipart/form-data" class="mt-4">
+            <!-- Manager Approval Actions -->
+            @if($dailyReport->status === 'pending_review' || $dailyReport->status === 'submitted')
+                @can('approve', $dailyReport)
+                <div class="dr-approval-card dr-card">
+                    <div class="dr-card-header" style="background: #f0fdf4; border-color: #bbf7d0;">
+                        <h6 class="mb-0 fw-bold" style="color: #15803d;">
+                            <i class="fas fa-user-check me-2"></i>
+                            Manager Review Actions
+                        </h6>
+                        <span class="badge" style="background: #15803d; color: white; font-size: 0.75rem;">Action Required</span>
+                    </div>
+                    <div class="dr-card-body">
+                        <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                            <i class="fas fa-info-circle me-1"></i>Review this report and approve or reject with your feedback
+                        </p>
+                        
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST">
                                     @csrf
-                                    <div class="form-group">
-                                        <label class="form-label fw-semibold">Add Attachment</label>
-                                        <input type="file" name="attachment" class="form-control mb-3" required style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;">
-                                        <small class="text-muted">Supported formats: PDF, DOC, DOCX, XLS, XLSX, JPG, PNG (Max: 10MB)</small>
-                                    </div>
-                                    <button type="submit" class="btn mt-2" style="background-color: #DC143C; color: #FFFFFF; border: none; padding: 0.6rem 1.5rem; border-radius: 0.5rem; font-weight: 600;">
-                                        <i class="fas fa-upload me-2"></i>Upload File
+                                    <label class="dr-label">Approval Comment (Optional)</label>
+                                    <textarea name="comment" class="dr-textarea mb-3" rows="3" placeholder="Add approval comments..."></textarea>
+                                    <button type="submit" class="dr-btn dr-btn-success w-100">
+                                        <i class="fas fa-check-circle"></i>Approve Report
                                     </button>
                                 </form>
-                                @endcan
-                            @endif
-                        </div>
-                    </div>
-                    @endif
-
-                    <!-- Review History Section -->
-                    @php
-                        $reviews = $dailyReport->reviews;
-                        // Show reviews if: report is completed OR user is the submitter
-                        $canViewReviews = $dailyReport->isCompleted() || $dailyReport->submitted_by === auth()->id() || auth()->user()->hasAnyRole(['Super Admin', 'Admin', 'department_manager', 'office_admin']);
-                    @endphp
-
-                    @if($reviews->isNotEmpty() && $canViewReviews)
-                    <div class="card shadow-sm border-0 mb-4">
-                        <div class="card-header-custom bg-light">
-                            <h5 class="mb-0">
-                                <i class="fas fa-comments text-primary me-2"></i>
-                                Review History ({{ $reviews->count() }})
-                            </h5>
-                        </div>
-                        <div class="card-body-custom">
-                            @if(!$dailyReport->isCompleted() && $dailyReport->submitted_by === auth()->id())
-                            <div class="alert alert-warning border-0 mb-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <small><strong>Note:</strong> Your manager has provided feedback below. Please review and update your report accordingly. This report is not yet marked as completed.</small>
                             </div>
-                            @endif
-
-                            <!-- Timeline Style Reviews -->
-                            <div class="review-timeline">
-                                @foreach($reviews as $review)
-                                <div class="review-item {{ $review->marked_as_completed ? 'review-completed' : 'review-instruction' }} mb-4">
-                                    <div class="d-flex gap-3">
-                                        <!-- Reviewer Avatar -->
-                                        <div class="flex-shrink-0">
-                                            <div class="user-avatar" style="width: 48px; height: 48px; font-size: 18px;">
-                                                @if($review->reviewer->photo_path)
-                                                    <img src="{{ asset('storage/' . $review->reviewer->photo_path) }}" alt="{{ $review->reviewer->name }}">
-                                                @else
-                                                    {{ strtoupper(substr($review->reviewer->name, 0, 1)) }}
-                                                @endif
-                                            </div>
-                                        </div>
-
-                                        <!-- Review Content -->
-                                        <div class="flex-grow-1">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <div>
-                                                    <h6 class="mb-0 fw-semibold">{{ $review->reviewer->name }}</h6>
-                                                    <small class="text-muted">
-                                                        <i class="fas fa-clock me-1"></i>
-                                                        {{ $review->reviewed_at->format('M d, Y \a\t h:i A') }}
-                                                        <span class="text-muted">•</span>
-                                                        {{ $review->reviewed_at->diffForHumans() }}
-                                                    </small>
-                                                </div>
-                                                @if($review->marked_as_completed)
-                                                <span class="badge bg-success">
-                                                    <i class="fas fa-check-circle me-1"></i>Marked as Completed
-                                                </span>
-                                                @else
-                                                <span class="badge bg-warning text-dark">
-                                                    <i class="fas fa-edit me-1"></i>Instructions
-                                                </span>
-                                                @endif
-                                            </div>
-
-                                            @if($review->comment)
-                                            <div class="review-comment p-3 rounded {{ $review->marked_as_completed ? 'bg-success-subtle' : 'bg-warning-subtle' }}" style="white-space: pre-wrap; border-left: 3px solid {{ $review->marked_as_completed ? '#198754' : '#ffc107' }};">
-                                                {{ $review->comment }}
-                                            </div>
-                                            @else
-                                            <div class="review-comment p-3 rounded bg-light" style="font-style: italic; color: #6c757d;">
-                                                No comment provided
-                                            </div>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
-                                @endforeach
+                            <div class="col-md-6">
+                                <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST">
+                                    @csrf
+                                    <label class="dr-label">Rejection Reason <span style="color: #dc3545;">*</span></label>
+                                    <textarea name="comment" class="dr-textarea mb-3" rows="3" placeholder="Explain reason for rejection..." required></textarea>
+                                    <button type="submit" class="dr-btn dr-btn-danger w-100">
+                                        <i class="fas fa-times-circle"></i>Reject Report
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
-                    @endif
-
-                    <!-- Review Form (for managers/supervisors on submitted reports) -->
-                    @can('review', $dailyReport)
-                    @if($dailyReport->isAwaitingReview())
-                    <div class="card shadow-sm border-0 border-start border-primary border-4">
-                        <div class="card-header-custom bg-light">
-                            <h5 class="mb-0">
-                                <i class="fas fa-check-circle text-primary me-2"></i>
-                                Review This Report
-                            </h5>
-                        </div>
-                        <div class="card-body-custom">
-                            <div class="alert alert-info border-0 mb-3">
-                                <i class="fas fa-info-circle me-2"></i>
-                                <small><strong>Organizational Review:</strong> You are reviewing this report as a supervisor/manager. The employee who submitted this report will receive your feedback.</small>
-                            </div>
-                            <form action="{{ route('office.daily-reports.review', $dailyReport) }}" method="POST">
-                                @csrf
-
-                                <div class="mb-3">
-                                    <label for="review_comment" class="form-label">Review Comment (Optional)</label>
-                                    <textarea name="review_comment"
-                                              id="review_comment"
-                                              rows="4"
-                                              class="form-control @error('review_comment') is-invalid @enderror"
-                                              placeholder="Add feedback, suggestions, or acknowledgment...">{{ old('review_comment') }}</textarea>
-                                    @error('review_comment')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <small class="text-muted">Provide feedback, instructions, or acknowledgment for the submitted report</small>
-                                </div>
-
-                                <div class="mb-3">
-                                    <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" name="mark_as_completed" id="mark_as_completed" value="1" {{ old('mark_as_completed') ? 'checked' : '' }}>
-                                        <label class="form-check-label" for="mark_as_completed">
-                                            <strong>Mark as Completed</strong>
-                                        </label>
-                                    </div>
-                                    <small class="text-muted">Check this to mark the report as completed. If unchecked, your comment will be sent as instructions to the reporting user, and they can continue updating the report.</small>
-                                </div>
-
-                                <div class="alert alert-warning border-0 mb-3">
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
-                                    <small><strong>Review Guidelines:</strong></small>
-                                    <ul class="mb-0 mt-2" style="font-size: 0.85rem;">
-                                        <li><strong>Mark as Completed:</strong> Report is finalized and locked from further edits</li>
-                                        <li><strong>Don't Mark as Completed:</strong> Employee can continue updating based on your instructions</li>
-                                        <li><strong>Note:</strong> You cannot review your own reports - only reports submitted by your team members</li>
-                                    </ul>
-                                </div>
-
-                                <button type="submit" class="btn btn-success">
-                                    <i class="fas fa-check me-2"></i>Submit Review
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    @elseif($dailyReport->isDraft() && $dailyReport->submitted_by === auth()->id())
-                    <div class="card shadow-sm border-0 border-start border-warning border-4">
-                        <div class="card-header-custom bg-light">
-                            <h5 class="mb-0">
-                                <i class="fas fa-info-circle text-warning me-2"></i>
-                                Submit for Review
-                            </h5>
-                        </div>
-                        <div class="card-body-custom">
-                            <p class="mb-3">This report is in <strong>Draft</strong> status. Once you're ready, submit it for review by your manager/supervisor.</p>
-                            <form action="{{ route('office.daily-reports.submit', $dailyReport) }}" method="POST">
-                                @csrf
-                                <button type="submit" class="btn btn-primary">
-                                    <i class="fas fa-paper-plane me-2"></i>Submit for Manager Review
-                                </button>
-                            </form>
-                        </div>
-                    </div>
-                    @endif
-                    @endcan
-                    
-                    @if($dailyReport->submitted_by === auth()->id() && $dailyReport->isAwaitingReview())
-                    <div class="alert alert-info border-0">
-                        <i class="fas fa-hourglass-half me-2"></i>
-                        <strong>Awaiting Manager Review:</strong> Your report has been submitted and is pending review by your supervisor.
-                    </div>
-                    @endif
                 </div>
+                @endcan
+            @endif
 
-                <!-- Sidebar -->
-                <div class="col-lg-4">
-                    <!-- Submitted By Card -->
-                    <div class="card shadow-sm border-0 mb-3">
-                        <div class="card-header-custom bg-light">
-                            <h6 class="mb-0">
-                                <i class="fas fa-user me-2"></i>
-                                Submitted By
-                            </h6>
-                        </div>
-                        <div class="card-body-custom">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="user-avatar" style="width: 48px; height: 48px; font-size: 18px;">
-                                    @if($dailyReport->submittedBy->photo_path)
-                                        <img src="{{ asset('storage/' . $dailyReport->submittedBy->photo_path) }}" alt="{{ $dailyReport->submittedBy->name }}">
-                                    @else
-                                        {{ strtoupper(substr($dailyReport->submittedBy->name, 0, 1)) }}
-                                    @endif
-                                </div>
-                                <div>
-                                    <div class="fw-semibold text-dark">{{ $dailyReport->submittedBy->name }}</div>
-                                    <small class="text-muted">{{ $dailyReport->submittedBy->email }}</small>
-                                    <div class="mt-1">
-                                        <span class="badge-custom badge-secondary-custom">
-                                            {{ $dailyReport->submittedBy->roles->first()->name ?? 'User' }}
-                                        </span>
-                                    </div>
-                                </div>
+            <!-- Comments Section -->
+            @if(isset($dailyReport->comments))
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
+                        <i class="fas fa-comments me-2" style="color: #dc3545;"></i>
+                        Comments
+                    </h6>
+                    <span class="dr-badge" style="background: #dc3545; color: white;">{{ $dailyReport->comments->count() }}</span>
+                </div>
+                <div class="dr-card-body">
+                    @if($dailyReport->comments->count() > 0)
+                        @foreach($dailyReport->comments as $comment)
+                        <div class="d-flex gap-3 mb-3">
+                            <div class="dr-user-avatar">
+                                {{ strtoupper(substr($comment->user->name ?? 'U', 0, 1)) }}
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Reviewed By Card (if reviewed) -->
-                    @if($dailyReport->isReviewed() && $dailyReport->reviewedBy)
-                    <div class="card shadow-sm border-0 mb-3">
-                        <div class="card-header-custom bg-light">
-                            <h6 class="mb-0">
-                                <i class="fas fa-user-check me-2"></i>
-                                Reviewed By
-                            </h6>
-                        </div>
-                        <div class="card-body-custom">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="user-avatar" style="width: 48px; height: 48px; font-size: 18px;">
-                                    @if($dailyReport->reviewedBy->photo_path)
-                                        <img src="{{ asset('storage/' . $dailyReport->reviewedBy->photo_path) }}" alt="{{ $dailyReport->reviewedBy->name }}">
-                                    @else
-                                        {{ strtoupper(substr($dailyReport->reviewedBy->name, 0, 1)) }}
-                                    @endif
-                                </div>
-                                <div>
-                                    <div class="fw-semibold text-dark">{{ $dailyReport->reviewedBy->name }}</div>
-                                    <small class="text-muted">{{ $dailyReport->reviewedBy->email }}</small>
-                                    <div class="mt-1">
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold" style="font-size: 0.9375rem;">{{ $comment->user->name ?? 'Unknown User' }}</h6>
                                         <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>
-                                            {{ $dailyReport->reviewed_at->diffForHumans() }}
+                                            <i class="fas fa-clock me-1"></i>{{ $comment->created_at->diffForHumans() }}
                                         </small>
                                     </div>
                                 </div>
+                                <div class="dr-comment-item">
+                                    {{ $comment->comment }}
+                                </div>
                             </div>
+                        </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted text-center mb-0">
+                            <i class="fas fa-inbox me-2"></i>No comments yet
+                        </p>
+                    @endif
+
+                    <!-- Add Comment Form -->
+                    @if(in_array($dailyReport->status, ['submitted', 'pending_review', 'in_progress', 'review']))
+                    <form action="{{ route('office.daily-reports.comments', $dailyReport) }}" method="POST" class="mt-4">
+                        @csrf
+                        <label class="dr-label">Add a Comment</label>
+                        <textarea name="comment" class="dr-textarea mb-3" rows="3" placeholder="Share your thoughts..." required></textarea>
+                        <button type="submit" class="dr-btn dr-btn-primary">
+                            <i class="fas fa-paper-plane"></i>Post Comment
+                        </button>
+                    </form>
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            <!-- Attachments Section -->
+            @if(isset($dailyReport->attachments))
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
+                        <i class="fas fa-paperclip me-2" style="color: #dc3545;"></i>
+                        Attachments
+                    </h6>
+                    <span class="dr-badge" style="background: #dc3545; color: white;">{{ $dailyReport->attachments->count() }}</span>
+                </div>
+                <div class="dr-card-body">
+                    @if($dailyReport->attachments->count() > 0)
+                        @foreach($dailyReport->attachments as $attachment)
+                        <div class="dr-attachment-item">
+                            <div class="d-flex align-items-center gap-3">
+                                <i class="fas fa-file-alt fa-2x" style="color: #dc3545;"></i>
+                                <div>
+                                    <h6 class="mb-0 fw-semibold" style="font-size: 0.9rem;">{{ $attachment->file_name ?? 'Document' }}</h6>
+                                    <small class="text-muted">
+                                        <i class="fas fa-hdd me-1"></i>{{ $attachment->file_size ?? 'N/A' }} • 
+                                        <i class="fas fa-clock me-1"></i>{{ $attachment->created_at->diffForHumans() }}
+                                    </small>
+                                </div>
+                            </div>
+                            <a href="{{ asset('storage/' . $attachment->file_path) }}" target="_blank" class="dr-btn dr-btn-secondary" style="font-size: 0.8125rem; padding: 0.375rem 0.875rem;">
+                                <i class="fas fa-download"></i>Download
+                            </a>
+                        </div>
+                        @endforeach
+                    @else
+                        <p class="text-muted text-center mb-0">
+                            <i class="fas fa-inbox me-2"></i>No attachments
+                        </p>
+                    @endif
+
+                    <!-- Upload Attachment Form -->
+                    @if(in_array($dailyReport->status, ['draft', 'submitted', 'pending_review']))
+                        @can('update', $dailyReport)
+                        <form action="{{ route('office.daily-reports.attachments', $dailyReport) }}" method="POST" enctype="multipart/form-data" class="mt-3">
+                            @csrf
+                            <label class="dr-label">Add Attachment</label>
+                            <input type="file" name="attachment" class="dr-input mb-2" required>
+                            <small class="text-muted d-block mb-3">PDF, DOC, XLS, JPG, PNG (Max: 10MB)</small>
+                            <button type="submit" class="dr-btn dr-btn-primary">
+                                <i class="fas fa-upload"></i>Upload File
+                            </button>
+                        </form>
+                        @endcan
+                    @endif
+                </div>
+            </div>
+            @endif
+
+            <!-- Review History Section (Keeping existing functionality) -->
+            @php
+                $reviews = $dailyReport->reviews;
+                $canViewReviews = $dailyReport->isCompleted() || $dailyReport->submitted_by === auth()->id() || auth()->user()->hasAnyRole(['Super Admin', 'Admin', 'department_manager', 'office_admin']);
+            @endphp
+
+            @if($reviews->isNotEmpty() && $canViewReviews)
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
+                        <i class="fas fa-history me-2" style="color: #dc3545;"></i>
+                        Review History
+                    </h6>
+                    <span class="dr-badge" style="background: #dc3545; color: white;">{{ $reviews->count() }}</span>
+                </div>
+                <div class="dr-card-body">
+                    @if(!$dailyReport->isCompleted() && $dailyReport->submitted_by === auth()->id())
+                    <div class="alert alert-warning border-0 mb-3" style="font-size: 0.875rem;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Note:</strong> Your manager has provided feedback below. Please review and update your report accordingly.
+                    </div>
+                    @endif
+
+                    @foreach($reviews as $review)
+                    <div class="mb-3 pb-3 border-bottom">
+                        <div class="d-flex gap-3">
+                            <div class="dr-user-avatar">
+                                {{ strtoupper(substr($review->reviewer->name, 0, 1)) }}
+                            </div>
+                            <div class="flex-grow-1">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="mb-0 fw-semibold">{{ $review->reviewer->name }}</h6>
+                                        <small class="text-muted">
+                                            <i class="fas fa-clock me-1"></i>{{ $review->reviewed_at->format('M d, Y h:i A') }} • {{ $review->reviewed_at->diffForHumans() }}
+                                        </small>
+                                    </div>
+                                    @if($review->marked_as_completed)
+                                    <span class="dr-badge dr-status-completed">
+                                        <i class="fas fa-check-circle"></i>Completed
+                                    </span>
+                                    @else
+                                    <span class="dr-badge dr-status-review">
+                                        <i class="fas fa-edit"></i>Instructions
+                                    </span>
+                                    @endif
+                                </div>
+                                @if($review->comment)
+                                <div class="dr-comment-item" style="border-left-color: {{ $review->marked_as_completed ? '#10b981' : '#f59e0b' }}; background: {{ $review->marked_as_completed ? '#f0fdf4' : '#fffbeb' }};">
+                                    {{ $review->comment }}
+                                </div>
+                                @else
+                                <p class="text-muted fst-italic mb-0" style="font-size: 0.875rem;">No comment provided</p>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+            @endif
+
+            <!-- Review Form (for managers/supervisors on submitted reports) -->
+            @can('review', $dailyReport)
+            @if($dailyReport->isAwaitingReview())
+            <div class="dr-card" style="border: 2px solid #3b82f6;">
+                <div class="dr-card-header" style="background: #eff6ff; border-color: #bfdbfe;">
+                    <h6 class="mb-0 fw-bold" style="color: #1e40af;">
+                        <i class="fas fa-check-circle me-2"></i>
+                        Review This Report
+                    </h6>
+                </div>
+                <div class="dr-card-body">
+                    <div class="alert alert-info border-0 mb-3" style="font-size: 0.875rem;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Manager Review:</strong> The employee who submitted this report will receive your feedback.
+                    </div>
+                    <form action="{{ route('office.daily-reports.review', $dailyReport) }}" method="POST">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label class="dr-label">Review Comment (Optional)</label>
+                            <textarea name="review_comment" id="review_comment" rows="4" class="dr-textarea @error('review_comment') is-invalid @enderror" placeholder="Add feedback, suggestions, or acknowledgment...">{{ old('review_comment') }}</textarea>
+                            @error('review_comment')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <small class="text-muted">Provide feedback, instructions, or acknowledgment for the submitted report</small>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="mark_as_completed" id="mark_as_completed" value="1" {{ old('mark_as_completed') ? 'checked' : '' }}>
+                                <label class="form-check-label fw-semibold" for="mark_as_completed">
+                                    Mark as Completed
+                                </label>
+                            </div>
+                            <small class="text-muted">Check this to finalize the report. If unchecked, employee can continue updating based on your instructions.</small>
+                        </div>
+
+                        <div class="alert alert-warning border-0 mb-3" style="font-size: 0.875rem;">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Review Guidelines:</strong>
+                            <ul class="mb-0 mt-2" style="font-size: 0.8125rem;">
+                                <li><strong>Mark as Completed:</strong> Report is finalized and locked</li>
+                                <li><strong>Don't Mark:</strong> Employee can continue updating</li>
+                            </ul>
+                        </div>
+
+                        <button type="submit" class="dr-btn dr-btn-success">
+                            <i class="fas fa-check"></i>Submit Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @elseif($dailyReport->isDraft() && $dailyReport->submitted_by === auth()->id())
+            <div class="dr-card" style="border: 2px solid #f59e0b;">
+                <div class="dr-card-header" style="background: #fffbeb; border-color: #fcd34d;">
+                    <h6 class="mb-0 fw-bold" style="color: #92400e;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Submit for Review
+                    </h6>
+                </div>
+                <div class="dr-card-body">
+                    <p class="mb-3" style="font-size: 0.9rem;">This report is in <strong>Draft</strong> status. Submit it for manager review when ready.</p>
+                    <form action="{{ route('office.daily-reports.submit', $dailyReport) }}" method="POST">
+                        @csrf
+                        <button type="submit" class="dr-btn dr-btn-primary">
+                            <i class="fas fa-paper-plane"></i>Submit for Manager Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+            @endif
+            @endcan
+            
+            @if($dailyReport->submitted_by === auth()->id() && $dailyReport->isAwaitingReview())
+            <div class="alert alert-info border-0" style="font-size: 0.875rem;">
+                <i class="fas fa-hourglass-half me-2"></i>
+                <strong>Awaiting Manager Review:</strong> Your report has been submitted and is pending review by your supervisor.
+            </div>
+            @endif
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Submitted By Card -->
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-semibold" style="color: #1f2937;">
+                        <i class="fas fa-user me-2"></i>Submitted By
+                    </h6>
+                </div>
+                <div class="dr-card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="dr-user-avatar" style="width: 48px; height: 48px; font-size: 1.125rem;">
+                            {{ strtoupper(substr($dailyReport->submittedBy->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <div class="fw-semibold text-dark">{{ $dailyReport->submittedBy->name }}</div>
+                            <small class="text-muted d-block">{{ $dailyReport->submittedBy->email }}</small>
+                            <span class="badge mt-1" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; font-size: 0.75rem;">
+                                {{ $dailyReport->submittedBy->roles->first()->name ?? 'User' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reviewed By Card (if reviewed) -->
+            @if($dailyReport->isReviewed() && $dailyReport->reviewedBy)
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-semibold" style="color: #1f2937;">
+                        <i class="fas fa-user-check me-2"></i>Reviewed By
+                    </h6>
+                </div>
+                <div class="dr-card-body">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="dr-user-avatar" style="width: 48px; height: 48px; font-size: 1.125rem;">
+                            {{ strtoupper(substr($dailyReport->reviewedBy->name, 0, 1)) }}
+                        </div>
+                        <div>
+                            <div class="fw-semibold text-dark">{{ $dailyReport->reviewedBy->name }}</div>
+                            <small class="text-muted d-block">{{ $dailyReport->reviewedBy->email }}</small>
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-clock me-1"></i>{{ $dailyReport->reviewed_at->diffForHumans() }}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
+
+            <!-- Timeline Card -->
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-semibold" style="color: #1f2937;">
+                        <i class="fas fa-history me-2"></i>Timeline
+                    </h6>
+                </div>
+                <div class="dr-card-body">
+                    <div class="dr-timeline-item">
+                        <div class="dr-timeline-icon" style="background: #dbeafe; color: #1d4ed8;">
+                            <i class="fas fa-plus"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Created</small>
+                            <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->created_at->format('M d, Y h:i A') }}</div>
+                            <small class="text-muted">{{ $dailyReport->created_at->diffForHumans() }}</small>
+                        </div>
+                    </div>
+
+                    @if($dailyReport->updated_at != $dailyReport->created_at)
+                    <div class="dr-timeline-item">
+                        <div class="dr-timeline-icon" style="background: #fef3c7; color: #92400e;">
+                            <i class="fas fa-edit"></i>
+                        </div>
+                        <div>
+                            <small class="text-muted d-block">Last Updated</small>
+                            <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->updated_at->format('M d, Y h:i A') }}</div>
+                            <small class="text-muted">{{ $dailyReport->updated_at->diffForHumans() }}</small>
                         </div>
                     </div>
                     @endif
 
-                    <!-- Timeline Card -->
-                    <div class="card shadow-sm border-0">
-                        <div class="card-header-custom bg-light">
-                            <h6 class="mb-0">
-                                <i class="fas fa-history me-2"></i>
-                                Timeline
-                            </h6>
+                    @if($dailyReport->reviewed_at)
+                    <div class="dr-timeline-item">
+                        <div class="dr-timeline-icon" style="background: #d1fae5; color: #065f46;">
+                            <i class="fas fa-check"></i>
                         </div>
-                        <div class="card-body-custom">
-                            <div class="mb-3">
-                                <div class="d-flex align-items-start gap-2">
-                                    <i class="fas fa-plus-circle text-primary mt-1"></i>
-                                    <div>
-                                        <small class="text-muted">Created</small>
-                                        <div class="fw-semibold">{{ $dailyReport->created_at->format('M d, Y h:i A') }}</div>
-                                        <small class="text-muted">{{ $dailyReport->created_at->diffForHumans() }}</small>
-                                    </div>
-                                </div>
-                            </div>
-
-                            @if($dailyReport->updated_at != $dailyReport->created_at)
-                            <div class="mb-3">
-                                <div class="d-flex align-items-start gap-2">
-                                    <i class="fas fa-edit text-warning mt-1"></i>
-                                    <div>
-                                        <small class="text-muted">Last Updated</small>
-                                        <div class="fw-semibold">{{ $dailyReport->updated_at->format('M d, Y h:i A') }}</div>
-                                        <small class="text-muted">{{ $dailyReport->updated_at->diffForHumans() }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
-
-                            @if($dailyReport->reviewed_at)
-                            <div class="mb-0">
-                                <div class="d-flex align-items-start gap-2">
-                                    <i class="fas fa-check-circle text-success mt-1"></i>
-                                    <div>
-                                        <small class="text-muted">Reviewed</small>
-                                        <div class="fw-semibold">{{ $dailyReport->reviewed_at->format('M d, Y h:i A') }}</div>
-                                        <small class="text-muted">{{ $dailyReport->reviewed_at->diffForHumans() }}</small>
-                                    </div>
-                                </div>
-                            </div>
-                            @endif
+                        <div>
+                            <small class="text-muted d-block">Reviewed</small>
+                            <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->reviewed_at->format('M d, Y h:i A') }}</div>
+                            <small class="text-muted">{{ $dailyReport->reviewed_at->diffForHumans() }}</small>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
-
-@section('styles')
-<style>
-    /* Quill content display styling */
-    .ql-editor-content {
-        font-size: 15px;
-        line-height: 1.7;
-    }
-
-    .ql-editor-content p {
-        margin-bottom: 1rem;
-    }
-
-    .ql-editor-content h1, .ql-editor-content h2, .ql-editor-content h3 {
-        margin-top: 1.5rem;
-        margin-bottom: 1rem;
-        font-weight: 600;
-    }
-
-    .ql-editor-content ul, .ql-editor-content ol {
-        margin-bottom: 1rem;
-        padding-left: 1.5rem;
-    }
-
-    .ql-editor-content li {
-        margin-bottom: 0.5rem;
-    }
-
-    .ql-editor-content a {
-        color: #0d6efd;
-        text-decoration: underline;
-    }
-
-    .ql-editor-content strong {
-        font-weight: 600;
-    }
-
-    /* Review Timeline Styling */
-    .review-timeline {
-        position: relative;
-    }
-
-    .review-item {
-        position: relative;
-        padding-bottom: 1.5rem;
-    }
-
-    .review-item:not(:last-child)::after {
-        content: '';
-        position: absolute;
-        left: 24px;
-        top: 60px;
-        bottom: 0;
-        width: 2px;
-        background: linear-gradient(to bottom, #dee2e6 0%, transparent 100%);
-    }
-
-    .review-comment {
-        font-size: 14px;
-        line-height: 1.6;
-    }
-
-    .bg-success-subtle {
-        background-color: rgba(25, 135, 84, 0.1) !important;
-    }
-
-    .bg-warning-subtle {
-        background-color: rgba(255, 193, 7, 0.15) !important;
-    }
-
-    .user-avatar {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        font-weight: 600;
-        border-radius: 50%;
-        overflow: hidden;
-    }
-
-    .user-avatar img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-    }
-</style>
+</div>
 @endsection
