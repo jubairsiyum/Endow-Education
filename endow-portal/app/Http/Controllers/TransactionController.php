@@ -497,7 +497,12 @@ class TransactionController extends Controller
                 ->limit(10)
                 ->get();
 
-            return view('accounting.summary-enhanced', compact(
+            // Try to use enhanced view, fallback to regular view if not found
+            $viewName = view()->exists('accounting.summary-enhanced') 
+                ? 'accounting.summary-enhanced' 
+                : 'accounting.summary';
+            
+            return view($viewName, compact(
                 'totalIncome',
                 'totalExpense',
                 'netProfit',
