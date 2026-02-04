@@ -668,10 +668,10 @@
                                 <div class="d-flex justify-content-between align-items-start mb-2">
                                     <div class="flex-grow-1">
                                         <h6 class="mb-1 fw-bold">
-                                            {{ $checklist->checklistItem->title }}
-                                            @if($checklist->checklistItem->is_required)
+                                            {{ $checklist->checklistItem->title ?? 'Checklist Item (Missing)' }}
+                                            @if($checklist->checklistItem && $checklist->checklistItem->is_required)
                                                 <span class="badge bg-danger ms-2">Required</span>
-                                            @else
+                                            @elseif($checklist->checklistItem)
                                                 <span class="badge bg-secondary ms-2">Optional</span>
                                             @endif
                                         </h6>

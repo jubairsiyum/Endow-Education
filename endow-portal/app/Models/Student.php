@@ -113,13 +113,27 @@ class Student extends Model
 
     /**
      * Get all checklist items for this student.
+     * Note: Removed join to avoid filtering out records with missing checklist items.
+     * Ordering is now handled by eager loading the checklistItem relationship.
      */
     public function checklists()
     {
-        return $this->hasMany(StudentChecklist::class)
-            ->join('checklist_items', 'student_checklists.checklist_item_id', '=', 'checklist_items.id')
-            ->orderBy('checklist_items.order')
-            ->select('student_checklists.*');
+        return $this->hasMany(StudentChecklist::class);
+    }
+    
+    /**
+     * Get checklists with proper ordering by checklist item order
+     * This is a helper method to get properly sorted checklists
+     */
+    public function getOrderedChecklistsAttribute()
+    {
+        return $this->checklists()
+            ->with('checklistItem')
+            ->get()
+            ->sortBy(function($checklist) {
+                return $checklist->checklistItem ? $checklist->checklistItem->order : 999;
+            })
+            ->values();
     }
 
     /**
