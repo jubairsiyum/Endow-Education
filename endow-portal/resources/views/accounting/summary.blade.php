@@ -37,15 +37,15 @@
         </div>
 
         <div class="col-md-3">
-            <div class="card bg-{{ $netProfit >= 0 ? 'primary' : 'warning' }} text-white">
+            <div class="card bg-primary text-white">
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-subtitle mb-2 text-white-50">Net Profit/Loss</h6>
-                            <h3 class="card-title mb-0">{{ number_format($netProfit, 2) }}</h3>
+                            <h6 class="card-subtitle mb-2 text-white-50">Cash (On Hand)</h6>
+                            <h3 class="card-title mb-0">{{ number_format($totalCash, 2) }}</h3>
                         </div>
                         <div>
-                            <i class="fas fa-{{ $netProfit >= 0 ? 'chart-line' : 'exclamation-triangle' }} fa-3x opacity-50"></i>
+                            <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
                         </div>
                     </div>
                 </div>
@@ -57,13 +57,13 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-subtitle mb-2 text-white-50">Profit Margin</h6>
+                            <h6 class="card-subtitle mb-2 text-white-50">Deposited to Bank</h6>
                             <h3 class="card-title mb-0">
-                                {{ $totalIncome > 0 ? number_format(($netProfit / $totalIncome) * 100, 1) : 0 }}%
+                                {{ number_format($totalDepositedToBank, 2) }}
                             </h3>
                         </div>
                         <div>
-                            <i class="fas fa-percentage fa-3x opacity-50"></i>
+                            <i class="fas fa-university fa-3x opacity-50"></i>
                         </div>
                     </div>
                 </div>

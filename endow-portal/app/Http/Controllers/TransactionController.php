@@ -4,11 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\TransactionRequest;
 use App\Models\AccountCategory;
+use App\Models\BankDeposit;
 use App\Models\Transaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Schema;
 
 class TransactionController extends Controller
 {
@@ -391,7 +393,7 @@ class TransactionController extends Controller
     {
         try {
             // Check if transactions table exists
-            if (!\Schema::hasTable('transactions')) {
+            if (!Schema::hasTable('transactions')) {
                 return back()->with('error', 'Accounting tables not found. Please run migrations: php artisan migrate');
             }
 
@@ -411,6 +413,22 @@ class TransactionController extends Controller
             $totalIncome = (clone $query)->income()->sum('amount') ?? 0;
             $totalExpense = (clone $query)->expense()->sum('amount') ?? 0;
             $netProfit = $totalIncome - $totalExpense;
+
+            // Calculate Cash on Hand (Total Income - Total Expense - Deposited to Bank)
+            // Check if bank_deposits table exists before querying
+            $totalDepositedToBank = 0;
+            if (Schema::hasTable('bank_deposits')) {
+                try {
+                    $totalDepositedToBank = BankDeposit::approved()
+                        ->whereBetween('deposit_date', [$startDate, $endDate])
+                        ->sum('amount') ?? 0;
+                } catch (\Exception $e) {
+                    \Log::warning('Bank deposits query failed: ' . $e->getMessage());
+                    $totalDepositedToBank = 0;
+                }
+            }
+            
+            $totalCash = $netProfit - $totalDepositedToBank;
 
             // Get income by category with optimized query
             $incomeByCategory = Transaction::approved()
@@ -446,6 +464,8 @@ class TransactionController extends Controller
                 'totalIncome',
                 'totalExpense',
                 'netProfit',
+                'totalCash',
+                'totalDepositedToBank',
                 'incomeByCategory',
                 'expenseByCategory',
                 'recentTransactions',

@@ -9,6 +9,9 @@
                     <h4 class="mb-0">Transactions</h4>
                     <div>
                         @can('create-transaction')
+                            <a href="{{ route('office.accounting.bank-deposits.create') }}" class="btn btn-success me-2">
+                                <i class="fas fa-university"></i> Deposit to Bank
+                            </a>
                             <a href="{{ route('office.accounting.transactions.create') }}" class="btn btn-primary">
                                 <i class="fas fa-plus"></i> Add Transaction
                             </a>

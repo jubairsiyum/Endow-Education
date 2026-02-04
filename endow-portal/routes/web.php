@@ -343,6 +343,7 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
     Route::prefix('accounting')->name('accounting.')->middleware('role:Super Admin|Accountant')->group(function () {
         // Summary/Dashboard
         Route::get('/summary', [TransactionController::class, 'summary'])->name('summary');
+        Route::get('/dashboard', [TransactionController::class, 'summary'])->name('dashboard'); // Alias for summary
         
         // Account Categories Management
         Route::resource('categories', AccountCategoryController::class)->except(['show']);

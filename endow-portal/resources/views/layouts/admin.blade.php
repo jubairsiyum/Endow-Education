@@ -1209,6 +1209,13 @@
                 </a>
                 @endcan
 
+                @can('view-transaction')
+                <a href="{{ route('office.accounting.bank-deposits.index') }}" class="menu-item {{ request()->routeIs('office.accounting.bank-deposits.*') ? 'active' : '' }}">
+                    <i class="fas fa-university"></i>
+                    <span>Bank Deposits</span>
+                </a>
+                @endcan
+
                 @can('approve-transaction')
                 <a href="{{ route('office.accounting.transactions.pending') }}" class="menu-item {{ request()->routeIs('office.accounting.transactions.pending') ? 'active' : '' }}">
                     <i class="fas fa-clock"></i>
