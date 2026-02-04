@@ -407,6 +407,32 @@ class TransactionController extends Controller
                 ? $request->end_date 
                 : now()->endOfMonth()->format('Y-m-d');
 
+            // Handle period shortcuts
+            if ($request->filled('period')) {
+                switch ($request->period) {
+                    case 'today':
+                        $startDate = now()->format('Y-m-d');
+                        $endDate = now()->format('Y-m-d');
+                        break;
+                    case 'week':
+                        $startDate = now()->startOfWeek()->format('Y-m-d');
+                        $endDate = now()->endOfWeek()->format('Y-m-d');
+                        break;
+                    case 'month':
+                        $startDate = now()->startOfMonth()->format('Y-m-d');
+                        $endDate = now()->endOfMonth()->format('Y-m-d');
+                        break;
+                    case 'quarter':
+                        $startDate = now()->startOfQuarter()->format('Y-m-d');
+                        $endDate = now()->endOfQuarter()->format('Y-m-d');
+                        break;
+                    case 'year':
+                        $startDate = now()->startOfYear()->format('Y-m-d');
+                        $endDate = now()->endOfYear()->format('Y-m-d');
+                        break;
+                }
+            }
+
             // Get approved transactions only
             $query = Transaction::approved()->dateRange($startDate, $endDate);
 
@@ -414,6 +440,10 @@ class TransactionController extends Controller
             $totalIncome = (clone $query)->income()->sum('amount') ?? 0;
             $totalExpense = (clone $query)->expense()->sum('amount') ?? 0;
             $netProfit = $totalIncome - $totalExpense;
+
+            // Get transaction counts
+            $totalIncomeCount = (clone $query)->income()->count();
+            $totalExpenseCount = (clone $query)->expense()->count();
 
             // Calculate Cash Income and Cash Expense (payment_method = 'cash')
             $cashIncome = (clone $query)->income()->where('payment_method', 'cash')->sum('amount') ?? 0;
@@ -457,7 +487,7 @@ class TransactionController extends Controller
 
             // Get recent transactions with selective column loading
             $recentTransactions = Transaction::approved()
-                ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'category_id', 'created_by')
+                ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'headline', 'payment_method', 'category_id', 'created_by')
                 ->with([
                     'category:id,name',
                     'creator:id,name'
@@ -467,12 +497,16 @@ class TransactionController extends Controller
                 ->limit(10)
                 ->get();
 
-            return view('accounting.summary', compact(
+            return view('accounting.summary-enhanced', compact(
                 'totalIncome',
                 'totalExpense',
                 'netProfit',
                 'totalCash',
                 'totalDepositedToBank',
+                'cashIncome',
+                'cashExpense',
+                'totalIncomeCount',
+                'totalExpenseCount',
                 'incomeByCategory',
                 'expenseByCategory',
                 'recentTransactions',
@@ -491,6 +525,103 @@ class TransactionController extends Controller
         } catch (\Exception $e) {
             \Log::error('Accounting Summary Error: ' . $e->getMessage());
             return back()->with('error', 'An error occurred while loading summary: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export transactions to Excel/CSV format.
+     */
+    public function export(Request $request)
+    {
+        try {
+            $startDate = $request->filled('start_date') 
+                ? $request->start_date 
+                : now()->startOfMonth()->format('Y-m-d');
+            
+            $endDate = $request->filled('end_date') 
+                ? $request->end_date 
+                : now()->endOfMonth()->format('Y-m-d');
+
+            // Get all approved transactions for the period
+            $transactions = Transaction::approved()
+                ->dateRange($startDate, $endDate)
+                ->with(['category', 'creator', 'employee'])
+                ->orderBy('entry_date', 'desc')
+                ->get();
+
+            // Calculate summary
+            $totalIncome = $transactions->where('type', 'income')->sum('amount');
+            $totalExpense = $transactions->where('type', 'expense')->sum('amount');
+            $netProfit = $totalIncome - $totalExpense;
+
+            // Set headers for CSV download
+            $filename = "accounting_report_" . $startDate . "_to_" . $endDate . ".csv";
+            
+            header('Content-Type: text/csv; charset=utf-8');
+            header('Content-Disposition: attachment; filename="' . $filename . '"');
+            
+            $output = fopen('php://output', 'w');
+            
+            // Add BOM for proper UTF-8 encoding in Excel
+            fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Write summary header
+            fputcsv($output, ['ENDOW CORPORATION - ACCOUNTING REPORT']);
+            fputcsv($output, ['Period:', $startDate . ' to ' . $endDate]);
+            fputcsv($output, ['Generated:', now()->format('Y-m-d H:i:s')]);
+            fputcsv($output, []);
+            
+            // Write summary
+            fputcsv($output, ['SUMMARY']);
+            fputcsv($output, ['Total Income', number_format($totalIncome, 2)]);
+            fputcsv($output, ['Total Expense', number_format($totalExpense, 2)]);
+            fputcsv($output, ['Net Profit/Loss', number_format($netProfit, 2)]);
+            fputcsv($output, []);
+            
+            // Write transaction headers
+            fputcsv($output, [
+                'Date',
+                'Type',
+                'Category',
+                'Headline',
+                'Student Name',
+                'Amount (BDT)',
+                'Payment Method',
+                'Currency',
+                'Original Amount',
+                'Employee',
+                'Remarks',
+                'Created By',
+                'Status',
+                'Approved At'
+            ]);
+            
+            // Write transaction data
+            foreach ($transactions as $transaction) {
+                fputcsv($output, [
+                    $transaction->entry_date && is_object($transaction->entry_date) ? $transaction->entry_date->format('Y-m-d') : ($transaction->entry_date ?? '-'),
+                    ucfirst($transaction->type),
+                    $transaction->category->name ?? 'N/A',
+                    $transaction->headline ?? '-',
+                    $transaction->student_name ?? '-',
+                    number_format((float)$transaction->amount, 2),
+                    ucfirst($transaction->payment_method ?? 'N/A'),
+                    $transaction->currency ?? 'BDT',
+                    $transaction->original_amount ? number_format((float)$transaction->original_amount, 2) : '-',
+                    $transaction->employee->name ?? '-',
+                    $transaction->remarks ?? '-',
+                    $transaction->creator->name ?? 'N/A',
+                    ucfirst($transaction->status),
+                    $transaction->approved_at ? $transaction->approved_at->format('Y-m-d H:i:s') : '-'
+                ]);
+            }
+            
+            fclose($output);
+            exit;
+            
+        } catch (\Exception $e) {
+            \Log::error('Transaction Export Error: ' . $e->getMessage());
+            return back()->with('error', 'Failed to export transactions: ' . $e->getMessage());
         }
     }
 }

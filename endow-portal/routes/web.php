@@ -344,6 +344,7 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
         // Summary/Dashboard
         Route::get('/summary', [TransactionController::class, 'summary'])->name('summary');
         Route::get('/dashboard', [TransactionController::class, 'summary'])->name('dashboard'); // Alias for summary
+        Route::get('/transactions/export', [TransactionController::class, 'export'])->name('transactions.export');
         
         // Account Categories Management
         Route::resource('categories', AccountCategoryController::class)->except(['show']);
