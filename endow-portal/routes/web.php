@@ -368,6 +368,21 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
         
         // Transaction CRUD
         Route::resource('transactions', TransactionController::class)->except(['pending']);
+        
+        // Bank Deposits - Track cash deposits to bank (doesn't affect P&L)
+        Route::get('/bank-deposits/pending', [\App\Http\Controllers\BankDepositController::class, 'pending'])
+            ->name('bank-deposits.pending')
+            ->middleware('permission:approve-transaction');
+        
+        Route::patch('/bank-deposits/{bankDeposit}/approve', [\App\Http\Controllers\BankDepositController::class, 'approve'])
+            ->name('bank-deposits.approve')
+            ->middleware('permission:approve-transaction');
+        
+        Route::patch('/bank-deposits/{bankDeposit}/reject', [\App\Http\Controllers\BankDepositController::class, 'reject'])
+            ->name('bank-deposits.reject')
+            ->middleware('permission:approve-transaction');
+        
+        Route::resource('bank-deposits', \App\Http\Controllers\BankDepositController::class);
     });
 });
 
