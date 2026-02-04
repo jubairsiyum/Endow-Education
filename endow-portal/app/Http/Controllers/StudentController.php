@@ -548,7 +548,7 @@ class StudentController extends Controller
                 $eagerLoad['checklists'] = function($query) {
                     $query->with([
                         'checklistItem' => function($q) {
-                            $q->select('id', 'title', 'description', 'required', 'order');
+                            $q->withTrashed()->select('id', 'title', 'description', 'is_required', 'order');
                         },
                         'reviewer' => function($q) {
                             $q->select('id', 'name', 'email');
@@ -631,44 +631,41 @@ class StudentController extends Controller
                 // Continue anyway - we can still show basic student info
             }
 
-            // CRITICAL: Load checklists with documents - simplified approach using proper relationships
-            if (!$student->relationLoaded('checklists')) {
-                try {
-                    Log::info("Student {$student->id}: Loading checklists with relationships");
-                    
-                    // Load checklists with all nested relationships using eager loading
-                    $student->load([
-                        'checklists' => function($query) {
-                            $query->orderBy('id');
-                        },
-                        'checklists.checklistItem' => function($query) {
-                            $query->withTrashed(); // Include soft deleted items to avoid filtering
-                        },
-                        'checklists.reviewer',
-                        'checklists.documents' => function($query) {
-                            $query->orderBy('created_at', 'desc');
-                        },
-                        'checklists.documents.uploader',
-                        'checklists.documents.reviewer'
-                    ]);
-                    
-                    Log::info("Student {$student->id}: Loaded " . $student->checklists->count() . " checklists successfully");
-                    
-                    // Sort checklists by checklist_item order if available
-                    $sortedChecklists = $student->checklists->sortBy(function($checklist) {
-                        return $checklist->checklistItem ? $checklist->checklistItem->order : 999;
-                    })->values();
-                    
-                    $student->setRelation('checklists', $sortedChecklists);
-                    
-                } catch (\Exception $e) {
-                    Log::error("Student {$student->id}: CRITICAL ERROR loading checklists - " . $e->getMessage());
-                    Log::error("Stack: " . $e->getTraceAsString());
-                    // Set empty collection as fallback
-                    $student->setRelation('checklists', collect());
-                }
-            } else {
-                Log::info("Student {$student->id}: Checklists already loaded, count: " . $student->checklists->count());
+            // CRITICAL: Load checklists with documents - force reload to ensure proper data
+            // Always reload checklists to ensure we have the correct data with withTrashed()
+            try {
+                Log::info("Student {$student->id}: Force reloading checklists with all relationships");
+                
+                // Force reload checklists with all nested relationships using eager loading
+                $student->load([
+                    'checklists' => function($query) {
+                        $query->orderBy('id');
+                    },
+                    'checklists.checklistItem' => function($query) {
+                        $query->withTrashed(); // Include soft deleted items to avoid filtering
+                    },
+                    'checklists.reviewer',
+                    'checklists.documents' => function($query) {
+                        $query->orderBy('created_at', 'desc');
+                    },
+                    'checklists.documents.uploader',
+                    'checklists.documents.reviewer'
+                ]);
+                
+                Log::info("Student {$student->id}: Loaded " . $student->checklists->count() . " checklists successfully");
+                
+                // Sort checklists by checklist_item order if available
+                $sortedChecklists = $student->checklists->sortBy(function($checklist) {
+                    return $checklist->checklistItem ? $checklist->checklistItem->order : 999;
+                })->values();
+                
+                $student->setRelation('checklists', $sortedChecklists);
+                
+            } catch (\Exception $e) {
+                Log::error("Student {$student->id}: CRITICAL ERROR loading checklists - " . $e->getMessage());
+                Log::error("Stack: " . $e->getTraceAsString());
+                // Set empty collection as fallback
+                $student->setRelation('checklists', collect());
             }
 
             // Load standalone documents if not loaded
