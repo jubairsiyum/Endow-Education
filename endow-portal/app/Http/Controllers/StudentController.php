@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class StudentController extends Controller
@@ -499,33 +500,221 @@ class StudentController extends Controller
     {
         $this->authorize('view', $student);
 
-        // Optimize eager loading for production - load relationships efficiently
-        $student->load([
-            'user',
-            'assignedUser',
-            'creator',
-            'targetUniversity',
-            'targetProgram',
-            'followUps' => function($query) {
-                $query->orderBy('created_at', 'desc')->with('creator');
-            },
-            'checklists' => function($query) {
-                $query->with([
-                    'checklistItem',
-                    'reviewer',
-                    'documents' => function($docQuery) {
-                        $docQuery->with(['uploader', 'reviewer']);
-                    }
-                ]);
-            },
-            'documents' => function($query) {
-                $query->with(['checklistItem', 'uploader', 'reviewer']);
+        try {
+            Log::info("Loading student ID: {$student->id}");
+
+            // Load relationships one by one with individual error handling
+            $eagerLoad = [];
+
+            // Basic relationships - load safely
+            try {
+                if ($student->user_id) {
+                    $eagerLoad[] = 'user';
+                }
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot load user - " . $e->getMessage());
             }
-        ]);
 
-        $checklistProgress = $this->checklistService->getChecklistProgress($student);
+            try {
+                if ($student->assigned_to) {
+                    $eagerLoad[] = 'assignedUser';
+                }
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot load assignedUser - " . $e->getMessage());
+            }
 
-        return view('students.show', compact('student', 'checklistProgress'));
+            try {
+                if ($student->created_by) {
+                    $eagerLoad[] = 'creator';
+                }
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot load creator - " . $e->getMessage());
+            }
+
+            // Load follow-ups with error handling
+            try {
+                $eagerLoad['followUps'] = function($query) {
+                    $query->orderBy('created_at', 'desc')
+                          ->with(['creator' => function($q) {
+                              $q->select('id', 'name', 'email');
+                          }]);
+                };
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot setup followUps - " . $e->getMessage());
+            }
+
+            // Load checklists with error handling
+            try {
+                $eagerLoad['checklists'] = function($query) {
+                    $query->with([
+                        'checklistItem' => function($q) {
+                            $q->select('id', 'title', 'description', 'required', 'order');
+                        },
+                        'reviewer' => function($q) {
+                            $q->select('id', 'name', 'email');
+                        },
+                        'documents' => function($docQuery) {
+                            $docQuery->with([
+                                'uploader' => function($q) {
+                                    $q->select('id', 'name', 'email');
+                                },
+                                'reviewer' => function($q) {
+                                    $q->select('id', 'name', 'email');
+                                }
+                            ]);
+                        }
+                    ]);
+                };
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot setup checklists - " . $e->getMessage());
+            }
+
+            // Load documents with error handling
+            try {
+                $eagerLoad['documents'] = function($query) {
+                    $query->with([
+                        'checklistItem' => function($q) {
+                            $q->select('id', 'title', 'description');
+                        },
+                        'uploader' => function($q) {
+                            $q->select('id', 'name', 'email');
+                        },
+                        'reviewer' => function($q) {
+                            $q->select('id', 'name', 'email');
+                        }
+                    ]);
+                };
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot setup documents - " . $e->getMessage());
+            }
+
+            // Conditionally add university and program relationships
+            try {
+                if (Schema::hasColumn('students', 'target_university_id') && $student->target_university_id) {
+                    $eagerLoad[] = 'targetUniversity';
+                }
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot check/load targetUniversity - " . $e->getMessage());
+            }
+
+            try {
+                if (Schema::hasColumn('students', 'target_program_id') && $student->target_program_id) {
+                    $eagerLoad[] = 'targetProgram';
+                }
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot check/load targetProgram - " . $e->getMessage());
+            }
+
+            // Load payments relationship if it exists
+            try {
+                if (method_exists($student, 'payments')) {
+                    $eagerLoad['payments'] = function($query) {
+                        $query->orderBy('payment_date', 'desc')
+                              ->with(['creator' => function($q) {
+                                  $q->select('id', 'name', 'email');
+                              }]);
+                    };
+                }
+            } catch (\Exception $e) {
+                Log::warning("Student {$student->id}: Cannot setup payments - " . $e->getMessage());
+            }
+
+            // Load all relationships with global error handling
+            try {
+                if (!empty($eagerLoad)) {
+                    $student->load($eagerLoad);
+                }
+                Log::info("Student {$student->id}: Successfully loaded relationships");
+            } catch (\Exception $e) {
+                Log::error("Student {$student->id}: Failed to load relationships - " . $e->getMessage());
+                Log::error("Trace: " . $e->getTraceAsString());
+                // Continue anyway - we can still show basic student info
+            }
+
+            // Ensure critical relationships are initialized even if loading failed
+            if (!$student->relationLoaded('checklists')) {
+                try {
+                    $student->load(['checklists' => function($query) {
+                        $query->with([
+                            'checklistItem' => function($q) {
+                                $q->select('id', 'title', 'description', 'required', 'order');
+                            },
+                            'reviewer' => function($q) {
+                                $q->select('id', 'name', 'email');
+                            },
+                            'documents' => function($docQuery) {
+                                $docQuery->with([
+                                    'uploader' => function($q) {
+                                        $q->select('id', 'name', 'email');
+                                    },
+                                    'reviewer' => function($q) {
+                                        $q->select('id', 'name', 'email');
+                                    }
+                                ]);
+                            }
+                        ]);
+                    }]);
+                    Log::info("Student {$student->id}: Checklists loaded separately");
+                } catch (\Exception $e) {
+                    Log::error("Student {$student->id}: Cannot load checklists separately - " . $e->getMessage());
+                    // Set empty collection to prevent view errors
+                    $student->setRelation('checklists', collect());
+                }
+            }
+
+            if (!$student->relationLoaded('documents')) {
+                try {
+                    $student->load(['documents' => function($query) {
+                        $query->with(['checklistItem', 'uploader', 'reviewer']);
+                    }]);
+                } catch (\Exception $e) {
+                    Log::error("Student {$student->id}: Cannot load documents separately - " . $e->getMessage());
+                    $student->setRelation('documents', collect());
+                }
+            }
+
+            if (!$student->relationLoaded('followUps')) {
+                try {
+                    $student->load(['followUps' => function($query) {
+                        $query->orderBy('created_at', 'desc')->with('creator');
+                    }]);
+                } catch (\Exception $e) {
+                    Log::error("Student {$student->id}: Cannot load followUps separately - " . $e->getMessage());
+                    $student->setRelation('followUps', collect());
+                }
+            }
+
+            // Get checklist progress with error handling
+            try {
+                $checklistProgress = $this->checklistService->getChecklistProgress($student);
+            } catch (\Exception $e) {
+                Log::error("Student {$student->id}: Failed to get checklist progress - " . $e->getMessage());
+                // Provide default progress
+                $checklistProgress = [
+                    'total' => 0,
+                    'approved' => 0,
+                    'submitted' => 0,
+                    'rejected' => 0,
+                    'pending' => 0,
+                    'in_progress' => 0,
+                    'percentage' => 0,
+                ];
+            }
+
+            Log::info("Student {$student->id}: Rendering view with " . $student->checklists->count() . " checklists");
+            return view('students.show', compact('student', 'checklistProgress'));
+
+        } catch (\Exception $e) {
+            Log::error("Student show CRITICAL error for ID {$student->id}: " . $e->getMessage());
+            Log::error("File: {$e->getFile()} Line: {$e->getLine()}");
+            Log::error("Stack trace: " . $e->getTraceAsString());
+            
+            // Try to get student basic info for error message
+            $studentName = $student->name ?? 'Unknown';
+            
+            return redirect()->route('students.index')
+                ->with('error', "Unable to load details for student: {$studentName} (ID: {$student->id}). Error: " . $e->getMessage());
+        }
     }
 
     /**
