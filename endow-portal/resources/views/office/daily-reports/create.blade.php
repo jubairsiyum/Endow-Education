@@ -7,12 +7,12 @@
 <style>
     /* Scoped Daily Report Styles - Won't affect global layout */
     .daily-report-page .dr-header {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
         padding: 1.75rem;
         border-radius: 12px;
         color: white;
         margin-bottom: 1.5rem;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
     }
     
     .daily-report-page .dr-card {
@@ -52,8 +52,8 @@
     
     .daily-report-page .dr-input:focus,
     .daily-report-page .dr-select:focus {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
         outline: none;
     }
     
@@ -78,21 +78,21 @@
     }
     
     .daily-report-page .dr-icon-badge {
-        width: 22px;
-        height: 22px;
+        width: 24px;
+        height: 24px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        border-radius: 5px;
-        background: rgba(102, 126, 234, 0.1);
-        color: #667eea;
-        font-size: 0.75rem;
+        border-radius: 6px;
+        background: rgba(220, 53, 69, 0.1);
+        color: #dc3545;
+        font-size: 0.8125rem;
         flex-shrink: 0;
     }
     
     .daily-report-page .dr-guidelines {
-        background: #f0f9ff;
-        border-left: 4px solid #3b82f6;
+        background: #fff5f5;
+        border-left: 4px solid #dc3545;
         border-radius: 8px;
         padding: 1.25rem;
     }
@@ -127,12 +127,12 @@
     }
     
     .daily-report-page .dr-btn-primary {
-        background: #667eea;
+        background: #dc3545;
         color: white;
     }
     
     .daily-report-page .dr-btn-primary:hover {
-        background: #5568d3;
+        background: #c82333;
         color: white;
     }
     
@@ -180,8 +180,8 @@
     }
     
     .daily-report-page .dr-quill-wrapper:focus-within {
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
     }
     
     .daily-report-page .ql-toolbar.ql-snow {
@@ -245,7 +245,7 @@
                 <p class="mb-0 opacity-90" style="font-size: 0.95rem;">Document your daily activities and accomplishments</p>
             </div>
             <a href="{{ route('office.daily-reports.index') }}" class="dr-btn dr-btn-back">
-                <i class="bi bi-arrow-left"></i> Back to Reports
+                <i class="fas fa-arrow-left"></i> Back to Reports
             </a>
         </div>
     </div>
@@ -255,7 +255,7 @@
             <div class="dr-card">
                 <div class="dr-card-header">
                     <h5 class="mb-0 fw-bold text-dark">
-                        <i class="bi bi-pencil-square me-2" style="color: #667eea;"></i>
+                        <i class="fas fa-edit me-2" style="color: #dc3545;"></i>
                         Report Information
                     </h5>
                 </div>
@@ -267,12 +267,12 @@
                         <!-- Department -->
                         <div class="mb-4">
                             <label class="dr-label">
-                                <span class="dr-icon-badge"><i class="bi bi-building"></i></span>
+                                <span class="dr-icon-badge"><i class="fas fa-building"></i></span>
                                 Department
                             </label>
                             <input type="text" class="dr-input" value="{{ auth()->user()->department?->name ?? 'No Department Assigned' }}" disabled>
                             <div class="dr-hint">
-                                <i class="bi bi-info-circle"></i>Auto-assigned based on your profile
+                                <i class="fas fa-info-circle"></i> Auto-assigned based on your profile
                             </div>
                         </div>
 
@@ -280,7 +280,7 @@
                             <!-- Report Date -->
                             <div class="col-md-6 mb-4">
                                 <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="bi bi-calendar-event"></i></span>
+                                    <span class="dr-icon-badge"><i class="fas fa-calendar-alt"></i></span>
                                     Report Date <span class="required-star">*</span>
                                 </label>
                                 <input type="date" name="report_date" id="report_date" class="dr-input @error('report_date') is-invalid @enderror" value="{{ old('report_date', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" required>
@@ -288,14 +288,14 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <div class="dr-hint">
-                                    <i class="bi bi-clock"></i>Cannot select future dates
+                                    <i class="fas fa-clock"></i> Cannot select future dates
                                 </div>
                             </div>
 
                             <!-- Priority -->
                             <div class="col-md-6 mb-4">
                                 <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="bi bi-flag"></i></span>
+                                    <span class="dr-icon-badge"><i class="fas fa-flag"></i></span>
                                     Priority Level
                                 </label>
                                 <select name="priority" class="dr-select @error('priority') is-invalid @enderror">
@@ -313,7 +313,7 @@
                         <!-- Title -->
                         <div class="mb-4">
                             <label class="dr-label">
-                                <span class="dr-icon-badge"><i class="bi bi-card-heading"></i></span>
+                                <span class="dr-icon-badge"><i class="fas fa-heading"></i></span>
                                 Report Title <span class="required-star">*</span>
                             </label>
                             <input type="text" name="title" class="dr-input @error('title') is-invalid @enderror" value="{{ old('title') }}" placeholder="e.g., Daily Activities Summary - Marketing Team" maxlength="255" required>
@@ -321,14 +321,14 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <div class="dr-hint">
-                                <i class="bi bi-lightbulb"></i>Brief summary of today's activities
+                                <i class="fas fa-lightbulb"></i> Brief summary of today's activities
                             </div>
                         </div>
 
                         <!-- Description -->
                         <div class="mb-4">
                             <label class="dr-label">
-                                <span class="dr-icon-badge"><i class="bi bi-text-paragraph"></i></span>
+                                <span class="dr-icon-badge"><i class="fas fa-align-left"></i></span>
                                 Report Description <span class="required-star">*</span>
                             </label>
                             <div class="dr-quill-wrapper">
@@ -339,7 +339,7 @@
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
                             <div class="dr-hint">
-                                <i class="bi bi-pen"></i>Include achievements, challenges, meetings, and tasks completed
+                                <i class="fas fa-pen"></i> Include achievements, challenges, meetings, and tasks completed
                             </div>
                         </div>
 
@@ -349,7 +349,7 @@
                             <!-- Status -->
                             <div class="col-md-6 mb-4">
                                 <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="bi bi-check2-circle"></i></span>
+                                    <span class="dr-icon-badge"><i class="fas fa-check-circle"></i></span>
                                     Submission Type <span class="required-star">*</span>
                                 </label>
                                 <select name="status" class="dr-select @error('status') is-invalid @enderror" required>
@@ -364,7 +364,7 @@
                             <!-- Tags -->
                             <div class="col-md-6 mb-4">
                                 <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="bi bi-tags"></i></span>
+                                    <span class="dr-icon-badge"><i class="fas fa-tags"></i></span>
                                     Tags <span class="text-muted">(Optional)</span>
                                 </label>
                                 <input type="text" name="tags" class="dr-input @error('tags') is-invalid @enderror" placeholder="e.g., meeting, client, urgent" value="{{ old('tags') }}">
@@ -372,7 +372,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <div class="dr-hint">
-                                    <i class="bi bi-tag"></i>Separate with commas
+                                    <i class="fas fa-tag"></i> Separate with commas
                                 </div>
                             </div>
                         </div>
@@ -380,7 +380,7 @@
                         <!-- Attachments -->
                         <div class="mb-4">
                             <label class="dr-label">
-                                <span class="dr-icon-badge"><i class="bi bi-paperclip"></i></span>
+                                <span class="dr-icon-badge"><i class="fas fa-paperclip"></i></span>
                                 Attachments <span class="text-muted">(Optional)</span>
                             </label>
                             <input type="file" name="attachments[]" id="attachments" class="dr-input @error('attachments') is-invalid @enderror" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png,.txt">
@@ -388,7 +388,7 @@
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <div class="dr-hint">
-                                <i class="bi bi-info-circle"></i>PDF, Word, Excel, Images • Max 10MB each
+                                <i class="fas fa-info-circle"></i> PDF, Word, Excel, Images • Max 10MB each
                             </div>
                             <div id="file-preview" class="mt-3"></div>
                         </div>
@@ -396,7 +396,7 @@
                         <!-- Guidelines -->
                         <div class="dr-guidelines">
                             <h6 class="fw-bold text-dark mb-3">
-                                <i class="bi bi-clipboard-check me-2" style="color: #667eea;"></i>
+                                <i class="fas fa-clipboard-list me-2" style="color: #dc3545;"></i>
                                 Quick Guidelines
                             </h6>
                             <ul>
@@ -413,10 +413,10 @@
                     <div class="dr-footer">
                         <div class="d-flex gap-3 justify-content-end flex-wrap">
                             <a href="{{ route('office.daily-reports.index') }}" class="dr-btn dr-btn-secondary">
-                                <i class="bi bi-x-lg"></i>Cancel
+                                <i class="fas fa-times"></i> Cancel
                             </a>
                             <button type="submit" class="dr-btn dr-btn-primary">
-                                <i class="bi bi-save"></i>Save Report
+                                <i class="fas fa-save"></i> Save Report
                             </button>
                         </div>
                     </div>
@@ -470,13 +470,13 @@
                 item.className = 'dr-file-preview';
                 item.innerHTML = `
                     <div class="d-flex align-items-center gap-2">
-                        <i class="bi bi-file-earmark" style="color: #667eea;"></i>
+                        <i class="fas fa-file" style="color: #dc3545;"></i>
                         <div>
                             <div class="fw-semibold">${file.name}</div>
                             <small class="text-muted">${(file.size / 1024).toFixed(2)} KB</small>
                         </div>
                     </div>
-                    <i class="bi bi-check-circle-fill" style="color: #10b981;"></i>
+                    <i class="fas fa-check-circle" style="color: #10b981;"></i>
                 `;
                 preview.appendChild(item);
             });
