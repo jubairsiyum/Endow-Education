@@ -10,8 +10,25 @@
                 </div>
 
                 <div class="card-body">
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle"></i> <strong>Note:</strong> This feature tracks cash deposits to the bank. It does not affect profit/loss calculations.
+                    <div class="alert alert-info mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fas fa-info-circle"></i> <strong>Note:</strong> This feature tracks cash deposits to the bank. It does not affect profit/loss calculations.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Available Cash Alert -->
+                    <div class="alert alert-success mb-3">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <i class="fas fa-money-bill-wave"></i> <strong>Available Cash on Hand:</strong>
+                            </div>
+                            <div class="col-md-4 text-end">
+                                <h4 class="mb-0 text-success">BDT {{ number_format($availableCash ?? 0, 2) }}</h4>
+                            </div>
+                        </div>
+                        <small class="text-muted">Maximum amount you can deposit to bank</small>
                     </div>
 
                     <form action="{{ route('office.accounting.bank-deposits.store') }}" method="POST">

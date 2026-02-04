@@ -65,9 +65,10 @@ class TransactionController extends Controller
             return AccountCategory::active()->orderBy('type')->orderBy('name')->get();
         });
         
-        // Cache employees list for 30 minutes
+        // Cache employees list for 30 minutes (exclude students)
         $employees = Cache::remember('office_employees_list', 1800, function () {
             return \App\Models\User::select('id', 'name', 'email')
+                ->role(['Admin', 'Super Admin', 'Employee']) // Exclude Student role
                 ->orderBy('name')
                 ->get();
         });
@@ -414,7 +415,11 @@ class TransactionController extends Controller
             $totalExpense = (clone $query)->expense()->sum('amount') ?? 0;
             $netProfit = $totalIncome - $totalExpense;
 
-            // Calculate Cash on Hand (Total Income - Total Expense - Deposited to Bank)
+            // Calculate Cash Income and Cash Expense (payment_method = 'cash')
+            $cashIncome = (clone $query)->income()->where('payment_method', 'cash')->sum('amount') ?? 0;
+            $cashExpense = (clone $query)->expense()->where('payment_method', 'cash')->sum('amount') ?? 0;
+
+            // Get total deposited to bank (this reduces cash on hand)
             // Check if bank_deposits table exists before querying
             $totalDepositedToBank = 0;
             if (Schema::hasTable('bank_deposits')) {
@@ -428,7 +433,9 @@ class TransactionController extends Controller
                 }
             }
             
-            $totalCash = $netProfit - $totalDepositedToBank;
+            // Cash on Hand = Cash Income - Cash Expense - Bank Deposits
+            // Bank deposits come FROM cash, so they reduce the cash on hand
+            $totalCash = $cashIncome - $cashExpense - $totalDepositedToBank;
 
             // Get income by category with optimized query
             $incomeByCategory = Transaction::approved()

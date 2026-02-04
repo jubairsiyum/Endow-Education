@@ -47,7 +47,10 @@ class BankDepositController extends Controller
      */
     public function create()
     {
-        return view('accounting.bank-deposits.create');
+        // Calculate current available cash on hand
+        $availableCash = $this->calculateAvailableCash(date('Y-m-d'));
+        
+        return view('accounting.bank-deposits.create', compact('availableCash'));
     }
 
     /**
@@ -68,6 +71,23 @@ class BankDepositController extends Controller
 
             DB::beginTransaction();
 
+            // Calculate available cash on hand to validate deposit amount
+            $availableCash = $this->calculateAvailableCash($validated['deposit_date']);
+            
+            // Check if deposit amount exceeds available cash
+            if ($validated['amount'] > $availableCash) {
+                DB::rollBack();
+                return back()
+                    ->withInput()
+                    ->with('error', sprintf(
+                        'Insufficient cash on hand. Available cash: %s %s. Cannot deposit %s %s.',
+                        number_format($availableCash, 2),
+                        $validated['currency'],
+                        number_format($validated['amount'], 2),
+                        $validated['currency']
+                    ));
+            }
+
             $validated['deposited_by'] = Auth::id();
             $validated['status'] = 'pending';
 
@@ -76,7 +96,13 @@ class BankDepositController extends Controller
             DB::commit();
 
             return redirect()->route('office.accounting.bank-deposits.show', $deposit)
-                            ->with('success', 'Bank deposit recorded successfully and pending approval.');
+                            ->with('success', sprintf(
+                                'Bank deposit of %s %s recorded successfully and pending approval. Remaining cash on hand: %s %s',
+                                number_format($validated['amount'], 2),
+                                $validated['currency'],
+                                number_format($availableCash - $validated['amount'], 2),
+                                $validated['currency']
+                            ));
         } catch (\Exception $e) {
             DB::rollBack();
             \Log::error('Bank deposit creation failed: ' . $e->getMessage());
@@ -273,5 +299,43 @@ class BankDepositController extends Controller
                               ->paginate(20);
 
         return view('accounting.bank-deposits.pending', compact('deposits'));
+    }
+
+    /**
+     * Calculate available cash on hand up to a given date.
+     * Cash on hand = Cash Income - Cash Expense - Previous Bank Deposits (approved)
+     * 
+     * @param string $date The date to calculate cash up to (format: Y-m-d)
+     * @return float Available cash amount
+     */
+    private function calculateAvailableCash($date)
+    {
+        try {
+            // Get all approved cash transactions up to the given date
+            $cashIncome = \App\Models\Transaction::approved()
+                ->income()
+                ->where('payment_method', 'cash')
+                ->where('entry_date', '<=', $date)
+                ->sum('amount') ?? 0;
+
+            $cashExpense = \App\Models\Transaction::approved()
+                ->expense()
+                ->where('payment_method', 'cash')
+                ->where('entry_date', '<=', $date)
+                ->sum('amount') ?? 0;
+
+            // Get all approved bank deposits up to the given date
+            $totalDeposited = BankDeposit::approved()
+                ->where('deposit_date', '<=', $date)
+                ->sum('amount') ?? 0;
+
+            // Available Cash = Cash Income - Cash Expense - Already Deposited
+            $availableCash = $cashIncome - $cashExpense - $totalDeposited;
+
+            return max($availableCash, 0); // Cannot be negative
+        } catch (\Exception $e) {
+            \Log::error('Calculate available cash failed: ' . $e->getMessage());
+            return 0;
+        }
     }
 }
