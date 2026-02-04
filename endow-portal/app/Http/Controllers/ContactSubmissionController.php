@@ -24,7 +24,8 @@ class ContactSubmissionController extends Controller
         $user = Auth::user();
 
         // Build query based on role
-        $query = ContactSubmission::with(['student', 'student.user', 'assignedUser', 'responder'])
+        $query = ContactSubmission::with(['student.user', 'assignedUser', 'responder'])
+            ->whereHas('student') // Only include submissions with existing students
             ->orderBy('created_at', 'desc');
 
         // Employees only see submissions for their assigned students
@@ -67,6 +68,12 @@ class ContactSubmissionController extends Controller
     {
         $user = Auth::user();
 
+        // Check if student exists
+        if (!$contactSubmission->student || !$contactSubmission->student->user) {
+            return redirect()->route('contact-submissions.index')
+                ->with('error', 'This contact submission has an invalid or deleted student record.');
+        }
+
         // Check authorization
         if ($user->hasRole('Employee') && !$user->hasRole(['Super Admin', 'Admin'])) {
             if ($contactSubmission->student->assigned_to !== $user->id) {
@@ -74,7 +81,7 @@ class ContactSubmissionController extends Controller
             }
         }
 
-        $contactSubmission->load(['student', 'student.user', 'assignedUser', 'responder']);
+        $contactSubmission->load(['student.user', 'assignedUser', 'responder']);
 
         // Get available users for assignment (Admin and Employees)
         $availableUsers = User::whereHas('roles', function ($query) {

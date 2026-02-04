@@ -80,12 +80,16 @@
                                 <tr>
                                     <td>
                                         <div>
-                                            <a href="{{ route('students.show', $submission->student) }}"
-                                               class="text-decoration-none fw-medium">
-                                                {{ $submission->student->user->name ?? 'N/A' }}
-                                            </a>
-                                            <br>
-                                            <small class="text-muted">{{ $submission->student->user->email ?? 'N/A' }}</small>
+                                            @if($submission->student && $submission->student->user)
+                                                <a href="{{ route('students.show', $submission->student) }}"
+                                                   class="text-decoration-none fw-medium">
+                                                    {{ $submission->student->user->name }}
+                                                </a>
+                                                <br>
+                                                <small class="text-muted">{{ $submission->student->user->email }}</small>
+                                            @else
+                                                <span class="text-muted">Student Not Found</span>
+                                            @endif
                                         </div>
                                     </td>
                                     <td>

@@ -44,11 +44,15 @@
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Student Name</label>
                                 <div>
-                                    <a href="{{ route('students.show', $contactSubmission->student) }}"
-                                       class="text-decoration-none fw-medium">
-                                        <i class="fas fa-user-circle me-1"></i>
-                                        {{ $contactSubmission->student->user->name ?? 'N/A' }}
-                                    </a>
+                                    @if($contactSubmission->student && $contactSubmission->student->user)
+                                        <a href="{{ route('students.show', $contactSubmission->student) }}"
+                                           class="text-decoration-none fw-medium">
+                                            <i class="fas fa-user-circle me-1"></i>
+                                            {{ $contactSubmission->student->user->name }}
+                                        </a>
+                                    @else
+                                        <span class="text-muted">Student Not Found</span>
+                                    @endif
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -59,7 +63,7 @@
                         <div class="row mt-3">
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Phone</label>
-                                <div>{{ $contactSubmission->student->phone ?? 'N/A' }}</div>
+                                <div>{{ $contactSubmission->student?->phone ?? 'N/A' }}</div>
                             </div>
                             <div class="col-md-6">
                                 <label class="text-muted small mb-1">Submitted On</label>
