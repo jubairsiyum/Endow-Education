@@ -81,7 +81,7 @@ class StudentChecklist extends Model
      */
     public function documents()
     {
-        return $this->hasMany(StudentDocument::class);
+        return $this->hasMany(StudentDocument::class, 'student_checklist_id');
     }
 
     /**

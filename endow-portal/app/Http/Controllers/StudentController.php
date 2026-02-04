@@ -624,62 +624,179 @@ class StudentController extends Controller
                 if (!empty($eagerLoad)) {
                     $student->load($eagerLoad);
                 }
-                Log::info("Student {$student->id}: Successfully loaded relationships");
+                Log::info("Student {$student->id}: Successfully loaded initial relationships");
             } catch (\Exception $e) {
                 Log::error("Student {$student->id}: Failed to load relationships - " . $e->getMessage());
                 Log::error("Trace: " . $e->getTraceAsString());
                 // Continue anyway - we can still show basic student info
             }
 
-            // Ensure critical relationships are initialized even if loading failed
+            // CRITICAL: Load checklists with documents - bulletproof approach
             if (!$student->relationLoaded('checklists')) {
                 try {
-                    $student->load(['checklists' => function($query) {
-                        $query->with([
-                            'checklistItem' => function($q) {
-                                $q->select('id', 'title', 'description', 'required', 'order');
-                            },
-                            'reviewer' => function($q) {
-                                $q->select('id', 'name', 'email');
-                            },
-                            'documents' => function($docQuery) {
-                                $docQuery->with([
-                                    'uploader' => function($q) {
-                                        $q->select('id', 'name', 'email');
-                                    },
-                                    'reviewer' => function($q) {
-                                        $q->select('id', 'name', 'email');
+                    // First, check what exists in database using raw queries
+                    Log::info("Student {$student->id}: Checking database for checklists");
+                    $checklistIds = DB::table('student_checklists')
+                        ->where('student_id', $student->id)
+                        ->pluck('id')
+                        ->toArray();
+                    
+                    if (count($checklistIds) > 0) {
+                        Log::info("Student {$student->id}: Found " . count($checklistIds) . " checklists in DB: " . implode(', ', $checklistIds));
+                        
+                        // Check documents for these checklists
+                        $documentCounts = DB::table('student_documents')
+                            ->whereIn('student_checklist_id', $checklistIds)
+                            ->whereNull('deleted_at')
+                            ->selectRaw('student_checklist_id, COUNT(*) as doc_count')
+                            ->groupBy('student_checklist_id')
+                            ->pluck('doc_count', 'student_checklist_id');
+                        
+                        Log::info("Student {$student->id}: Document counts per checklist: " . json_encode($documentCounts));
+                        
+                        // Load checklists using direct query without JOIN to avoid failures
+                        $checklistsCollection = \App\Models\StudentChecklist::query()
+                            ->where('student_id', $student->id)
+                            ->orderBy('id')
+                            ->get();
+                        
+                        Log::info("Student {$student->id}: Loaded " . $checklistsCollection->count() . " checklist objects");
+                        
+                        // Set the relation with raw collection first
+                        $student->setRelation('checklists', $checklistsCollection);
+                        
+                        // Now load nested relationships one by one for each checklist
+                        foreach ($student->checklists as $index => $checklist) {
+                            Log::info("Processing checklist {$checklist->id} (#{$index})");
+                            
+                            // Load checklistItem
+                            try {
+                                if ($checklist->checklist_item_id && !$checklist->relationLoaded('checklistItem')) {
+                                    $checklistItem = DB::table('checklist_items')
+                                        ->where('id', $checklist->checklist_item_id)
+                                        ->first();
+                                    if ($checklistItem) {
+                                        $checklist->setRelation('checklistItem', \App\Models\ChecklistItem::find($checklist->checklist_item_id));
+                                        Log::info("Checklist {$checklist->id}: ChecklistItem loaded - {$checklistItem->title}");
                                     }
-                                ]);
+                                }
+                            } catch (\Exception $e) {
+                                Log::warning("Checklist {$checklist->id}: Failed to load checklistItem - " . $e->getMessage());
                             }
-                        ]);
-                    }]);
-                    Log::info("Student {$student->id}: Checklists loaded separately");
+                            
+                            // Load reviewer if exists
+                            try {
+                                if ($checklist->reviewed_by && !$checklist->relationLoaded('reviewer')) {
+                                    $reviewer = \App\Models\User::find($checklist->reviewed_by);
+                                    if ($reviewer) {
+                                        $checklist->setRelation('reviewer', $reviewer);
+                                    }
+                                }
+                            } catch (\Exception $e) {
+                                Log::warning("Checklist {$checklist->id}: Failed to load reviewer - " . $e->getMessage());
+                            }
+                            
+                            // CRITICAL: Load documents with explicit foreign key
+                            try {
+                                if (!$checklist->relationLoaded('documents')) {
+                                    // Use raw query first to check what exists
+                                    $docIds = DB::table('student_documents')
+                                        ->where('student_checklist_id', $checklist->id)
+                                        ->whereNull('deleted_at')
+                                        ->pluck('id')
+                                        ->toArray();
+                                    
+                                    if (count($docIds) > 0) {
+                                        Log::info("Checklist {$checklist->id}: Found " . count($docIds) . " documents in DB");
+                                        
+                                        // Load documents using Eloquent
+                                        $documents = \App\Models\StudentDocument::whereIn('id', $docIds)->get();
+                                        $checklist->setRelation('documents', $documents);
+                                        
+                                        Log::info("Checklist {$checklist->id}: Loaded " . $documents->count() . " document objects");
+                                        
+                                        // Load uploader and reviewer for each document
+                                        foreach ($documents as $doc) {
+                                            try {
+                                                if ($doc->uploaded_by && !$doc->relationLoaded('uploader')) {
+                                                    $uploader = \App\Models\User::find($doc->uploaded_by);
+                                                    if ($uploader) {
+                                                        $doc->setRelation('uploader', $uploader);
+                                                    }
+                                                }
+                                            } catch (\Exception $e) {
+                                                Log::warning("Document {$doc->id}: Failed to load uploader - " . $e->getMessage());
+                                            }
+                                            
+                                            try {
+                                                if ($doc->reviewed_by && !$doc->relationLoaded('reviewer')) {
+                                                    $reviewer = \App\Models\User::find($doc->reviewed_by);
+                                                    if ($reviewer) {
+                                                        $doc->setRelation('reviewer', $reviewer);
+                                                    }
+                                                }
+                                            } catch (\Exception $e) {
+                                                Log::warning("Document {$doc->id}: Failed to load reviewer - " . $e->getMessage());
+                                            }
+                                        }
+                                    } else {
+                                        Log::info("Checklist {$checklist->id}: No documents found in DB");
+                                        $checklist->setRelation('documents', collect());
+                                    }
+                                }
+                            } catch (\Exception $e) {
+                                Log::error("Checklist {$checklist->id}: CRITICAL - Failed to load documents - " . $e->getMessage());
+                                Log::error("Stack: " . $e->getTraceAsString());
+                                $checklist->setRelation('documents', collect());
+                            }
+                        }
+                        
+                        Log::info("Student {$student->id}: All checklists processed successfully");
+                    } else {
+                        Log::info("Student {$student->id}: No checklists found in database");
+                        $student->setRelation('checklists', collect());
+                    }
                 } catch (\Exception $e) {
-                    Log::error("Student {$student->id}: Cannot load checklists separately - " . $e->getMessage());
-                    // Set empty collection to prevent view errors
+                    Log::error("Student {$student->id}: CRITICAL ERROR loading checklists - " . $e->getMessage());
+                    Log::error("Stack: " . $e->getTraceAsString());
                     $student->setRelation('checklists', collect());
                 }
+            } else {
+                Log::info("Student {$student->id}: Checklists already loaded, count: " . $student->checklists->count());
             }
 
+            // Load standalone documents if not loaded
             if (!$student->relationLoaded('documents')) {
                 try {
-                    $student->load(['documents' => function($query) {
-                        $query->with(['checklistItem', 'uploader', 'reviewer']);
-                    }]);
+                    $student->load('documents');
+                    Log::info("Student {$student->id}: Standalone documents loaded");
                 } catch (\Exception $e) {
-                    Log::error("Student {$student->id}: Cannot load documents separately - " . $e->getMessage());
+                    Log::error("Student {$student->id}: Cannot load documents - " . $e->getMessage());
                     $student->setRelation('documents', collect());
                 }
             }
 
+            // Load follow-ups
             if (!$student->relationLoaded('followUps')) {
                 try {
                     $student->load(['followUps' => function($query) {
-                        $query->orderBy('created_at', 'desc')->with('creator');
+                        $query->orderBy('created_at', 'desc');
                     }]);
+                    
+                    // Load creator for each follow-up individually
+                    foreach ($student->followUps as $followUp) {
+                        try {
+                            if ($followUp->created_by && !$followUp->relationLoaded('creator')) {
+                                $followUp->load('creator');
+                            }
+                        } catch (\Exception $e) {
+                            Log::warning("FollowUp {$followUp->id}: Failed to load creator - " . $e->getMessage());
+                        }
+                    }
+                    
+                    Log::info("Student {$student->id}: FollowUps loaded");
                 } catch (\Exception $e) {
-                    Log::error("Student {$student->id}: Cannot load followUps separately - " . $e->getMessage());
+                    Log::error("Student {$student->id}: Cannot load followUps - " . $e->getMessage());
                     $student->setRelation('followUps', collect());
                 }
             }
@@ -687,6 +804,7 @@ class StudentController extends Controller
             // Get checklist progress with error handling
             try {
                 $checklistProgress = $this->checklistService->getChecklistProgress($student);
+                Log::info("Student {$student->id}: Checklist progress retrieved");
             } catch (\Exception $e) {
                 Log::error("Student {$student->id}: Failed to get checklist progress - " . $e->getMessage());
                 // Provide default progress
@@ -701,7 +819,9 @@ class StudentController extends Controller
                 ];
             }
 
-            Log::info("Student {$student->id}: Rendering view with " . $student->checklists->count() . " checklists");
+            $checklistCount = $student->checklists->count();
+            Log::info("Student {$student->id}: Rendering view with {$checklistCount} checklists");
+            
             return view('students.show', compact('student', 'checklistProgress'));
 
         } catch (\Exception $e) {
