@@ -288,12 +288,15 @@ class DailyReportService
         try {
             DB::beginTransaction();
 
-            // Process through approval service
-            $approved = $this->approvalService->processApproval($report, $approver, true, $comment);
+            // Update report status
+            $report->update([
+                'status' => DailyReport::STATUS_APPROVED,
+                'reviewed_by' => $approver->id,
+                'reviewed_at' => now(),
+            ]);
 
-            if ($approved) {
-                $this->activityLogger->logApproved($report, $approver->id, $comment);
-            }
+            // Log activity
+            $this->activityLogger->logApproved($report, $approver->id, $comment);
 
             DB::commit();
 
