@@ -10,7 +10,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-subtitle mb-2 text-white-50">Total Income</h6>
-                            <h3 class="card-title mb-0">{{ number_format($totalIncome, 2) }}</h3>
+                            <h3 class="card-title mb-0">{{ $currencySymbol ?? '৳' }}{{ number_format($totalIncome, 2) }}</h3>
                         </div>
                         <div>
                             <i class="fas fa-arrow-up fa-3x opacity-50"></i>
@@ -26,7 +26,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-subtitle mb-2 text-white-50">Total Expense</h6>
-                            <h3 class="card-title mb-0">{{ number_format($totalExpense, 2) }}</h3>
+                            <h3 class="card-title mb-0">{{ $currencySymbol ?? '৳' }}{{ number_format($totalExpense, 2) }}</h3>
                         </div>
                         <div>
                             <i class="fas fa-arrow-down fa-3x opacity-50"></i>
@@ -42,7 +42,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="card-subtitle mb-2 text-white-50">Cash (On Hand)</h6>
-                            <h3 class="card-title mb-0">{{ number_format($totalCash, 2) }}</h3>
+                            <h3 class="card-title mb-0">{{ $currencySymbol ?? '৳' }}{{ number_format($totalCash, 2) }}</h3>
                         </div>
                         <div>
                             <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
@@ -59,7 +59,7 @@
                         <div>
                             <h6 class="card-subtitle mb-2 text-white-50">Deposited to Bank</h6>
                             <h3 class="card-title mb-0">
-                                {{ number_format($totalDepositedToBank, 2) }}
+                                {{ $currencySymbol ?? '৳' }}{{ number_format($totalDepositedToBank, 2) }}
                             </h3>
                         </div>
                         <div>
@@ -222,13 +222,19 @@
                                         <tr>
                                             <td>{{ $transaction->entry_date->format('M d, Y') }}</td>
                                             <td>
-                                                <span class="badge bg-{{ $transaction->type == 'income' ? 'success' : 'danger' }}">
-                                                    {{ ucfirst($transaction->type) }}
-                                                </span>
+                                                @if($transaction->type == 'income')
+                                                    <span class="badge bg-success">Income</span>
+                                                @elseif($transaction->type == 'expense')
+                                                    <span class="badge bg-danger">Expense</span>
+                                                @else
+                                                    <span class="badge bg-info">Non Financial</span>
+                                                @endif
                                             </td>
-                                            <td>{{ $transaction->category->name }}</td>
+                                            <td>{{ $transaction->category ? $transaction->category->name : 'N/A' }}</td>
                                             <td>{{ $transaction->student_name ?? '-' }}</td>
-                                            <td class="text-end">{{ number_format($transaction->amount, 2) }}</td>
+                                            <td class="text-end">
+                                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}
+                                            </td>
                                             <td>{{ $transaction->creator->name ?? 'N/A' }}</td>
                                         </tr>
                                     @endforeach

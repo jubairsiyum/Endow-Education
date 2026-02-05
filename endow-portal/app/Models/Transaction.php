@@ -129,6 +129,30 @@ class Transaction extends Model
     }
 
     /**
+     * Scope a query to only include non-financial transactions.
+     */
+    public function scopeNonFinancial($query)
+    {
+        return $query->where('type', 'non_financial');
+    }
+
+    /**
+     * Scope a query to only include financial transactions (income/expense, excluding journal).
+     */
+    public function scopeFinancial($query)
+    {
+        return $query->whereIn('type', ['income', 'expense']);
+    }
+
+    /**
+     * Scope a query to filter by currency.
+     */
+    public function scopeCurrency($query, $currency)
+    {
+        return $query->where('currency', $currency);
+    }
+
+    /**
      * Scope a query to filter by date range.
      */
     public function scopeDateRange($query, $startDate, $endDate)
@@ -170,12 +194,28 @@ class Transaction extends Model
     }
 
     /**
+     * Check if transaction is non-financial.
+     */
+    public function isNonFinancial(): bool
+    {
+        return $this->type === 'non_financial';
+    }
+
+    /**
+     * Check if transaction affects financials (income or expense).
+     */
+    public function isFinancial(): bool
+    {
+        return in_array($this->type, ['income', 'expense']);
+    }
+
+    /**
      * Get formatted amount with currency.
      */
     public function getFormattedAmountAttribute(): string
     {
         $symbol = $this->getCurrencySymbol();
-        return $symbol . ' ' . number_format($this->amount, 2);
+        return $symbol . ' ' . number_format((float)$this->amount, 2);
     }
 
     /**

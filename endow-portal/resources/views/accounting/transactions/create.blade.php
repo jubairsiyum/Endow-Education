@@ -21,7 +21,11 @@
                                     <option value="">Select Type</option>
                                     <option value="income" {{ old('type') == 'income' ? 'selected' : '' }}>Income</option>
                                     <option value="expense" {{ old('type') == 'expense' ? 'selected' : '' }}>Expense</option>
+                                    <option value="non_financial" {{ old('type') == 'non_financial' ? 'selected' : '' }}>Non Financial</option>
                                 </select>
+                                <small class="text-muted" id="non-financial-note" style="display: none;">
+                                    <i class="fas fa-info-circle"></i> Non-financial transactions don't affect income or expense totals.
+                                </small>
                                 @error('type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -74,24 +78,28 @@
                         </div>
 
                         <!-- Category -->
-                        <div class="mb-3">
+                        <div class="mb-3" id="category-field">
                             <label for="category_id" class="form-label">Category <span class="text-danger">*</span></label>
                             <select name="category_id" id="category_id" class="form-select @error('category_id') is-invalid @enderror" required>
                                 <option value="">Select Category</option>
-                                <optgroup label="Income Categories" id="income-categories" style="display: none;">
+                                @if($categories->where('type', 'income')->count() > 0)
+                                <optgroup label="Income Categories" id="income-categories">
                                     @foreach($categories->where('type', 'income') as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }} data-type="income">
                                             {{ $category->name }}
                                         </option>
                                     @endforeach
                                 </optgroup>
-                                <optgroup label="Expense Categories" id="expense-categories" style="display: none;">
+                                @endif
+                                @if($categories->where('type', 'expense')->count() > 0)
+                                <optgroup label="Expense Categories" id="expense-categories">
                                     @foreach($categories->where('type', 'expense') as $category)
-                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                        <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }} data-type="expense">
                                             {{ $category->name }}
                                         </option>
                                     @endforeach
                                 </optgroup>
+                                @endif
                             </select>
                             @error('category_id')
                                 <div class="invalid-feedback">{{ $message }}</div>
@@ -136,7 +144,7 @@
                         <div id="income-fields" style="display: none;">
                             <div class="row">
                                 <!-- Student Name -->
-                                <div class="col-md-6 mb-3">
+                                <div class="col-md-12 mb-3">
                                     <label for="student_name" class="form-label">Student Name</label>
                                     <select name="student_name" 
                                             id="student_name" 
@@ -153,24 +161,27 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
-
-                                <!-- Payment Method -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="payment_method" class="form-label">Payment Method <span class="text-danger income-required">*</span></label>
-                                    <select name="payment_method" id="payment_method" class="form-select @error('payment_method') is-invalid @enderror">
-                                        <option value="">Select Payment Method</option>
-                                        <option value="Cash" {{ old('payment_method') == 'Cash' ? 'selected' : '' }}>Cash</option>
-                                        <option value="Bank Transfer" {{ old('payment_method') == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
-                                        <option value="Check" {{ old('payment_method') == 'Check' ? 'selected' : '' }}>Check</option>
-                                        <option value="Credit Card" {{ old('payment_method') == 'Credit Card' ? 'selected' : '' }}>Credit Card</option>
-                                        <option value="Debit Card" {{ old('payment_method') == 'Debit Card' ? 'selected' : '' }}>Debit Card</option>
-                                        <option value="Mobile Payment" {{ old('payment_method') == 'Mobile Payment' ? 'selected' : '' }}>Mobile Payment</option>
-                                    </select>
-                                    @error('payment_method')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
                             </div>
+                        </div>
+
+                        <!-- Payment Method (for all transaction types) -->
+                        <div class="mb-3">
+                            <label for="payment_method" class="form-label">Payment Method <span class="text-danger income-required" style="display: none;">*</span></label>
+                            <select name="payment_method" id="payment_method" class="form-select @error('payment_method') is-invalid @enderror">
+                                <option value="">Select Payment Method</option>
+                                <option value="Cash" {{ old('payment_method') == 'Cash' ? 'selected' : '' }}>Cash</option>
+                                <option value="Bank Transfer" {{ old('payment_method') == 'Bank Transfer' ? 'selected' : '' }}>Bank Transfer</option>
+                                <option value="Check" {{ old('payment_method') == 'Check' ? 'selected' : '' }}>Check</option>
+                                <option value="Credit Card" {{ old('payment_method') == 'Credit Card' ? 'selected' : '' }}>Credit Card</option>
+                                <option value="Debit Card" {{ old('payment_method') == 'Debit Card' ? 'selected' : '' }}>Debit Card</option>
+                                <option value="Mobile Payment" {{ old('payment_method') == 'Mobile Payment' ? 'selected' : '' }}>Mobile Payment</option>
+                                <option value="bKash" {{ old('payment_method') == 'bKash' ? 'selected' : '' }}>bKash</option>
+                                <option value="Nagad" {{ old('payment_method') == 'Nagad' ? 'selected' : '' }}>Nagad</option>
+                                <option value="Rocket" {{ old('payment_method') == 'Rocket' ? 'selected' : '' }}>Rocket</option>
+                            </select>
+                            @error('payment_method')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
                         </div>
 
                         <!-- Remarks -->
@@ -236,6 +247,10 @@
         const incomeCategories = document.getElementById('income-categories');
         const expenseCategories = document.getElementById('expense-categories');
         const paymentMethodInput = document.getElementById('payment_method');
+
+        // Debug: Log initial state
+        console.log('Category Select Options:', categorySelect.querySelectorAll('option').length);
+        console.log('Options with data-type:', categorySelect.querySelectorAll('option[data-type]').length);
 
         // Initialize Select2 for student name with search functionality
         const studentNameSelect = $('#student_name').select2({
@@ -309,35 +324,122 @@
         // Function to toggle fields based on transaction type
         function toggleFieldsByType() {
             const type = typeSelect.value;
+            const nonFinancialNote = document.getElementById('non-financial-note');
+            const categoryField = document.getElementById('category-field');
             
-            // Reset category selection
-            categorySelect.value = '';
+            // Toggle non-financial note visibility
+            if (type === 'non_financial') {
+                nonFinancialNote.style.display = 'block';
+            } else {
+                nonFinancialNote.style.display = 'none';
+            }
+            
+            // Get all category options (not the optgroups themselves)
+            const allOptions = categorySelect.querySelectorAll('option[data-type]');
+            const incomeOptgroup = document.getElementById('income-categories');
+            const expenseOptgroup = document.getElementById('expense-categories');
             
             if (type === 'income') {
+                // Show category field
+                categoryField.style.display = 'block';
+                categorySelect.required = true;
+                
+                // Reset category selection only if switching from another type
+                if (categorySelect.value) {
+                    const selectedOption = categorySelect.querySelector('option[value="' + categorySelect.value + '"]');
+                    if (selectedOption && selectedOption.getAttribute('data-type') !== 'income') {
+                        categorySelect.value = '';
+                    }
+                }
+                
                 // Show income-specific fields
                 incomeFields.style.display = 'block';
-                incomeCategories.style.display = 'block';
-                expenseCategories.style.display = 'none';
+                
+                // Show income optgroup, hide expense optgroup
+                incomeOptgroup.style.display = '';
+                expenseOptgroup.style.display = 'none';
+                
+                // Enable income options, disable expense options
+                allOptions.forEach(option => {
+                    if (option.getAttribute('data-type') === 'income') {
+                        option.disabled = false;
+                        option.style.display = '';
+                    } else {
+                        option.disabled = true;
+                        option.style.display = 'none';
+                    }
+                });
                 
                 // Make income fields required
                 paymentMethodInput.required = true;
+                document.querySelector('.income-required').style.display = 'inline';
             } else if (type === 'expense') {
+                // Show category field
+                categoryField.style.display = 'block';
+                categorySelect.required = true;
+                
+                // Reset category selection only if switching from another type
+                if (categorySelect.value) {
+                    const selectedOption = categorySelect.querySelector('option[value="' + categorySelect.value + '"]');
+                    if (selectedOption && selectedOption.getAttribute('data-type') !== 'expense') {
+                        categorySelect.value = '';
+                    }
+                }
+                
                 // Hide income-specific fields
                 incomeFields.style.display = 'none';
-                incomeCategories.style.display = 'none';
-                expenseCategories.style.display = 'block';
                 
-                // Remove required attribute and clear values
+                // Hide income optgroup, show expense optgroup
+                incomeOptgroup.style.display = 'none';
+                expenseOptgroup.style.display = '';
+                
+                // Disable income options, enable expense options
+                allOptions.forEach(option => {
+                    if (option.getAttribute('data-type') === 'expense') {
+                        option.disabled = false;
+                        option.style.display = '';
+                    } else {
+                        option.disabled = true;
+                        option.style.display = 'none';
+                    }
+                });
+                
+                // Payment method is optional for expense
                 paymentMethodInput.required = false;
-                paymentMethodInput.value = '';
-                studentNameSelect.val(null).trigger('change'); // Clear student name
-            } else {
-                // No type selected
+                document.querySelector('.income-required').style.display = 'none';
+                studentNameSelect.val(null).trigger('change');
+            } else if (type === 'non_financial') {
+                // For non-financial transactions, hide category field completely
+                categoryField.style.display = 'none';
+                categorySelect.required = false;
+                categorySelect.value = '';
+                
+                // Hide income-specific fields
                 incomeFields.style.display = 'none';
-                incomeCategories.style.display = 'none';
-                expenseCategories.style.display = 'none';
                 
+                // Payment method is optional for non-financial
                 paymentMethodInput.required = false;
+                document.querySelector('.income-required').style.display = 'none';
+                studentNameSelect.val(null).trigger('change');
+            } else {
+                // No type selected - show category field with all options
+                categoryField.style.display = 'block';
+                categorySelect.required = true;
+                incomeFields.style.display = 'none';
+                
+                // Show both optgroups
+                incomeOptgroup.style.display = '';
+                expenseOptgroup.style.display = '';
+                
+                // Enable all options
+                allOptions.forEach(option => {
+                    option.disabled = false;
+                    option.style.display = '';
+                });
+                
+                // Payment method is optional when no type selected
+                paymentMethodInput.required = false;
+                document.querySelector('.income-required').style.display = 'none';
             }
         }
 

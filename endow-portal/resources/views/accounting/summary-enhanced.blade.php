@@ -64,8 +64,8 @@
             <a href="{{ route('office.accounting.transactions.create') }}" class="quick-action-btn btn btn-primary">
                 <i class="fas fa-plus-circle"></i> Add Transaction
             </a>
-            <a href="{{ route('office.accounting.transactions.export', request()->query()) }}" class="quick-action-btn btn btn-success">
-                <i class="fas fa-file-excel"></i> Export
+            <a href="{{ route('office.accounting.transactions.export', array_merge(request()->query(), ['currency' => $selectedCurrency])) }}" class="quick-action-btn btn btn-success">
+                <i class="fas fa-file-excel"></i> Export {{ $selectedCurrency ? "($selectedCurrency)" : '' }}
             </a>
             <button class="quick-action-btn btn btn-outline-secondary" onclick="window.print()">
                 <i class="fas fa-print"></i> Print
@@ -92,6 +92,14 @@
                     </button>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
+                    <select id="currency_filter" class="form-select form-select-sm" style="width:150px; border-radius: 8px;">
+                        <option value="">All Currencies</option>
+                        @foreach($currencies as $curr)
+                            <option value="{{ $curr }}" {{ $selectedCurrency == $curr ? 'selected' : '' }}>
+                                {{ $curr }}
+                            </option>
+                        @endforeach
+                    </select>
                     <input type="date" id="custom_start" class="form-control form-control-sm" style="width:150px; border-radius: 8px;" value="{{ $startDate }}">
                     <span class="text-muted">to</span>
                     <input type="date" id="custom_end" class="form-control form-control-sm" style="width:150px; border-radius: 8px;" value="{{ $endDate }}">
@@ -103,6 +111,21 @@
         </div>
     </div>
 
+    <!-- Info Note about Non-Financial Transactions and Currency Filter -->
+    @if($selectedCurrency)
+    <div class="alert alert-info mb-4" style="border-radius: 12px;">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Currency Filter Active:</strong> Showing only transactions in {{ $selectedCurrency }}.
+        Non-financial transactions are excluded from financial calculations.
+    </div>
+    @else
+    <div class="alert alert-light mb-4" style="border-radius: 12px; border-left: 4px solid #3b82f6;">
+        <i class="fas fa-info-circle me-2"></i>
+        <strong>Note:</strong> Financial totals include only income and expense transactions. 
+        Non-financial transactions are excluded from these calculations.
+    </div>
+    @endif
+
     <!-- Row 1: Primary Metrics -->
     <div class="row g-3 mb-4">
         <div class="col-xl-3 col-md-6">
@@ -111,7 +134,7 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="stat-label">Net Profit/Loss</div>
-                            <h2 class="stat-value mt-2" style="color: {{ $netProfit >= 0 ? '#10b981' : '#ef4444' }}">৳{{ number_format(abs($netProfit), 2) }}</h2>
+                            <h2 class="stat-value mt-2" style="color: {{ $netProfit >= 0 ? '#10b981' : '#ef4444' }}">{{ $currencySymbol }}{{ number_format(abs($netProfit), 2) }}</h2>
                             <span class="stat-badge {{ $netProfit >= 0 ? 'badge-profit' : 'badge-loss' }} mt-2">
                                 <i class="fas fa-{{ $netProfit >= 0 ? 'arrow-up' : 'arrow-down' }}"></i>
                                 {{ $netProfit >= 0 ? 'Profitable' : 'Loss' }}
@@ -134,7 +157,7 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="stat-label">Total Income</div>
-                            <h2 class="stat-value mt-2" style="color: #3b82f6">৳{{ number_format($totalIncome, 2) }}</h2>
+                            <h2 class="stat-value mt-2" style="color: #3b82f6">{{ $currencySymbol }}{{ number_format($totalIncome, 2) }}</h2>
                             <span class="stat-badge badge-income mt-2"><i class="fas fa-arrow-up"></i> Revenue</span>
                         </div>
                         <div class="stat-icon" style="color: #3b82f6"><i class="fas fa-hand-holding-usd"></i></div>
@@ -152,7 +175,7 @@
                     <div class="d-flex justify-content-between align-items-start">
                         <div class="flex-grow-1">
                             <div class="stat-label">Total Expenses</div>
-                            <h2 class="stat-value mt-2" style="color: #f59e0b">৳{{ number_format($totalExpense, 2) }}</h2>
+                            <h2 class="stat-value mt-2" style="color: #f59e0b">{{ $currencySymbol }}{{ number_format($totalExpense, 2) }}</h2>
                             <span class="stat-badge badge-expense mt-2"><i class="fas fa-arrow-down"></i> Outflow</span>
                         </div>
                         <div class="stat-icon" style="color: #f59e0b"><i class="fas fa-receipt"></i></div>
@@ -194,7 +217,7 @@
                     <div class="d-flex justify-content-between">
                         <div class="flex-grow-1">
                             <div class="stat-label"><i class="fas fa-money-bill-wave me-1"></i> Cash on Hand</div>
-                            <h2 class="stat-value mt-2" style="color: #8b5cf6">৳{{ number_format($totalCash, 2) }}</h2>
+                            <h2 class="stat-value mt-2" style="color: #8b5cf6">{{ $currencySymbol }}{{ number_format($totalCash, 2) }}</h2>
                             <small class="text-muted">Available for operations</small>
                         </div>
                         <div class="stat-icon" style="color: #8b5cf6"><i class="fas fa-wallet"></i></div>
@@ -202,8 +225,8 @@
                     @if(isset($cashIncome) && isset($cashExpense))
                     <div class="stat-meta">
                         <div class="d-flex justify-content-between mb-2">
-                            <small>In: ৳{{ number_format($cashIncome, 2) }}</small>
-                            <small>Out: ৳{{ number_format($cashExpense, 2) }}</small>
+                            <small>In: {{ $currencySymbol }}{{ number_format($cashIncome, 2) }}</small>
+                            <small>Out: {{ $currencySymbol }}{{ number_format($cashExpense, 2) }}</small>
                         </div>
                         <div class="progress progress-modern">
                             <div class="progress-bar-profit" style="width: {{ $cashIncome > 0 ? (($cashIncome / ($cashIncome + $cashExpense)) * 100) : 0 }}%"></div>
@@ -221,7 +244,7 @@
                     <div class="d-flex justify-content-between">
                         <div class="flex-grow-1">
                             <div class="stat-label"><i class="fas fa-university me-1"></i> Bank Deposits</div>
-                            <h2 class="stat-value mt-2" style="color: #06b6d4">৳{{ number_format($totalDepositedToBank, 2) }}</h2>
+                            <h2 class="stat-value mt-2" style="color: #06b6d4">{{ $currencySymbol }}{{ number_format($totalDepositedToBank, 2) }}</h2>
                             <small class="text-muted">Secured in bank</small>
                         </div>
                         <div class="stat-icon" style="color: #06b6d4"><i class="fas fa-landmark"></i></div>
@@ -241,7 +264,7 @@
                     <div class="d-flex justify-content-between">
                         <div class="flex-grow-1">
                             <div class="stat-label"><i class="fas fa-piggy-bank me-1"></i> Liquid Assets</div>
-                            <h2 class="stat-value mt-2" style="color: #6b7280">৳{{ number_format($totalCash + $totalDepositedToBank, 2) }}</h2>
+                            <h2 class="stat-value mt-2" style="color: #6b7280">{{ $currencySymbol }}{{ number_format($totalCash + $totalDepositedToBank, 2) }}</h2>
                             <small class="text-muted">Total available</small>
                         </div>
                         <div class="stat-icon" style="color: #6b7280"><i class="fas fa-coins"></i></div>
@@ -264,7 +287,7 @@
                 <div class="card-header bg-white border-bottom-0 py-3" style="border-radius: 12px 12px 0 0;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold"><i class="fas fa-arrow-up text-success me-2"></i>Income Breakdown</h6>
-                        <span class="badge bg-success">৳{{ number_format($totalIncome, 2) }}</span>
+                        <span class="badge bg-success">{{ $currencySymbol }}{{ number_format($totalIncome, 2) }}</span>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -275,7 +298,7 @@
                             @foreach($incomeByCategory as $item)
                             <tr>
                                 <td><i class="fas fa-circle text-success" style="font-size:6px"></i> {{ $item->category->name }}</td>
-                                <td class="text-end fw-semibold">৳{{ number_format($item->total, 2) }}</td>
+                                <td class="text-end fw-semibold">{{ $currencySymbol }}{{ number_format($item->total, 2) }}</td>
                                 <td>
                                     @php $pct = $totalIncome > 0 ? ($item->total / $totalIncome) * 100 : 0; @endphp
                                     <div class="d-flex align-items-center gap-2">
@@ -301,7 +324,7 @@
                 <div class="card-header bg-white border-bottom-0 py-3" style="border-radius: 12px 12px 0 0;">
                     <div class="d-flex justify-content-between align-items-center">
                         <h6 class="mb-0 fw-bold"><i class="fas fa-arrow-down text-danger me-2"></i>Expense Breakdown</h6>
-                        <span class="badge bg-danger">৳{{ number_format($totalExpense, 2) }}</span>
+                        <span class="badge bg-danger">{{ $currencySymbol }}{{ number_format($totalExpense, 2) }}</span>
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -312,7 +335,7 @@
                             @foreach($expenseByCategory as $item)
                             <tr>
                                 <td><i class="fas fa-circle text-danger" style="font-size:6px"></i> {{ $item->category->name }}</td>
-                                <td class="text-end fw-semibold">৳{{ number_format($item->total, 2) }}</td>
+                                <td class="text-end fw-semibold">{{ $currencySymbol }}{{ number_format($item->total, 2) }}</td>
                                 <td>
                                     @php $pct = $totalExpense > 0 ? ($item->total / $totalExpense) * 100 : 0; @endphp
                                     <div class="d-flex align-items-center gap-2">
@@ -334,6 +357,119 @@
         </div>
     </div>
 
+    <!-- Currency-Specific Reporting Section -->
+    @if(!$selectedCurrency && isset($currencySummaries) && count($currencySummaries) > 1)
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm" style="border-radius: 12px;">
+                <div class="card-header bg-white border-bottom-0 py-3" style="border-radius: 12px 12px 0 0;">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0 fw-bold"><i class="fas fa-coins me-2"></i>Currency-Wise Financial Summary</h6>
+                        <span class="badge bg-primary">{{ count($currencySummaries) }} Currencies</span>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table modern-table mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Currency</th>
+                                    <th class="text-end">Income</th>
+                                    <th class="text-end">Expense</th>
+                                    <th class="text-end">Net Profit/Loss</th>
+                                    <th class="text-center">Transactions</th>
+                                    <th class="text-center">Margin</th>
+                                    <th>Status</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($currencySummaries as $curr => $summary)
+                                <tr>
+                                    <td>
+                                        <strong>{{ $curr }}</strong>
+                                        <small class="text-muted d-block">
+                                            @if($curr == 'BDT') Bangladeshi Taka
+                                            @elseif($curr == 'USD') US Dollar
+                                            @elseif($curr == 'KRW') Korean Won
+                                            @endif
+                                        </small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-success fw-semibold">
+                                            @if($curr == 'BDT') ৳
+                                            @elseif($curr == 'USD') $
+                                            @elseif($curr == 'KRW') ₩
+                                            @endif
+                                            {{ number_format($summary['income'], 2) }}
+                                        </span>
+                                        <small class="text-muted d-block">{{ $summary['income_count'] }} txns</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="text-danger fw-semibold">
+                                            @if($curr == 'BDT') ৳
+                                            @elseif($curr == 'USD') $
+                                            @elseif($curr == 'KRW') ₩
+                                            @endif
+                                            {{ number_format($summary['expense'], 2) }}
+                                        </span>
+                                        <small class="text-muted d-block">{{ $summary['expense_count'] }} txns</small>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="fw-bold" style="color: {{ $summary['profit'] >= 0 ? '#10b981' : '#ef4444' }}">
+                                            {{ $summary['profit'] >= 0 ? '+' : '' }}
+                                            @if($curr == 'BDT') ৳
+                                            @elseif($curr == 'USD') $
+                                            @elseif($curr == 'KRW') ₩
+                                            @endif
+                                            {{ number_format($summary['profit'], 2) }}
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-secondary">{{ $summary['total_transactions'] }}</span>
+                                    </td>
+                                    <td class="text-center">
+                                        @if($summary['income'] > 0)
+                                            <span class="stat-badge {{ ($summary['profit'] / $summary['income']) >= 0 ? 'badge-profit' : 'badge-loss' }}">
+                                                {{ number_format(($summary['profit'] / $summary['income']) * 100, 1) }}%
+                                            </span>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <span class="stat-badge {{ $summary['profit'] >= 0 ? 'badge-profit' : 'badge-loss' }}">
+                                            <i class="fas fa-{{ $summary['profit'] >= 0 ? 'check-circle' : 'exclamation-triangle' }}"></i>
+                                            {{ $summary['profit'] >= 0 ? 'Profit' : 'Loss' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ route('office.accounting.summary', array_merge(request()->query(), ['currency' => $curr])) }}" 
+                                           class="btn btn-sm btn-outline-primary" style="border-radius: 6px;">
+                                            <i class="fas fa-chart-line"></i> View Details
+                                        </a>
+                                    </td>
+                                </tr>
+                                @endforeach
+                            </tbody>
+                            <tfoot style="background: #f9fafb; font-weight: 600;">
+                                <tr>
+                                    <td colspan="8" class="text-center py-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-info-circle"></i> 
+                                            Amounts shown in their original currencies. Click "View Details" for currency-specific analysis.
+                                        </small>
+                                    </td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <!-- Row 4: Recent Transactions -->
     <div class="row">
         <div class="col-12">
@@ -352,7 +488,7 @@
                         <table class="table modern-table mb-0">
                             <thead>
                                 <tr>
-                                    <th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Student</th><th class="text-end">Amount</th><th>Method</th><th>By</th>
+                                    <th>Date</th><th>Type</th><th>Category</th><th>Description</th><th>Student</th><th>Currency</th><th class="text-end">Amount</th><th>Method</th><th>By</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -363,7 +499,17 @@
                                     <td><small>{{ $t->category->name ?? 'N/A' }}</small></td>
                                     <td><small class="text-muted">{{ Str::limit($t->headline ?? '-', 25) }}</small></td>
                                     <td><small>{{ $t->student_name ?? '-' }}</small></td>
-                                    <td class="text-end fw-semibold"><small class="{{ $t->type == 'income' ? 'text-success' : 'text-danger' }}">{{ $t->type == 'income' ? '+' : '-' }}৳{{ number_format($t->amount, 2) }}</small></td>
+                                    <td><span class="badge bg-light text-dark">{{ $t->currency }}</span></td>
+                                    <td class="text-end fw-semibold">
+                                        <small class="{{ $t->type == 'income' ? 'text-success' : 'text-danger' }}">
+                                            {{ $t->type == 'income' ? '+' : '-' }}
+                                            @if($t->currency == 'BDT') ৳
+                                            @elseif($t->currency == 'USD') $
+                                            @elseif($t->currency == 'KRW') ₩
+                                            @endif
+                                            {{ number_format($t->currency != 'BDT' && $t->original_amount ? $t->original_amount : $t->amount, 2) }}
+                                        </small>
+                                    </td>
                                     <td><span class="stat-badge" style="background: #f3f4f6; color: #374151;"><i class="fas fa-{{ $t->payment_method == 'cash' ? 'money-bill' : ($t->payment_method == 'bank' ? 'university' : 'credit-card') }}"></i> {{ ucfirst($t->payment_method ?? 'N/A') }}</span></td>
                                     <td><small class="text-muted">{{ Str::limit($t->creator->name ?? 'N/A', 10) }}</small></td>
                                 </tr>
@@ -381,11 +527,51 @@
 </div>
 
 <script>
-function setPeriod(period) { window.location.href = `{{ route('office.accounting.summary') }}?period=${period}`; }
+function setPeriod(period) { 
+    const currency = document.getElementById('currency_filter').value;
+    let url = `{{ route('office.accounting.summary') }}?period=${period}`;
+    if (currency) {
+        url += `&currency=${currency}`;
+    }
+    window.location.href = url;
+}
 function applyCustomPeriod() {
     const start = document.getElementById('custom_start').value;
     const end = document.getElementById('custom_end').value;
-    if (start && end) window.location.href = `{{ route('office.accounting.summary') }}?start_date=${start}&end_date=${end}`;
+    const currency = document.getElementById('currency_filter').value;
+    if (start && end) {
+        let url = `{{ route('office.accounting.summary') }}?start_date=${start}&end_date=${end}`;
+        if (currency) {
+            url += `&currency=${currency}`;
+        }
+        window.location.href = url;
+    }
 }
+
+// Add event listener for currency filter change
+document.addEventListener('DOMContentLoaded', function() {
+    const currencyFilter = document.getElementById('currency_filter');
+    if (currencyFilter) {
+        currencyFilter.addEventListener('change', function() {
+            const start = document.getElementById('custom_start').value;
+            const end = document.getElementById('custom_end').value;
+            const currency = this.value;
+            
+            let url = `{{ route('office.accounting.summary') }}`;
+            const params = new URLSearchParams();
+            
+            if (start) params.append('start_date', start);
+            if (end) params.append('end_date', end);
+            if (currency) params.append('currency', currency);
+            
+            const queryString = params.toString();
+            if (queryString) {
+                url += '?' + queryString;
+            }
+            
+            window.location.href = url;
+        });
+    }
+});
 </script>
 @endsection

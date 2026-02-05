@@ -8,9 +8,13 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">Transaction Details</h4>
                     <div>
-                        <span class="badge bg-{{ $transaction->type == 'income' ? 'success' : 'danger' }} fs-6">
-                            {{ ucfirst($transaction->type) }}
-                        </span>
+                        @if($transaction->type == 'income')
+                            <span class="badge bg-success fs-6">Income</span>
+                        @elseif($transaction->type == 'expense')
+                            <span class="badge bg-danger fs-6">Expense</span>
+                        @else
+                            <span class="badge bg-info fs-6">Non Financial</span>
+                        @endif
                         @if($transaction->status == 'pending')
                             <span class="badge bg-warning text-dark fs-6">Pending</span>
                         @elseif($transaction->status == 'approved')
@@ -22,6 +26,7 @@
                 </div>
 
                 <div class="card-body">
+                    @if($transaction->category)
                     <div class="row mb-4">
                         <div class="col-md-6">
                             <h6 class="text-muted mb-1">Category</h6>
@@ -30,10 +35,21 @@
                         <div class="col-md-6">
                             <h6 class="text-muted mb-1">Amount</h6>
                             <p class="fs-5 fw-bold text-{{ $transaction->type == 'income' ? 'success' : 'danger' }}">
-                                {{ number_format($transaction->amount, 2) }}
+                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}
                             </p>
                         </div>
                     </div>
+                    @else
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <h6 class="text-muted mb-1">Amount</h6>
+                            <p class="fs-5 fw-bold text-info">
+                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}
+                            </p>
+                            <span class="badge bg-info">Non-financial transaction - No category assigned</span>
+                        </div>
+                    </div>
+                    @endif
 
                     <div class="row mb-4">
                         <div class="col-md-6">

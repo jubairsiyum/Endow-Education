@@ -31,13 +31,19 @@
                                         <tr>
                                             <td>{{ $transaction->entry_date->format('M d, Y') }}</td>
                                             <td>
-                                                <span class="badge bg-{{ $transaction->type == 'income' ? 'success' : 'danger' }}">
-                                                    {{ ucfirst($transaction->type) }}
-                                                </span>
+                                                @if($transaction->type == 'income')
+                                                    <span class="badge bg-success">Income</span>
+                                                @elseif($transaction->type == 'expense')
+                                                    <span class="badge bg-danger">Expense</span>
+                                                @else
+                                                    <span class="badge bg-info">Non Financial</span>
+                                                @endif
                                             </td>
-                                            <td>{{ $transaction->category->name }}</td>
+                                            <td>{{ $transaction->category ? $transaction->category->name : 'N/A' }}</td>
                                             <td>{{ $transaction->student_name ?? '-' }}</td>
-                                            <td class="text-end">{{ number_format($transaction->amount, 2) }}</td>
+                                            <td class="text-end">
+                                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}
+                                            </td>
                                             <td>{{ $transaction->payment_method ?? '-' }}</td>
                                             <td>
                                                 @if($transaction->remarks)

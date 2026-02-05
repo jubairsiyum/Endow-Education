@@ -42,6 +42,11 @@ class TransactionController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
+        // Filter by currency
+        if ($request->filled('currency')) {
+            $query->where('currency', $request->currency);
+        }
+
         // Order by entry date descending
         $transactions = $query->orderBy('entry_date', 'desc')
                              ->orderBy('created_at', 'desc')
@@ -434,11 +439,29 @@ class TransactionController extends Controller
             }
 
             // Get approved transactions only
-            $query = Transaction::approved()->dateRange($startDate, $endDate);
+            $query = Transaction::approved()->financial()->dateRange($startDate, $endDate);
 
-            // Calculate totals
-            $totalIncome = (clone $query)->income()->sum('amount') ?? 0;
-            $totalExpense = (clone $query)->expense()->sum('amount') ?? 0;
+            // Filter by currency if specified
+            $selectedCurrency = $request->filled('currency') ? $request->currency : null;
+            if ($selectedCurrency) {
+                $query->where('currency', $selectedCurrency);
+            }
+
+            // Determine which amount field to use based on selected currency
+            // For BDT or no currency filter, use 'amount'. For other currencies, use 'original_amount'
+            $amountField = ($selectedCurrency && $selectedCurrency !== 'BDT') ? 'original_amount' : 'amount';
+            
+            // Get currency symbol
+            $currencySymbol = match($selectedCurrency) {
+                'USD' => '$',
+                'KRW' => '₩',
+                'BDT' => '৳',
+                default => '৳' // Default to BDT symbol when showing all currencies
+            };
+
+            // Calculate totals using the appropriate amount field
+            $totalIncome = (clone $query)->income()->sum($amountField) ?? 0;
+            $totalExpense = (clone $query)->expense()->sum($amountField) ?? 0;
             $netProfit = $totalIncome - $totalExpense;
 
             // Get transaction counts
@@ -446,8 +469,8 @@ class TransactionController extends Controller
             $totalExpenseCount = (clone $query)->expense()->count();
 
             // Calculate Cash Income and Cash Expense (payment_method = 'cash')
-            $cashIncome = (clone $query)->income()->where('payment_method', 'cash')->sum('amount') ?? 0;
-            $cashExpense = (clone $query)->expense()->where('payment_method', 'cash')->sum('amount') ?? 0;
+            $cashIncome = (clone $query)->income()->where('payment_method', 'cash')->sum($amountField) ?? 0;
+            $cashExpense = (clone $query)->expense()->where('payment_method', 'cash')->sum($amountField) ?? 0;
 
             // Get total deposited to bank (this reduces cash on hand)
             // Check if bank_deposits table exists before querying
@@ -465,33 +488,68 @@ class TransactionController extends Controller
             
             // Cash on Hand = Cash Income - Cash Expense - Bank Deposits
             // Bank deposits come FROM cash, so they reduce the cash on hand
-            $totalCash = $cashIncome - $cashExpense - $totalDepositedToBank;
+            // $totalCash = $cashIncome - $cashExpense - $totalDepositedToBank;
+            $totalCash = $cashIncome - $totalDepositedToBank;
+
 
             // Get income by category with optimized query
             $incomeByCategory = Transaction::approved()
+                ->financial()
                 ->income()
                 ->dateRange($startDate, $endDate)
-                ->select('category_id', DB::raw('SUM(amount) as total'))
+                ->when($selectedCurrency, fn($q) => $q->where('currency', $selectedCurrency))
+                ->select('category_id', DB::raw("SUM($amountField) as total"))
                 ->groupBy('category_id')
                 ->with('category:id,name,type')
                 ->get();
 
             // Get expense by category with optimized query
             $expenseByCategory = Transaction::approved()
+                ->financial()
                 ->expense()
                 ->dateRange($startDate, $endDate)
-                ->select('category_id', DB::raw('SUM(amount) as total'))
+                ->when($selectedCurrency, fn($q) => $q->where('currency', $selectedCurrency))
+                ->select('category_id', DB::raw("SUM($amountField) as total"))
                 ->groupBy('category_id')
                 ->with('category:id,name,type')
                 ->get();
 
+            // Get available currencies
+            $currencies = Transaction::approved()
+                ->select('currency')
+                ->distinct()
+                ->orderBy('currency')
+                ->pluck('currency');
+
+            // Prepare currency-specific summaries
+            $currencySummaries = [];
+            foreach ($currencies as $curr) {
+                $currQuery = Transaction::approved()->financial()->dateRange($startDate, $endDate)->where('currency', $curr);
+                
+                $income = (clone $currQuery)->income()->sum($curr != 'BDT' && $curr ? 'original_amount' : 'amount') ?? 0;
+                $expense = (clone $currQuery)->expense()->sum($curr != 'BDT' && $curr ? 'original_amount' : 'amount') ?? 0;
+                $incomeCount = (clone $currQuery)->income()->count();
+                $expenseCount = (clone $currQuery)->expense()->count();
+                
+                $currencySummaries[$curr] = [
+                    'income' => $income,
+                    'expense' => $expense,
+                    'profit' => $income - $expense,
+                    'income_count' => $incomeCount,
+                    'expense_count' => $expenseCount,
+                    'total_transactions' => $incomeCount + $expenseCount,
+                ];
+            }
+
             // Get recent transactions with selective column loading
             $recentTransactions = Transaction::approved()
-                ->select('id', 'entry_date', 'type', 'amount', 'student_name', 'headline', 'payment_method', 'category_id', 'created_by')
+                ->financial()
+                ->select('id', 'entry_date', 'type', 'amount', 'currency', 'original_amount', 'student_name', 'headline', 'payment_method', 'category_id', 'created_by')
                 ->with([
                     'category:id,name',
                     'creator:id,name'
                 ])
+                ->when($selectedCurrency, fn($q) => $q->where('currency', $selectedCurrency))
                 ->dateRange($startDate, $endDate)
                 ->orderBy('entry_date', 'desc')
                 ->limit(10)
@@ -516,7 +574,11 @@ class TransactionController extends Controller
                 'expenseByCategory',
                 'recentTransactions',
                 'startDate',
-                'endDate'
+                'endDate',
+                'currencies',
+                'selectedCurrency',
+                'currencySummaries',
+                'currencySymbol'
             ));
         } catch (\Illuminate\Database\QueryException $e) {
             \Log::error('Accounting Summary Error: ' . $e->getMessage());
@@ -547,20 +609,37 @@ class TransactionController extends Controller
                 ? $request->end_date 
                 : now()->endOfMonth()->format('Y-m-d');
 
+            // Filter by currency if specified
+            $currency = $request->filled('currency') ? $request->currency : null;
+            
             // Get all approved transactions for the period
-            $transactions = Transaction::approved()
+            $query = Transaction::approved()
                 ->dateRange($startDate, $endDate)
                 ->with(['category', 'creator', 'employee'])
-                ->orderBy('entry_date', 'desc')
-                ->get();
+                ->orderBy('entry_date', 'desc');
+            
+            // Apply currency filter if specified
+            if ($currency) {
+                $query->where('currency', $currency);
+            }
+            
+            // Option to include or exclude non-financial entries
+            $includeNonFinancial = $request->filled('include_non_financial') ? $request->boolean('include_non_financial') : false;
+            if (!$includeNonFinancial) {
+                $query->financial();
+            }
+            
+            $transactions = $query->get();
 
-            // Calculate summary
-            $totalIncome = $transactions->where('type', 'income')->sum('amount');
-            $totalExpense = $transactions->where('type', 'expense')->sum('amount');
+            // Calculate summary (only for financial transactions)
+            $financialTransactions = $transactions->where('type', '!=', 'non_financial');
+            $totalIncome = $financialTransactions->where('type', 'income')->sum('amount');
+            $totalExpense = $financialTransactions->where('type', 'expense')->sum('amount');
             $netProfit = $totalIncome - $totalExpense;
 
             // Set headers for CSV download
-            $filename = "accounting_report_" . $startDate . "_to_" . $endDate . ".csv";
+            $currencyLabel = $currency ? "_{$currency}" : "_all_currencies";
+            $filename = "accounting_report{$currencyLabel}_{$startDate}_to_{$endDate}.csv";
             
             header('Content-Type: text/csv; charset=utf-8');
             header('Content-Disposition: attachment; filename="' . $filename . '"');
@@ -573,14 +652,17 @@ class TransactionController extends Controller
             // Write summary header
             fputcsv($output, ['ENDOW CORPORATION - ACCOUNTING REPORT']);
             fputcsv($output, ['Period:', $startDate . ' to ' . $endDate]);
+            if ($currency) {
+                fputcsv($output, ['Currency Filter:', $currency]);
+            }
             fputcsv($output, ['Generated:', now()->format('Y-m-d H:i:s')]);
             fputcsv($output, []);
             
             // Write summary
-            fputcsv($output, ['SUMMARY']);
-            fputcsv($output, ['Total Income', number_format($totalIncome, 2)]);
-            fputcsv($output, ['Total Expense', number_format($totalExpense, 2)]);
-            fputcsv($output, ['Net Profit/Loss', number_format($netProfit, 2)]);
+            fputcsv($output, ['SUMMARY (FINANCIAL TRANSACTIONS ONLY)']);
+            fputcsv($output, ['Total Income (BDT)', number_format($totalIncome, 2)]);
+            fputcsv($output, ['Total Expense (BDT)', number_format($totalExpense, 2)]);
+            fputcsv($output, ['Net Profit/Loss (BDT)', number_format($netProfit, 2)]);
             fputcsv($output, []);
             
             // Write transaction headers
@@ -591,9 +673,10 @@ class TransactionController extends Controller
                 'Headline',
                 'Student Name',
                 'Amount (BDT)',
-                'Payment Method',
                 'Currency',
                 'Original Amount',
+                'Conversion Rate',
+                'Payment Method',
                 'Employee',
                 'Remarks',
                 'Created By',
@@ -610,9 +693,10 @@ class TransactionController extends Controller
                     $transaction->headline ?? '-',
                     $transaction->student_name ?? '-',
                     number_format((float)$transaction->amount, 2),
-                    ucfirst($transaction->payment_method ?? 'N/A'),
                     $transaction->currency ?? 'BDT',
                     $transaction->original_amount ? number_format((float)$transaction->original_amount, 2) : '-',
+                    $transaction->conversion_rate ? number_format((float)$transaction->conversion_rate, 4) : '-',
+                    ucfirst($transaction->payment_method ?? 'N/A'),
                     $transaction->employee->name ?? '-',
                     $transaction->remarks ?? '-',
                     $transaction->creator->name ?? 'N/A',

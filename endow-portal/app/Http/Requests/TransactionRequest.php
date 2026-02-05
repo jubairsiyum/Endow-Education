@@ -22,7 +22,7 @@ class TransactionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => ['required', 'exists:account_categories,id'],
+            'category_id' => ['nullable', 'required_unless:type,non_financial', 'exists:account_categories,id'],
             'headline' => ['required', 'string', 'max:255'],
             'employee_id' => ['required', 'exists:users,id'],
             'currency' => ['required', 'in:BDT,USD,KRW'],
@@ -31,7 +31,7 @@ class TransactionRequest extends FormRequest
             'remarks' => ['nullable', 'string', 'max:1000'],
             'student_name' => ['nullable', 'string', 'max:255'],
             'payment_method' => ['nullable', 'string', 'max:100', 'required_if:type,income'],
-            'type' => ['required', 'in:income,expense'],
+            'type' => ['required', 'in:income,expense,non_financial'],
         ];
     }
 
@@ -57,7 +57,7 @@ class TransactionRequest extends FormRequest
             'entry_date.required' => 'Entry date is required.',
             'entry_date.date' => 'Entry date must be a valid date.',
             'type.required' => 'Transaction type is required.',
-            'type.in' => 'Transaction type must be either income or expense.',
+            'type.in' => 'Transaction type must be income, expense, or non-financial.',
             'payment_method.required_if' => 'Payment method is required for income transactions.',
         ];
     }
