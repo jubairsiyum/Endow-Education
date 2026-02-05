@@ -60,8 +60,8 @@ class DailyReportController extends Controller
             $reports = $this->reportService->getMyReports($user, $filters);
         }
 
-        // Get statistics
-        $statistics = $this->reportService->getStatistics($filters);
+        // Get role-based statistics
+        $statistics = $this->reportService->getStatistics($filters, $user);
 
         return view('office.daily-reports.index', compact('reports', 'statistics', 'filters'));
     }
@@ -324,11 +324,11 @@ class DailyReportController extends Controller
         }
 
         $validated = $request->validate([
-            'reason' => 'required|string|max:1000',
+            'comment' => 'nullable|string|max:1000',
         ]);
 
         try {
-            $this->reportService->rejectReport($dailyReport, auth()->user(), $validated['reason']);
+            $this->reportService->rejectReport($dailyReport, auth()->user(), $validated['comment'] ?? 'Report rejected by reviewer.');
 
             return back()->with('success', 'Report rejected. Feedback sent to submitter.');
         } catch (Exception $e) {

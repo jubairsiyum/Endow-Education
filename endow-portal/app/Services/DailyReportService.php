@@ -369,11 +369,27 @@ class DailyReportService
     }
 
     /**
-     * Get statistics for dashboard
+     * Get statistics for dashboard based on user role
      */
-    public function getStatistics(array $filters = []): array
+    public function getStatistics(array $filters = [], $user = null): array
     {
         $query = DailyReport::query();
+
+        // Apply role-based filtering if user is provided
+        if ($user) {
+            if ($user->hasRole('Super Admin')) {
+                // Super Admin sees all reports - no additional filtering needed
+            } elseif ($user->hasRole('department_manager') || $user->isManagerOfAnyDepartment()) {
+                // Department managers see only their department's reports
+                $departmentIds = $user->managedDepartments()->pluck('id')->toArray();
+                if (!empty($departmentIds)) {
+                    $query->whereIn('department_id', $departmentIds);
+                }
+            } else {
+                // General users/employees see only their own reports
+                $query->where('submitted_by', $user->id);
+            }
+        }
 
         // Apply date filter if provided
         if (!empty($filters['start_date']) && !empty($filters['end_date'])) {

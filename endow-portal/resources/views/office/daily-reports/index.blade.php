@@ -143,8 +143,6 @@
                         <tr style="border-bottom: 1px solid #E0E0E0;{{ $report->status === 'rejected' ? ' background-color: #fee2e2;' : '' }}">
                             <td class="px-3 py-2">
                                 <span class="fw-semibold" style="color: #000000;">{{ $report->report_date->format('M d, Y') }}</span>
-                                <br>
-                                <small class="text-muted">{{ $report->report_date->diffForHumans() }}</small>
                             </td>
                             <td class="px-3 py-2">
                                 <span class="badge rounded-pill" style="background-color: #000000; color: #FFFFFF;">
@@ -167,7 +165,7 @@
                                     </div>
                                     <div>
                                         <div class="fw-semibold" style="color: #000000;">{{ $report->submittedBy->name }}</div>
-                                        <small class="text-muted">{{ $report->created_at->diffForHumans() }}</small>
+                                        <small class="text-muted">{{ $report->created_at->format('M d, Y') }}</small>
                                     </div>
                                 </div>
                             </td>
@@ -227,7 +225,7 @@
                             <td class="px-3 py-2">
                                 @if($report->reviewedBy)
                                     <div class="fw-semibold" style="color: #000000;">{{ $report->reviewedBy->name }}</div>
-                                    <small class="text-muted">{{ $report->reviewed_at->diffForHumans() }}</small>
+                                    <small class="text-muted">{{ $report->reviewed_at->format('M d, Y') }}</small>
                                 @else
                                     <span class="text-muted">—</span>
                                 @endif

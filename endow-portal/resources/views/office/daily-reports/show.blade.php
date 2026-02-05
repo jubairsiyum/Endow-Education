@@ -345,29 +345,39 @@
                         <span class="badge" style="background: #15803d; color: white; font-size: 0.75rem;">Action Required</span>
                     </div>
                     <div class="dr-card-body">
-                        <p class="text-muted mb-3" style="font-size: 0.9rem;">
-                            <i class="fas fa-info-circle me-1"></i>Review this report and approve or reject with your feedback
+                        <p class="text-muted mb-4" style="font-size: 0.95rem;">
+                            <i class="fas fa-info-circle me-1"></i>Review this report carefully and take appropriate action
                         </p>
                         
-                        <div class="row g-3">
+                        <div class="row g-4">
                             <div class="col-md-6">
-                                <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST">
+                                <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST" class="text-center">
                                     @csrf
-                                    <label class="dr-label">Approval Comment (Optional)</label>
-                                    <textarea name="comment" class="dr-textarea mb-3" rows="3" placeholder="Add approval comments..."></textarea>
-                                    <button type="submit" class="dr-btn dr-btn-success w-100">
-                                        <i class="fas fa-check-circle"></i>Approve Report
-                                    </button>
+                                    <div class="p-4 rounded" style="background: #f0fdf4; border: 2px solid #bbf7d0;">
+                                        <i class="fas fa-check-circle mb-3" style="font-size: 3rem; color: #15803d;"></i>
+                                        <h5 class="mb-3 fw-bold" style="color: #15803d;">Approve Report</h5>
+                                        <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                                            Confirm that this report meets all requirements and standards
+                                        </p>
+                                        <button type="submit" class="dr-btn dr-btn-success w-100 py-3">
+                                            <i class="fas fa-check-circle me-2"></i>Approve Report
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                             <div class="col-md-6">
-                                <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST">
+                                <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST" class="text-center">
                                     @csrf
-                                    <label class="dr-label">Rejection Reason <span style="color: #dc3545;">*</span></label>
-                                    <textarea name="comment" class="dr-textarea mb-3" rows="3" placeholder="Explain reason for rejection..." required></textarea>
-                                    <button type="submit" class="dr-btn dr-btn-danger w-100">
-                                        <i class="fas fa-times-circle"></i>Reject Report
-                                    </button>
+                                    <div class="p-4 rounded" style="background: #fef2f2; border: 2px solid #fecaca;">
+                                        <i class="fas fa-times-circle mb-3" style="font-size: 3rem; color: #dc2626;"></i>
+                                        <h5 class="mb-3 fw-bold" style="color: #dc2626;">Reject Report</h5>
+                                        <p class="text-muted mb-3" style="font-size: 0.9rem;">
+                                            Report requires revisions or does not meet standards
+                                        </p>
+                                        <button type="submit" class="dr-btn dr-btn-danger w-100 py-3">
+                                            <i class="fas fa-times-circle me-2"></i>Reject Report
+                                        </button>
+                                    </div>
                                 </form>
                             </div>
                         </div>
