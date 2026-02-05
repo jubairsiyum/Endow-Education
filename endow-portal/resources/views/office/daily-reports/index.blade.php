@@ -140,7 +140,7 @@
                     </thead>
                     <tbody>
                         @foreach($reports as $report)
-                        <tr style="border-bottom: 1px solid #E0E0E0;">
+                        <tr style="border-bottom: 1px solid #E0E0E0;{{ $report->status === 'rejected' ? ' background-color: #fee2e2;' : '' }}">
                             <td class="px-3 py-2">
                                 <span class="fw-semibold" style="color: #000000;">{{ $report->report_date->format('M d, Y') }}</span>
                                 <br>
@@ -154,15 +154,9 @@
                             </td>
                             <td class="px-3 py-2">
                                 <div class="fw-semibold" style="color: #000000;">{{ Str::limit($report->title, 80) }}</div>
-                                @if($report->priority && $report->priority !== 'normal')
-                                    <span class="badge badge-{{ $report->priority_badge }} mt-1" style="font-size: 10px;">
-                                        @if($report->priority === 'urgent')
-                                            <i class="fas fa-exclamation-circle"></i> URGENT
-                                        @elseif($report->priority === 'high')
-                                            <i class="fas fa-arrow-up"></i> HIGH
-                                        @else
-                                            {{ strtoupper($report->priority) }}
-                                        @endif
+                                @if($report->status === 'rejected')
+                                    <span class="badge bg-danger mt-1" style="font-size: 10px;">
+                                        <i class="fas fa-exclamation-triangle"></i> REJECTED - Needs Attention
                                     </span>
                                 @endif
                             </td>
@@ -213,8 +207,8 @@
                                         <i class="fas fa-check-circle"></i> Approved
                                     </span>
                                 @elseif($report->status === 'rejected')
-                                    <span class="badge rounded-pill bg-danger">
-                                        <i class="fas fa-times-circle"></i> Rejected
+                                    <span class="badge rounded-pill" style="background-color: #dc3545; color: #FFFFFF; font-weight: bold; animation: pulse 2s infinite;">
+                                        <i class="fas fa-times-circle"></i> REJECTED
                                     </span>
                                 @elseif($report->status === 'completed')
                                     <span class="badge rounded-pill" style="background-color: #FFFFFF; color: #000000; border: 1px solid #000000;">

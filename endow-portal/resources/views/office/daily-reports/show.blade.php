@@ -300,27 +300,6 @@
                             </div>
                         </div>
                         
-                        <!-- Priority -->
-                        @if(isset($dailyReport->priority))
-                        <div class="col-md-6">
-                            <span class="dr-label">Priority Level</span>
-                            <div>
-                                @php
-                                    $priorityConfig = [
-                                        'urgent' => ['icon' => 'fa-exclamation-circle', 'class' => 'dr-priority-urgent', 'text' => 'URGENT'],
-                                        'high' => ['icon' => 'fa-arrow-up', 'class' => 'dr-priority-high', 'text' => 'HIGH'],
-                                        'normal' => ['icon' => 'fa-equals', 'class' => 'dr-priority-normal', 'text' => 'NORMAL'],
-                                        'low' => ['icon' => 'fa-arrow-down', 'class' => 'dr-priority-low', 'text' => 'LOW']
-                                    ];
-                                    $priorityBadge = $priorityConfig[$dailyReport->priority] ?? $priorityConfig['normal'];
-                                @endphp
-                                <span class="dr-badge {{ $priorityBadge['class'] }}">
-                                    <i class="fas {{ $priorityBadge['icon'] }}"></i>{{ $priorityBadge['text'] }}
-                                </span>
-                            </div>
-                        </div>
-                        @endif
-                        
                         <!-- Tags -->
                         @if(isset($dailyReport->tags) && !empty($dailyReport->tags))
                         <div class="col-md-6">
@@ -584,31 +563,13 @@
                         @csrf
 
                         <div class="mb-3">
-                            <label class="dr-label">Review Comment (Optional)</label>
-                            <textarea name="review_comment" id="review_comment" rows="4" class="dr-textarea @error('review_comment') is-invalid @enderror" placeholder="Add feedback, suggestions, or acknowledgment...">{{ old('review_comment') }}</textarea>
-                            @error('review_comment')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="text-muted">Provide feedback, instructions, or acknowledgment for the submitted report</small>
-                        </div>
-
-                        <div class="mb-3">
                             <div class="form-check">
                                 <input class="form-check-input" type="checkbox" name="mark_as_completed" id="mark_as_completed" value="1" {{ old('mark_as_completed') ? 'checked' : '' }}>
                                 <label class="form-check-label fw-semibold" for="mark_as_completed">
                                     Mark as Completed
                                 </label>
                             </div>
-                            <small class="text-muted">Check this to finalize the report. If unchecked, employee can continue updating based on your instructions.</small>
-                        </div>
-
-                        <div class="alert alert-warning border-0 mb-3" style="font-size: 0.875rem;">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            <strong>Review Guidelines:</strong>
-                            <ul class="mb-0 mt-2" style="font-size: 0.8125rem;">
-                                <li><strong>Mark as Completed:</strong> Report is finalized and locked</li>
-                                <li><strong>Don't Mark:</strong> Employee can continue updating</li>
-                            </ul>
+                            <small class="text-muted">Check this to finalize the report.</small>
                         </div>
 
                         <button type="submit" class="dr-btn dr-btn-success">

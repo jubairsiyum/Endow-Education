@@ -175,7 +175,6 @@ class DailyReportController extends Controller
             'description' => 'required|string',
             'report_date' => 'required|date|before_or_equal:today',
             'status' => 'required|in:draft,submitted,in_progress,review',
-            'priority' => 'nullable|in:low,normal,high,urgent',
             'tags' => 'nullable|string|max:500',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,txt',
@@ -231,7 +230,6 @@ class DailyReportController extends Controller
 
         // Validate request
         $validated = $request->validate([
-            'review_comment' => 'nullable|string|max:1000',
             'mark_as_completed' => 'nullable|boolean',
         ]);
 
@@ -239,7 +237,7 @@ class DailyReportController extends Controller
             $this->reportService->reviewReport(
                 $dailyReport,
                 auth()->user(),
-                $validated['review_comment'] ?? null,
+                null, // No comment needed
                 $validated['mark_as_completed'] ?? false
             );
 

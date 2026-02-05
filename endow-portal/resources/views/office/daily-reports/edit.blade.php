@@ -100,36 +100,6 @@
                             <small class="text-muted">Provide detailed information about your activities</small>
                         </div>
 
-                        <!-- Priority -->
-                        <div class="mb-4">
-                            <label for="priority" class="form-label fw-semibold" style="color: #000000;">
-                                <i class="fas fa-flag me-2" style="color: #DC143C;"></i>
-                                Priority Level
-                            </label>
-                            <select name="priority" 
-                                    id="priority" 
-                                    class="form-select @error('priority') is-invalid @enderror" 
-                                    style="border: 2px solid #E0E0E0; border-radius: 0.5rem; padding: 0.75rem;"
-                                    {{ $dailyReport->isReviewed() ? 'disabled' : '' }}>
-                                <option value="normal" {{ old('priority', $dailyReport->priority ?? 'normal') == 'normal' ? 'selected' : '' }}>
-                                    Normal - Standard priority
-                                </option>
-                                <option value="high" {{ old('priority', $dailyReport->priority) == 'high' ? 'selected' : '' }}>
-                                    High - Requires attention
-                                </option>
-                                <option value="urgent" {{ old('priority', $dailyReport->priority) == 'urgent' ? 'selected' : '' }}>
-                                    Urgent - Immediate action needed
-                                </option>
-                                <option value="low" {{ old('priority', $dailyReport->priority) == 'low' ? 'selected' : '' }}>
-                                    Low - Can wait
-                                </option>
-                            </select>
-                            @error('priority')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="text-muted">Update priority level if circumstances have changed</small>
-                        </div>
-
                         <!-- Tags -->
                         <div class="mb-4">
                             <label for="tags" class="form-label fw-semibold" style="color: #000000;">

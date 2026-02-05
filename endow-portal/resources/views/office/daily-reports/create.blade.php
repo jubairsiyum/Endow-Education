@@ -276,37 +276,18 @@
                             </div>
                         </div>
 
-                        <div class="row">
-                            <!-- Report Date -->
-                            <div class="col-md-6 mb-4">
-                                <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="fas fa-calendar-alt"></i></span>
-                                    Report Date <span class="required-star">*</span>
-                                </label>
-                                <input type="date" name="report_date" id="report_date" class="dr-input @error('report_date') is-invalid @enderror" value="{{ old('report_date', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" required>
-                                @error('report_date')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="dr-hint">
-                                    <i class="fas fa-clock"></i> Cannot select future dates
-                                </div>
-                            </div>
-
-                            <!-- Priority -->
-                            <div class="col-md-6 mb-4">
-                                <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="fas fa-flag"></i></span>
-                                    Priority Level
-                                </label>
-                                <select name="priority" class="dr-select @error('priority') is-invalid @enderror">
-                                    <option value="normal" {{ old('priority', 'normal') == 'normal' ? 'selected' : '' }}>🟢 Normal - Standard priority</option>
-                                    <option value="high" {{ old('priority') == 'high' ? 'selected' : '' }}>🟠 High - Requires attention</option>
-                                    <option value="urgent" {{ old('priority') == 'urgent' ? 'selected' : '' }}>🔴 Urgent - Immediate action needed</option>
-                                    <option value="low" {{ old('priority') == 'low' ? 'selected' : '' }}>🔵 Low - Can wait</option>
-                                </select>
-                                @error('priority')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
+                        <!-- Report Date -->
+                        <div class="mb-4">
+                            <label class="dr-label">
+                                <span class="dr-icon-badge"><i class="fas fa-calendar-alt"></i></span>
+                                Report Date <span class="required-star">*</span>
+                            </label>
+                            <input type="date" name="report_date" id="report_date" class="dr-input @error('report_date') is-invalid @enderror" value="{{ old('report_date', now()->format('Y-m-d')) }}" max="{{ now()->format('Y-m-d') }}" required>
+                            @error('report_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="dr-hint">
+                                <i class="fas fa-clock"></i> Cannot select future dates
                             </div>
                         </div>
 
@@ -345,35 +326,21 @@
 
                         <div class="dr-divider"></div>
 
-                        <div class="row">
-                            <!-- Status -->
-                            <div class="col-md-6 mb-4">
-                                <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="fas fa-check-circle"></i></span>
-                                    Submission Type <span class="required-star">*</span>
-                                </label>
-                                <select name="status" class="dr-select @error('status') is-invalid @enderror" required>
-                                    <option value="draft" {{ old('status', 'draft') == 'draft' ? 'selected' : '' }}>💾 Save as Draft - Continue later</option>
-                                    <option value="submitted" {{ old('status') == 'submitted' ? 'selected' : '' }}>✅ Submit for Review - Ready for manager</option>
-                                </select>
-                                @error('status')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+                        <!-- Hidden Status Field - Always Submit for Review -->
+                        <input type="hidden" name="status" value="submitted">
 
-                            <!-- Tags -->
-                            <div class="col-md-6 mb-4">
-                                <label class="dr-label">
-                                    <span class="dr-icon-badge"><i class="fas fa-tags"></i></span>
-                                    Tags <span class="text-muted">(Optional)</span>
-                                </label>
-                                <input type="text" name="tags" class="dr-input @error('tags') is-invalid @enderror" placeholder="e.g., meeting, client, urgent" value="{{ old('tags') }}">
-                                @error('tags')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="dr-hint">
-                                    <i class="fas fa-tag"></i> Separate with commas
-                                </div>
+                        <!-- Tags -->
+                        <div class="mb-4">
+                            <label class="dr-label">
+                                <span class="dr-icon-badge"><i class="fas fa-tags"></i></span>
+                                Tags <span class="text-muted">(Optional)</span>
+                            </label>
+                            <input type="text" name="tags" class="dr-input @error('tags') is-invalid @enderror" placeholder="e.g., meeting, client, urgent" value="{{ old('tags') }}">
+                            @error('tags')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="dr-hint">
+                                <i class="fas fa-tag"></i> Separate with commas
                             </div>
                         </div>
 
@@ -404,7 +371,7 @@
                                 <li>🎯 Mention key metrics or results achieved</li>
                                 <li>⚠️ Note any challenges and how you addressed them</li>
                                 <li>📋 List action items or follow-ups required</li>
-                                <li>💾 Save as draft to continue later, or submit for manager review</li>
+                                <li>✅ All reports are submitted for manager review automatically</li>
                             </ul>
                         </div>
                     </div>
@@ -416,7 +383,7 @@
                                 <i class="fas fa-times"></i> Cancel
                             </a>
                             <button type="submit" class="dr-btn dr-btn-primary">
-                                <i class="fas fa-save"></i> Save Report
+                                <i class="fas fa-paper-plane"></i> Submit Report for Review
                             </button>
                         </div>
                     </div>
