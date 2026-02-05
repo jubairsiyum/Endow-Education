@@ -35,7 +35,7 @@
                         <div class="col-md-6">
                             <h6 class="text-muted mb-1">Amount</h6>
                             <p class="fs-5 fw-bold text-{{ $transaction->type == 'income' ? 'success' : 'danger' }}">
-                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}
+                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->amount, 2) }}
                             </p>
                         </div>
                     </div>
@@ -44,7 +44,7 @@
                         <div class="col-md-12">
                             <h6 class="text-muted mb-1">Amount</h6>
                             <p class="fs-5 fw-bold text-info">
-                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}
+                                {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->amount, 2) }}
                             </p>
                             <span class="badge bg-info">Non-financial transaction - No category assigned</span>
                         </div>

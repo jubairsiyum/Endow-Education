@@ -123,26 +123,18 @@ class TransactionController extends Controller
         DB::beginTransaction();
 
         try {
-            // Get conversion rate if not BDT
+            // Store amount in its original currency without conversion
             $currency = $request->input('currency', 'BDT');
-            $originalAmount = $request->amount;
-            $conversionRate = null;
-            $amountInBDT = $originalAmount;
-
-            if ($currency !== 'BDT') {
-                // Get today's conversion rate
-                $conversionRate = $this->getConversionRate($currency);
-                $amountInBDT = $originalAmount * $conversionRate;
-            }
+            $amount = $request->amount;
 
             $transaction = Transaction::create([
                 'category_id' => $request->category_id,
                 'headline' => $request->headline,
                 'employee_id' => $request->employee_id,
-                'amount' => $amountInBDT, // Store in BDT
+                'amount' => $amount, // Store in original currency
                 'currency' => $currency,
-                'original_amount' => $currency !== 'BDT' ? $originalAmount : null,
-                'conversion_rate' => $conversionRate,
+                'original_amount' => null, // No longer needed
+                'conversion_rate' => null, // No longer needed
                 'entry_date' => $request->entry_date,
                 'remarks' => $request->remarks,
                 'student_name' => $request->student_name,
@@ -168,20 +160,7 @@ class TransactionController extends Controller
         }
     }
 
-    /**
-     * Get conversion rate for currency to BDT.
-     */
-    private function getConversionRate(string $currency): float
-    {
-        // Conversion rates to BDT (these should be updated daily in production)
-        // In production, you might want to fetch this from an API or database
-        $rates = [
-            'USD' => 110.50, // 1 USD = 110.50 BDT
-            'KRW' => 0.092,  // 1 KRW = 0.092 BDT
-        ];
 
-        return $rates[$currency] ?? 1;
-    }
 
     /**
      * Display the specified transaction.
@@ -235,26 +214,18 @@ class TransactionController extends Controller
         DB::beginTransaction();
 
         try {
-            // Get conversion rate if not BDT
+            // Store amount in its original currency without conversion
             $currency = $request->input('currency', 'BDT');
-            $originalAmount = $request->amount;
-            $conversionRate = null;
-            $amountInBDT = $originalAmount;
-
-            if ($currency !== 'BDT') {
-                // Get today's conversion rate
-                $conversionRate = $this->getConversionRate($currency);
-                $amountInBDT = $originalAmount * $conversionRate;
-            }
+            $amount = $request->amount;
 
             $transaction->update([
                 'category_id' => $request->category_id,
                 'headline' => $request->headline,
                 'employee_id' => $request->employee_id,
-                'amount' => $amountInBDT, // Store in BDT
+                'amount' => $amount, // Store in original currency
                 'currency' => $currency,
-                'original_amount' => $currency !== 'BDT' ? $originalAmount : null,
-                'conversion_rate' => $conversionRate,
+                'original_amount' => null, // No longer needed
+                'conversion_rate' => null, // No longer needed
                 'entry_date' => $request->entry_date,
                 'remarks' => $request->remarks,
                 'student_name' => $request->student_name,
@@ -447,19 +418,18 @@ class TransactionController extends Controller
                 $query->where('currency', $selectedCurrency);
             }
 
-            // Determine which amount field to use based on selected currency
-            // For BDT or no currency filter, use 'amount'. For other currencies, use 'original_amount'
-            $amountField = ($selectedCurrency && $selectedCurrency !== 'BDT') ? 'original_amount' : 'amount';
+            // Always use 'amount' field since we store in original currency now
+            $amountField = 'amount';
             
             // Get currency symbol
             $currencySymbol = match($selectedCurrency) {
                 'USD' => '$',
                 'KRW' => '₩',
                 'BDT' => '৳',
-                default => '৳' // Default to BDT symbol when showing all currencies
+                default => '৳' // Default to BDT when no filter
             };
 
-            // Calculate totals using the appropriate amount field
+            // Calculate totals using actual amounts in their currencies
             $totalIncome = (clone $query)->income()->sum($amountField) ?? 0;
             $totalExpense = (clone $query)->expense()->sum($amountField) ?? 0;
             $netProfit = $totalIncome - $totalExpense;
@@ -477,19 +447,23 @@ class TransactionController extends Controller
             $totalDepositedToBank = 0;
             if (Schema::hasTable('bank_deposits')) {
                 try {
-                    $totalDepositedToBank = BankDeposit::approved()
-                        ->whereBetween('deposit_date', [$startDate, $endDate])
-                        ->sum('amount') ?? 0;
+                    $bankDepositsQuery = BankDeposit::approved()
+                        ->whereBetween('deposit_date', [$startDate, $endDate]);
+                    
+                    // Filter by currency if specified
+                    if ($selectedCurrency) {
+                        $bankDepositsQuery->where('currency', $selectedCurrency);
+                    }
+                    
+                    $totalDepositedToBank = $bankDepositsQuery->sum('amount') ?? 0;
                 } catch (\Exception $e) {
                     \Log::warning('Bank deposits query failed: ' . $e->getMessage());
                     $totalDepositedToBank = 0;
                 }
             }
             
-            // Cash on Hand = Cash Income - Cash Expense - Bank Deposits
-            // Bank deposits come FROM cash, so they reduce the cash on hand
-            // $totalCash = $cashIncome - $cashExpense - $totalDepositedToBank;
-            $totalCash = $cashIncome - $totalDepositedToBank;
+            // Cash on Hand = Cash Income - Cash Expense - Bank Deposits (in same currency)
+            $totalCash = $cashIncome - $cashExpense - $totalDepositedToBank;
 
 
             // Get income by category with optimized query
@@ -521,13 +495,14 @@ class TransactionController extends Controller
                 ->orderBy('currency')
                 ->pluck('currency');
 
-            // Prepare currency-specific summaries
+            // Prepare currency-specific summaries (using real amounts in each currency)
             $currencySummaries = [];
             foreach ($currencies as $curr) {
                 $currQuery = Transaction::approved()->financial()->dateRange($startDate, $endDate)->where('currency', $curr);
                 
-                $income = (clone $currQuery)->income()->sum($curr != 'BDT' && $curr ? 'original_amount' : 'amount') ?? 0;
-                $expense = (clone $currQuery)->expense()->sum($curr != 'BDT' && $curr ? 'original_amount' : 'amount') ?? 0;
+                // Always use 'amount' since we now store in original currency
+                $income = (clone $currQuery)->income()->sum('amount') ?? 0;
+                $expense = (clone $currQuery)->expense()->sum('amount') ?? 0;
                 $incomeCount = (clone $currQuery)->income()->count();
                 $expenseCount = (clone $currQuery)->expense()->count();
                 
@@ -544,7 +519,7 @@ class TransactionController extends Controller
             // Get recent transactions with selective column loading
             $recentTransactions = Transaction::approved()
                 ->financial()
-                ->select('id', 'entry_date', 'type', 'amount', 'currency', 'original_amount', 'student_name', 'headline', 'payment_method', 'category_id', 'created_by')
+                ->select('id', 'entry_date', 'type', 'amount', 'currency', 'student_name', 'headline', 'payment_method', 'category_id', 'created_by')
                 ->with([
                     'category:id,name',
                     'creator:id,name'
@@ -631,7 +606,7 @@ class TransactionController extends Controller
             
             $transactions = $query->get();
 
-            // Calculate summary (only for financial transactions)
+            // Calculate summary (only for financial transactions in selected currency)
             $financialTransactions = $transactions->where('type', '!=', 'non_financial');
             $totalIncome = $financialTransactions->where('type', 'income')->sum('amount');
             $totalExpense = $financialTransactions->where('type', 'expense')->sum('amount');
@@ -659,10 +634,11 @@ class TransactionController extends Controller
             fputcsv($output, []);
             
             // Write summary
+            $currencyLabel = $currency ? $currency : 'Mixed Currencies';
             fputcsv($output, ['SUMMARY (FINANCIAL TRANSACTIONS ONLY)']);
-            fputcsv($output, ['Total Income (BDT)', number_format($totalIncome, 2)]);
-            fputcsv($output, ['Total Expense (BDT)', number_format($totalExpense, 2)]);
-            fputcsv($output, ['Net Profit/Loss (BDT)', number_format($netProfit, 2)]);
+            fputcsv($output, ['Total Income (' . $currencyLabel . ')', number_format($totalIncome, 2)]);
+            fputcsv($output, ['Total Expense (' . $currencyLabel . ')', number_format($totalExpense, 2)]);
+            fputcsv($output, ['Net Profit/Loss (' . $currencyLabel . ')', number_format($netProfit, 2)]);
             fputcsv($output, []);
             
             // Write transaction headers
@@ -672,10 +648,8 @@ class TransactionController extends Controller
                 'Category',
                 'Headline',
                 'Student Name',
-                'Amount (BDT)',
+                'Amount',
                 'Currency',
-                'Original Amount',
-                'Conversion Rate',
                 'Payment Method',
                 'Employee',
                 'Remarks',
@@ -694,8 +668,6 @@ class TransactionController extends Controller
                     $transaction->student_name ?? '-',
                     number_format((float)$transaction->amount, 2),
                     $transaction->currency ?? 'BDT',
-                    $transaction->original_amount ? number_format((float)$transaction->original_amount, 2) : '-',
-                    $transaction->conversion_rate ? number_format((float)$transaction->conversion_rate, 4) : '-',
                     ucfirst($transaction->payment_method ?? 'N/A'),
                     $transaction->employee->name ?? '-',
                     $transaction->remarks ?? '-',

@@ -119,7 +119,7 @@
                                         <td>{{ $transaction->category ? $transaction->category->name : 'N/A' }}</td>
                                         <td>{{ $transaction->student_name ?? '-' }}</td>
                                         <td class="text-end">
-                                            <strong>{{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->currency != 'BDT' && $transaction->original_amount ? $transaction->original_amount : $transaction->amount, 2) }}</strong>
+                                            <strong>{{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->amount, 2) }}</strong>
                                         </td>
                                         <td>{{ $transaction->currency }}</td>
                                         <td>{{ $transaction->payment_method ?? '-' }}</td>

@@ -20,15 +20,30 @@
 
                     <!-- Available Cash Alert -->
                     <div class="alert alert-success mb-3">
-                        <div class="row align-items-center">
-                            <div class="col-md-8">
-                                <i class="fas fa-money-bill-wave"></i> <strong>Available Cash on Hand:</strong>
+                        <div class="mb-2">
+                            <i class="fas fa-money-bill-wave"></i> <strong>Available Cash on Hand:</strong>
+                        </div>
+                        <div class="row text-center">
+                            <div class="col-md-4">
+                                <div class="border rounded p-2 bg-white">
+                                    <small class="text-muted d-block">BDT</small>
+                                    <h5 class="mb-0 text-success">৳ {{ number_format($availableCashBDT ?? 0, 2) }}</h5>
+                                </div>
                             </div>
-                            <div class="col-md-4 text-end">
-                                <h4 class="mb-0 text-success">BDT {{ number_format($availableCash ?? 0, 2) }}</h4>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2 bg-white">
+                                    <small class="text-muted d-block">USD</small>
+                                    <h5 class="mb-0 text-success">$ {{ number_format($availableCashUSD ?? 0, 2) }}</h5>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="border rounded p-2 bg-white">
+                                    <small class="text-muted d-block">KRW</small>
+                                    <h5 class="mb-0 text-success">₩ {{ number_format($availableCashKRW ?? 0, 2) }}</h5>
+                                </div>
                             </div>
                         </div>
-                        <small class="text-muted">Maximum amount you can deposit to bank</small>
+                        <small class="text-muted d-block mt-2">Maximum amount you can deposit to bank per currency</small>
                     </div>
 
                     <form action="{{ route('office.accounting.bank-deposits.store') }}" method="POST">

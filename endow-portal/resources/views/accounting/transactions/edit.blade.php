@@ -119,20 +119,11 @@
                                        name="amount" 
                                        id="amount" 
                                        class="form-control @error('amount') is-invalid @enderror"
-                                       value="{{ old('amount', $transaction->original_amount ?? $transaction->amount) }}"
+                                       value="{{ old('amount', $transaction->amount) }}"
                                        step="0.01"
                                        min="0.01"
                                        placeholder="0.00"
                                        required>
-                                <small class="text-muted" id="conversion-note" style="display: none;">
-                                    This will be automatically converted to BDT using today's exchange rate.
-                                </small>
-                                @if($transaction->original_amount)
-                                    <small class="text-info d-block mt-1">
-                                        Original: {{ $transaction->getCurrencySymbol() }} {{ number_format($transaction->original_amount, 2) }} 
-                                        (Converted to BDT: ৳{{ number_format($transaction->amount, 2) }} at rate {{ $transaction->conversion_rate }})
-                                    </small>
-                                @endif
                                 @error('amount')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -343,20 +334,9 @@
             }
         }
 
-        function toggleCurrencyNote() {
-            const currency = currencySelect.value;
-            if (currency !== 'BDT') {
-                conversionNote.style.display = 'block';
-            } else {
-                conversionNote.style.display = 'none';
-            }
-        }
-
         typeSelect.addEventListener('change', toggleFieldsByType);
-        currencySelect.addEventListener('change', toggleCurrencyNote);
         
         toggleFieldsByType();
-        toggleCurrencyNote();
     });
 </script>
 @endpush

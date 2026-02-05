@@ -131,9 +131,6 @@
                                        min="0.01"
                                        placeholder="0.00"
                                        required>
-                                <small class="text-muted" id="conversion-note" style="display: none;">
-                                    This will be automatically converted to BDT using today's exchange rate.
-                                </small>
                                 @error('amount')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -443,25 +440,11 @@
             }
         }
 
-        // Function to toggle currency conversion note
-        function toggleCurrencyNote() {
-            const currency = currencySelect.value;
-            if (currency !== 'BDT') {
-                conversionNote.style.display = 'block';
-            } else {
-                conversionNote.style.display = 'none';
-            }
-        }
-
         // Listen for type changes
         typeSelect.addEventListener('change', toggleFieldsByType);
-        
-        // Listen for currency changes
-        currencySelect.addEventListener('change', toggleCurrencyNote);
 
         // Initialize on page load (for old() values)
         toggleFieldsByType();
-        toggleCurrencyNote();
     });
 </script>
 @endpush

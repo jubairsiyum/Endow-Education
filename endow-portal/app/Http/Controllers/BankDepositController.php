@@ -47,10 +47,12 @@ class BankDepositController extends Controller
      */
     public function create()
     {
-        // Calculate current available cash on hand
-        $availableCash = $this->calculateAvailableCash(date('Y-m-d'));
+        // Calculate current available cash on hand per currency
+        $availableCashBDT = $this->calculateAvailableCash(date('Y-m-d'), 'BDT');
+        $availableCashUSD = $this->calculateAvailableCash(date('Y-m-d'), 'USD');
+        $availableCashKRW = $this->calculateAvailableCash(date('Y-m-d'), 'KRW');
         
-        return view('accounting.bank-deposits.create', compact('availableCash'));
+        return view('accounting.bank-deposits.create', compact('availableCashBDT', 'availableCashUSD', 'availableCashKRW'));
     }
 
     /**
@@ -71,8 +73,8 @@ class BankDepositController extends Controller
 
             DB::beginTransaction();
 
-            // Calculate available cash on hand to validate deposit amount
-            $availableCash = $this->calculateAvailableCash($validated['deposit_date']);
+            // Calculate available cash on hand for the specific currency to validate deposit amount
+            $availableCash = $this->calculateAvailableCash($validated['deposit_date'], $validated['currency']);
             
             // Check if deposit amount exceeds available cash
             if ($validated['amount'] > $availableCash) {
@@ -302,30 +304,34 @@ class BankDepositController extends Controller
     }
 
     /**
-     * Calculate available cash on hand up to a given date.
+     * Calculate available cash on hand up to a given date for a specific currency.
      * Cash on hand = Cash Income - Cash Expense - Previous Bank Deposits (approved)
      * 
      * @param string $date The date to calculate cash up to (format: Y-m-d)
-     * @return float Available cash amount
+     * @param string $currency The currency to calculate for (default: 'BDT')
+     * @return float Available cash amount in the specified currency
      */
-    private function calculateAvailableCash($date)
+    private function calculateAvailableCash($date, $currency = 'BDT')
     {
         try {
-            // Get all approved cash transactions up to the given date
+            // Get all approved cash transactions up to the given date for this currency
             $cashIncome = \App\Models\Transaction::approved()
                 ->income()
                 ->where('payment_method', 'cash')
+                ->where('currency', $currency)
                 ->where('entry_date', '<=', $date)
                 ->sum('amount') ?? 0;
 
             $cashExpense = \App\Models\Transaction::approved()
                 ->expense()
                 ->where('payment_method', 'cash')
+                ->where('currency', $currency)
                 ->where('entry_date', '<=', $date)
                 ->sum('amount') ?? 0;
 
-            // Get all approved bank deposits up to the given date
+            // Get all approved bank deposits up to the given date for this currency
             $totalDeposited = BankDeposit::approved()
+                ->where('currency', $currency)
                 ->where('deposit_date', '<=', $date)
                 ->sum('amount') ?? 0;
 
