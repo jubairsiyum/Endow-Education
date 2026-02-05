@@ -333,52 +333,78 @@
                 </div>
             </div>
 
-            <!-- Manager Approval Actions -->
+            <!-- Manager Review Section -->
             @if($dailyReport->status === 'pending_review' || $dailyReport->status === 'submitted')
                 @can('approve', $dailyReport)
                 <div class="dr-approval-card dr-card">
-                    <div class="dr-card-header" style="background: #f0fdf4; border-color: #bbf7d0;">
-                        <h6 class="mb-0 fw-bold" style="color: #15803d;">
-                            <i class="fas fa-user-check me-2"></i>
-                            Manager Review Actions
+                    <div class="dr-card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                        <h6 class="mb-0 fw-bold" style="color: #FFFFFF;">
+                            <i class="fas fa-clipboard-check me-2"></i>
+                            Manager Review & Decision
                         </h6>
-                        <span class="badge" style="background: #15803d; color: white; font-size: 0.75rem;">Action Required</span>
+                        <span class="badge" style="background: rgba(255,255,255,0.3); color: #FFFFFF; font-size: 0.75rem;">Action Required</span>
                     </div>
-                    <div class="dr-card-body">
-                        <p class="text-muted mb-4" style="font-size: 0.95rem;">
-                            <i class="fas fa-info-circle me-1"></i>Review this report carefully and take appropriate action
-                        </p>
+                    <div class="dr-card-body" style="background: #f8fafc;">
+                        <div class="alert alert-info border-0 mb-4" style="background: #e0f2fe; color: #075985;">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Review Instructions:</strong> Carefully examine the report content above. You can approve immediately or reject with feedback.
+                        </div>
                         
                         <div class="row g-4">
+                            <!-- Approve Option -->
                             <div class="col-md-6">
-                                <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST" class="text-center">
-                                    @csrf
-                                    <div class="p-4 rounded" style="background: #f0fdf4; border: 2px solid #bbf7d0;">
-                                        <i class="fas fa-check-circle mb-3" style="font-size: 3rem; color: #15803d;"></i>
-                                        <h5 class="mb-3 fw-bold" style="color: #15803d;">Approve Report</h5>
-                                        <p class="text-muted mb-3" style="font-size: 0.9rem;">
-                                            Confirm that this report meets all requirements and standards
+                                <div class="p-4 rounded h-100" style="background: white; border: 2px solid #e5e7eb;">
+                                    <div class="text-center mb-4">
+                                        <div class="mb-3" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
+                                        </div>
+                                        <h5 class="mb-2 fw-bold" style="color: #059669;">Approve Report</h5>
+                                        <p class="text-muted mb-0" style="font-size: 0.875rem;">
+                                            Report meets all standards and requirements
                                         </p>
-                                        <button type="submit" class="dr-btn dr-btn-success w-100 py-3">
+                                    </div>
+                                    
+                                    <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="form-label text-muted" style="font-size: 0.85rem; font-weight: 600;">Optional Notes</label>
+                                            <textarea name="comment" class="form-control" rows="3" placeholder="Add any approval notes or commendations..." style="border-color: #d1d5db; font-size: 0.9rem;"></textarea>
+                                            <small class="text-muted">Optional feedback for the employee</small>
+                                        </div>
+                                        <button type="submit" class="btn w-100 py-3 fw-bold" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
                                             <i class="fas fa-check-circle me-2"></i>Approve Report
                                         </button>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
                             </div>
+
+                            <!-- Reject Option -->
                             <div class="col-md-6">
-                                <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST" class="text-center">
-                                    @csrf
-                                    <div class="p-4 rounded" style="background: #fef2f2; border: 2px solid #fecaca;">
-                                        <i class="fas fa-times-circle mb-3" style="font-size: 3rem; color: #dc2626;"></i>
-                                        <h5 class="mb-3 fw-bold" style="color: #dc2626;">Reject Report</h5>
-                                        <p class="text-muted mb-3" style="font-size: 0.9rem;">
-                                            Report requires revisions or does not meet standards
+                                <div class="p-4 rounded h-100" style="background: white; border: 2px solid #e5e7eb;">
+                                    <div class="text-center mb-4">
+                                        <div class="mb-3" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-times" style="font-size: 2.5rem; color: white;"></i>
+                                        </div>
+                                        <h5 class="mb-2 fw-bold" style="color: #dc2626;">Reject Report</h5>
+                                        <p class="text-muted mb-0" style="font-size: 0.875rem;">
+                                            Report needs revisions or corrections
                                         </p>
-                                        <button type="submit" class="dr-btn dr-btn-danger w-100 py-3">
+                                    </div>
+                                    
+                                    <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST" id="rejectForm">
+                                        @csrf
+                                        <div class="mb-3">
+                                            <label class="form-label fw-bold" style="font-size: 0.9rem; color: #dc2626;">
+                                                <i class="fas fa-exclamation-triangle me-1"></i>Rejection Reason <span style="color: #dc2626;">*</span>
+                                            </label>
+                                            <textarea name="comment" class="form-control" rows="3" placeholder="Clearly explain what needs to be corrected or improved..." required style="border-color: #fca5a5; font-size: 0.9rem;"></textarea>
+                                            <small class="text-danger fw-semibold">Required: Employee needs clear feedback to improve</small>
+                                        </div>
+                                        <button type="submit" class="btn w-100 py-3 fw-bold" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none;">
                                             <i class="fas fa-times-circle me-2"></i>Reject Report
                                         </button>
-                                    </div>
-                                </form>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -554,41 +580,9 @@
             </div>
             @endif
 
-            <!-- Review Form (for managers/supervisors on submitted reports) -->
+            <!-- Draft Submission Form (for report owners only) -->
             @can('review', $dailyReport)
-            @if($dailyReport->isAwaitingReview())
-            <div class="dr-card" style="border: 2px solid #3b82f6;">
-                <div class="dr-card-header" style="background: #eff6ff; border-color: #bfdbfe;">
-                    <h6 class="mb-0 fw-bold" style="color: #1e40af;">
-                        <i class="fas fa-check-circle me-2"></i>
-                        Review This Report
-                    </h6>
-                </div>
-                <div class="dr-card-body">
-                    <div class="alert alert-info border-0 mb-3" style="font-size: 0.875rem;">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Manager Review:</strong> The employee who submitted this report will receive your feedback.
-                    </div>
-                    <form action="{{ route('office.daily-reports.review', $dailyReport) }}" method="POST">
-                        @csrf
-
-                        <div class="mb-3">
-                            <div class="form-check">
-                                <input class="form-check-input" type="checkbox" name="mark_as_completed" id="mark_as_completed" value="1" {{ old('mark_as_completed') ? 'checked' : '' }}>
-                                <label class="form-check-label fw-semibold" for="mark_as_completed">
-                                    Mark as Completed
-                                </label>
-                            </div>
-                            <small class="text-muted">Check this to finalize the report.</small>
-                        </div>
-
-                        <button type="submit" class="dr-btn dr-btn-success">
-                            <i class="fas fa-check"></i>Submit Review
-                        </button>
-                    </form>
-                </div>
-            </div>
-            @elseif($dailyReport->isDraft() && $dailyReport->submitted_by === auth()->id())
+            @if($dailyReport->isDraft() && $dailyReport->submitted_by === auth()->id())
             <div class="dr-card" style="border: 2px solid #f59e0b;">
                 <div class="dr-card-header" style="background: #fffbeb; border-color: #fcd34d;">
                     <h6 class="mb-0 fw-bold" style="color: #92400e;">

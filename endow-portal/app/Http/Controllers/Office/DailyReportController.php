@@ -324,13 +324,16 @@ class DailyReportController extends Controller
         }
 
         $validated = $request->validate([
-            'comment' => 'nullable|string|max:1000',
+            'comment' => 'required|string|min:10|max:1000',
+        ], [
+            'comment.required' => 'Please provide a clear reason for rejection.',
+            'comment.min' => 'Rejection reason must be at least 10 characters to provide meaningful feedback.',
         ]);
 
         try {
-            $this->reportService->rejectReport($dailyReport, auth()->user(), $validated['comment'] ?? 'Report rejected by reviewer.');
+            $this->reportService->rejectReport($dailyReport, auth()->user(), $validated['comment']);
 
-            return back()->with('success', 'Report rejected. Feedback sent to submitter.');
+            return back()->with('success', 'Report rejected. Detailed feedback sent to submitter.');
         } catch (Exception $e) {
             return back()->with('error', 'Failed to reject report: ' . $e->getMessage());
         }
