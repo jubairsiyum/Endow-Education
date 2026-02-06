@@ -7,38 +7,37 @@
 <style>
     /* Scoped Daily Report View Styles */
     .dr-view-page {
-        padding: 1.5rem 0;
+        padding: 1rem 0;
     }
     
     .dr-view-page .dr-view-header {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        padding: 1.75rem;
-        border-radius: 12px;
+        background: #DC143C;
+        padding: 1rem;
+        border-radius: 4px;
         color: white;
-        margin-bottom: 1.5rem;
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.25);
+        margin-bottom: 1rem;
+        border-bottom: 3px solid #000000;
     }
     
     .dr-view-page .dr-card {
         background: white;
-        border-radius: 10px;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        border-radius: 4px;
         border: 1px solid #e5e7eb;
-        margin-bottom: 1.25rem;
+        margin-bottom: 0.875rem;
         overflow: hidden;
     }
     
     .dr-view-page .dr-card-header {
-        background: #f9fafb;
-        padding: 1rem 1.25rem;
-        border-bottom: 1px solid #e5e7eb;
+        background: #f8f9fa;
+        padding: 0.75rem 0.875rem;
+        border-bottom: 1px solid #dee2e6;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
     
     .dr-view-page .dr-card-body {
-        padding: 1.25rem;
+        padding: 0.875rem;
     }
     
     .dr-view-page .dr-label {
@@ -57,13 +56,13 @@
     }
     
     .dr-view-page .dr-badge {
-        padding: 0.375rem 0.875rem;
-        border-radius: 6px;
-        font-size: 0.8125rem;
+        padding: 0.25rem 0.625rem;
+        border-radius: 3px;
+        font-size: 0.75rem;
         font-weight: 600;
         display: inline-flex;
         align-items: center;
-        gap: 0.375rem;
+        gap: 0.25rem;
     }
     
     .dr-view-page .dr-status-draft { background: #f3f4f6; color: #374151; }
@@ -79,30 +78,29 @@
     .dr-view-page .dr-priority-low { background: #dbeafe; color: #1e40af; }
     
     .dr-view-page .dr-btn {
-        padding: 0.5rem 1.25rem;
-        border-radius: 7px;
+        padding: 0.5rem 0.875rem;
+        border-radius: 3px;
         font-weight: 600;
-        font-size: 0.875rem;
-        transition: all 0.2s;
+        font-size: 0.8125rem;
         display: inline-flex;
         align-items: center;
-        gap: 0.5rem;
+        gap: 0.375rem;
         text-decoration: none;
         border: none;
+        transition: opacity 0.2s;
     }
     
     .dr-view-page .dr-btn:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        opacity: 0.85;
     }
     
     .dr-view-page .dr-btn-primary {
-        background: #dc3545;
+        background: #DC143C;
         color: white;
     }
     
     .dr-view-page .dr-btn-primary:hover {
-        background: #c82333;
+        background: #000000;
         color: white;
     }
     
@@ -123,40 +121,38 @@
     }
     
     .dr-view-page .dr-description-box {
-        background: #f9fafb;
-        border-left: 4px solid #dc3545;
-        border-radius: 8px;
-        padding: 1rem;
-        line-height: 1.6;
+        background: #f8f9fa;
+        border-left: 3px solid #DC143C;
+        padding: 0.75rem;
+        line-height: 1.5;
     }
     
     .dr-view-page .dr-comment-item {
-        background: #f9fafb;
-        border-radius: 8px;
-        padding: 1rem;
-        margin-bottom: 1rem;
-        border-left: 3px solid #dc3545;
+        background: #f8f9fa;
+        padding: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-left: 3px solid #DC143C;
     }
     
     .dr-view-page .dr-user-avatar {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
-        background: linear-gradient(135deg, #dc3545, #c82333);
+        background: #DC143C;
         color: white;
         display: flex;
         align-items: center;
         justify-content: center;
         font-weight: 700;
-        font-size: 1rem;
+        font-size: 0.85rem;
         flex-shrink: 0;
     }
     
     .dr-view-page .dr-timeline-item {
         display: flex;
-        gap: 0.75rem;
-        padding: 0.75rem 0;
-        border-bottom: 1px solid #f3f4f6;
+        gap: 0.5rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e9ecef;
     }
     
     .dr-view-page .dr-timeline-item:last-child {
@@ -164,37 +160,34 @@
     }
     
     .dr-view-page .dr-timeline-icon {
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        border-radius: 3px;
         display: flex;
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        font-size: 0.75rem;
+        font-size: 0.65rem;
     }
     
     .dr-view-page .dr-input,
     .dr-view-page .dr-textarea {
-        border: 1px solid #d1d5db;
-        border-radius: 7px;
-        padding: 0.625rem 0.875rem;
-        font-size: 0.9375rem;
+        border: 1px solid #ced4da;
+        border-radius: 3px;
+        padding: 0.5rem;
+        font-size: 0.8125rem;
         width: 100%;
-        transition: all 0.2s;
     }
     
     .dr-view-page .dr-input:focus,
     .dr-view-page .dr-textarea:focus {
-        border-color: #dc3545;
-        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        border-color: #DC143C;
         outline: none;
     }
     
     .dr-view-page .dr-approval-card {
-        border: 2px solid #10b981;
-        border-radius: 10px;
-        background: #f0fdf4;
+        border: 2px solid #DC143C;
+        background: #ffffff;
     }
     
     .dr-view-page .dr-attachment-item {
@@ -216,36 +209,34 @@
     
     @media (max-width: 768px) {
         .dr-view-page .dr-view-header {
-            padding: 1.25rem;
+            padding: 0.875rem;
         }
         .dr-view-page .dr-card-body {
-            padding: 1rem;
+            padding: 0.75rem;
         }
     }
 </style>
 
 <div class="dr-view-page">
-<div class="container-fluid px-3">
+<div class="container-fluid px-2">
     
     <!-- Header -->
     <div class="dr-view-header">
-        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+        <div class="d-flex justify-content-between align-items-center">
             <div>
-                <h3 class="mb-2 fw-bold">📄 Daily Report Details</h3>
-                <p class="mb-0 opacity-90" style="font-size: 0.9rem;">
-                    <i class="fas fa-clock me-1"></i> Submitted {{ $dailyReport->created_at->diffForHumans() }}
-                </p>
+                <h5 class="mb-0 fw-bold">Daily Report Details</h5>
+                <small class="opacity-90">{{ $dailyReport->created_at->format('M d, Y') }}</small>
             </div>
-            <div class="d-flex gap-2 flex-wrap">
+            <div class="d-flex gap-2">
                 @can('update', $dailyReport)
                     @if(in_array($dailyReport->status, ['draft', 'submitted']))
                     <a href="{{ route('office.daily-reports.edit', $dailyReport) }}" class="dr-btn dr-btn-primary">
-                        <i class="fas fa-edit"></i> Edit
+                        <i class="fas fa-edit"></i>Edit
                     </a>
                     @endif
                 @endcan
                 <a href="{{ route('office.daily-reports.index') }}" class="dr-btn dr-btn-secondary">
-                    <i class="fas fa-arrow-left"></i> Back
+                    <i class="fas fa-arrow-left"></i>Back
                 </a>
             </div>
         </div>
@@ -258,8 +249,8 @@
             <!-- Report Info Card -->
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
-                        <i class="fas fa-file-alt me-2" style="color: #dc3545;"></i>
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-file-alt me-1" style="color: #DC143C;"></i>
                         Report Information
                     </h6>
                     @php
@@ -286,7 +277,7 @@
                         <div class="col-md-6">
                             <span class="dr-label">Department</span>
                             <div class="dr-value">
-                                <i class="fas fa-building me-2" style="color: #dc3545;"></i>
+                                <i class="fas fa-building me-2" style="color: #DC143C;"></i>
                                 {{ $dailyReport->department_name }}
                             </div>
                         </div>
@@ -295,7 +286,7 @@
                         <div class="col-md-6">
                             <span class="dr-label">Report Date</span>
                             <div class="dr-value">
-                                <i class="fas fa-calendar me-2" style="color: #dc3545;"></i>
+                                <i class="fas fa-calendar me-2" style="color: #DC143C;"></i>
                                 {{ $dailyReport->report_date->format('M d, Y') }}
                             </div>
                         </div>
@@ -306,7 +297,7 @@
                             <span class="dr-label">Tags</span>
                             <div class="d-flex flex-wrap gap-1">
                                 @foreach(explode(',', $dailyReport->tags) as $tag)
-                                <span class="badge" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; font-size: 0.75rem; padding: 0.25rem 0.625rem; border-radius: 4px;">
+                                <span class="badge" style="background: rgba(220, 20, 60, 0.1); color: #DC143C; font-size: 0.75rem; padding: 0.25rem  0.625rem; border-radius: 4px;">
                                     <i class="fas fa-tag me-1"></i>{{ trim($tag) }}
                                 </span>
                                 @endforeach
@@ -337,42 +328,28 @@
             @if($dailyReport->status === 'pending_review' || $dailyReport->status === 'submitted')
                 @can('approve', $dailyReport)
                 <div class="dr-approval-card dr-card">
-                    <div class="dr-card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
-                        <h6 class="mb-0 fw-bold" style="color: #FFFFFF;">
-                            <i class="fas fa-clipboard-check me-2"></i>
-                            Manager Review & Decision
+                    <div class="dr-card-header" style="background: #DC143C; border: none;">
+                        <h6 class="mb-0 fw-bold" style="color: #FFFFFF; font-size: 0.9rem;">
+                            <i class="fas fa-tasks me-2"></i>Review & Decision
                         </h6>
-                        <span class="badge" style="background: rgba(255,255,255,0.3); color: #FFFFFF; font-size: 0.75rem;">Action Required</span>
+                        <span class="badge bg-white text-danger" style="font-size: 0.7rem; font-weight: 700;">ACTION REQUIRED</span>
                     </div>
-                    <div class="dr-card-body" style="background: #f8fafc;">
-                        <div class="alert alert-info border-0 mb-4" style="background: #e0f2fe; color: #075985;">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <strong>Review Instructions:</strong> Carefully examine the report content above. You can approve immediately or reject with feedback.
-                        </div>
-                        
-                        <div class="row g-4">
+                    <div class="dr-card-body">
+                        <div class="row g-2">
                             <!-- Approve Option -->
                             <div class="col-md-6">
-                                <div class="p-4 rounded h-100" style="background: white; border: 2px solid #e5e7eb;">
-                                    <div class="text-center mb-4">
-                                        <div class="mb-3" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-check" style="font-size: 2.5rem; color: white;"></i>
-                                        </div>
-                                        <h5 class="mb-2 fw-bold" style="color: #059669;">Approve Report</h5>
-                                        <p class="text-muted mb-0" style="font-size: 0.875rem;">
-                                            Report meets all standards and requirements
-                                        </p>
-                                    </div>
-                                    
+                                <div class="border p-2 h-100" style="background: #f8f9fa;">
                                     <form action="{{ route('office.daily-reports.approve', $dailyReport) }}" method="POST">
                                         @csrf
-                                        <div class="mb-3">
-                                            <label class="form-label text-muted" style="font-size: 0.85rem; font-weight: 600;">Optional Notes</label>
-                                            <textarea name="comment" class="form-control" rows="3" placeholder="Add any approval notes or commendations..." style="border-color: #d1d5db; font-size: 0.9rem;"></textarea>
-                                            <small class="text-muted">Optional feedback for the employee</small>
+                                        <h6 class="mb-2 fw-bold" style="font-size: 0.875rem;">
+                                            <i class="fas fa-check-circle text-success me-1"></i>Approve
+                                        </h6>
+                                        <div class="mb-2">
+                                            <label class="form-label mb-1" style="font-size: 0.75rem; color: #6c757d;">Notes (Optional)</label>
+                                            <textarea name="comment" class="form-control form-control-sm" rows="2" placeholder="Add comments..." style="font-size: 0.8rem;"></textarea>
                                         </div>
-                                        <button type="submit" class="btn w-100 py-3 fw-bold" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none;">
-                                            <i class="fas fa-check-circle me-2"></i>Approve Report
+                                        <button type="submit" class="btn btn-dark btn-sm w-100 fw-bold" style="font-size: 0.8rem;">
+                                            <i class="fas fa-check me-1"></i>Approve
                                         </button>
                                     </form>
                                 </div>
@@ -380,28 +357,19 @@
 
                             <!-- Reject Option -->
                             <div class="col-md-6">
-                                <div class="p-4 rounded h-100" style="background: white; border: 2px solid #e5e7eb;">
-                                    <div class="text-center mb-4">
-                                        <div class="mb-3" style="width: 80px; height: 80px; margin: 0 auto; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                                            <i class="fas fa-times" style="font-size: 2.5rem; color: white;"></i>
-                                        </div>
-                                        <h5 class="mb-2 fw-bold" style="color: #dc2626;">Reject Report</h5>
-                                        <p class="text-muted mb-0" style="font-size: 0.875rem;">
-                                            Report needs revisions or corrections
-                                        </p>
-                                    </div>
-                                    
-                                    <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST" id="rejectForm">
+                                <div class="border border-danger p-2 h-100" style="background: #fff5f5;">
+                                    <form action="{{ route('office.daily-reports.reject', $dailyReport) }}" method="POST">
                                         @csrf
-                                        <div class="mb-3">
-                                            <label class="form-label fw-bold" style="font-size: 0.9rem; color: #dc2626;">
-                                                <i class="fas fa-exclamation-triangle me-1"></i>Rejection Reason <span style="color: #dc2626;">*</span>
-                                            </label>
-                                            <textarea name="comment" class="form-control" rows="3" placeholder="Clearly explain what needs to be corrected or improved..." required style="border-color: #fca5a5; font-size: 0.9rem;"></textarea>
-                                            <small class="text-danger fw-semibold">Required: Employee needs clear feedback to improve</small>
+                                        <h6 class="mb-2 fw-bold" style="font-size: 0.875rem;">
+                                            <i class="fas fa-times-circle text-danger me-1"></i>Reject
+                                        </h6>
+                                        <div class="mb-2">
+                                            <label class="form-label mb-1 text-danger" style="font-size: 0.75rem; font-weight: 600;">Reason <span>*</span></label>
+                                            <textarea name="comment" class="form-control form-control-sm border-danger" rows="2" placeholder="Explain required changes..." required style="font-size: 0.8rem;"></textarea>
+                                            <small class="text-danger" style="font-size: 0.7rem;">Required</small>
                                         </div>
-                                        <button type="submit" class="btn w-100 py-3 fw-bold" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; border: none;">
-                                            <i class="fas fa-times-circle me-2"></i>Reject Report
+                                        <button type="submit" class="btn btn-sm w-100 fw-bold" style="background: #DC143C; color: white; font-size: 0.8rem;">
+                                            <i class="fas fa-times me-1"></i>Reject
                                         </button>
                                     </form>
                                 </div>
@@ -416,11 +384,11 @@
             @if(isset($dailyReport->comments))
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
-                        <i class="fas fa-comments me-2" style="color: #dc3545;"></i>
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-comments me-1" style="color: #DC143C;"></i>
                         Comments
                     </h6>
-                    <span class="dr-badge" style="background: #dc3545; color: white;">{{ $dailyReport->comments->count() }}</span>
+                    <span class="dr-badge" style="background: #DC143C; color: white;">{{ $dailyReport->comments->count() }}</span>
                 </div>
                 <div class="dr-card-body">
                     @if($dailyReport->comments->count() > 0)
@@ -434,7 +402,7 @@
                                     <div>
                                         <h6 class="mb-0 fw-semibold" style="font-size: 0.9375rem;">{{ $comment->user->name ?? 'Unknown User' }}</h6>
                                         <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>{{ $comment->created_at->diffForHumans() }}
+                                            <i class="fas fa-clock me-1"></i>{{ $comment->created_at->format('M d, Y h:i A') }}
                                         </small>
                                     </div>
                                 </div>
@@ -469,23 +437,23 @@
             @if(isset($dailyReport->attachments))
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
-                        <i class="fas fa-paperclip me-2" style="color: #dc3545;"></i>
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-paperclip me-1" style="color: #DC143C;"></i>
                         Attachments
                     </h6>
-                    <span class="dr-badge" style="background: #dc3545; color: white;">{{ $dailyReport->attachments->count() }}</span>
+                    <span class="dr-badge" style="background: #DC143C; color: white;">{{ $dailyReport->attachments->count() }}</span>
                 </div>
                 <div class="dr-card-body">
                     @if($dailyReport->attachments->count() > 0)
                         @foreach($dailyReport->attachments as $attachment)
                         <div class="dr-attachment-item">
                             <div class="d-flex align-items-center gap-3">
-                                <i class="fas fa-file-alt fa-2x" style="color: #dc3545;"></i>
+                                <i class="fas fa-file-alt fa-2x" style="color: #DC143C;"></i>
                                 <div>
                                     <h6 class="mb-0 fw-semibold" style="font-size: 0.9rem;">{{ $attachment->file_name ?? 'Document' }}</h6>
                                     <small class="text-muted">
                                         <i class="fas fa-hdd me-1"></i>{{ $attachment->file_size ?? 'N/A' }} • 
-                                        <i class="fas fa-clock me-1"></i>{{ $attachment->created_at->diffForHumans() }}
+                                        <i class="fas fa-calendar me-1"></i>{{ $attachment->created_at->format('M d, Y') }}
                                     </small>
                                 </div>
                             </div>
@@ -527,11 +495,11 @@
             @if($reviews->isNotEmpty() && $canViewReviews)
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-bold" style="color: #1f2937;">
-                        <i class="fas fa-history me-2" style="color: #dc3545;"></i>
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-history me-1" style="color: #DC143C;"></i>
                         Review History
                     </h6>
-                    <span class="dr-badge" style="background: #dc3545; color: white;">{{ $reviews->count() }}</span>
+                    <span class="dr-badge" style="background: #DC143C; color: white;">{{ $reviews->count() }}</span>
                 </div>
                 <div class="dr-card-body">
                     @if(!$dailyReport->isCompleted() && $dailyReport->submitted_by === auth()->id())
@@ -552,7 +520,7 @@
                                     <div>
                                         <h6 class="mb-0 fw-semibold">{{ $review->reviewer->name }}</h6>
                                         <small class="text-muted">
-                                            <i class="fas fa-clock me-1"></i>{{ $review->reviewed_at->format('M d, Y h:i A') }} • {{ $review->reviewed_at->diffForHumans() }}
+                                            <i class="fas fa-clock me-1"></i>{{ $review->reviewed_at->format('M d, Y h:i A') }}
                                         </small>
                                     </div>
                                     @if($review->marked_as_completed)
@@ -616,19 +584,19 @@
             <!-- Submitted By Card -->
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-semibold" style="color: #1f2937;">
-                        <i class="fas fa-user me-2"></i>Submitted By
+                    <h6 class="mb-0 fw-semibold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-user me-1"></i>Submitted By
                     </h6>
                 </div>
                 <div class="dr-card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="dr-user-avatar" style="width: 48px; height: 48px; font-size: 1.125rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dr-user-avatar">
                             {{ strtoupper(substr($dailyReport->submittedBy->name, 0, 1)) }}
                         </div>
                         <div>
-                            <div class="fw-semibold text-dark">{{ $dailyReport->submittedBy->name }}</div>
-                            <small class="text-muted d-block">{{ $dailyReport->submittedBy->email }}</small>
-                            <span class="badge mt-1" style="background: rgba(220, 53, 69, 0.1); color: #dc3545; font-size: 0.75rem;">
+                            <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->submittedBy->name }}</div>
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">{{ $dailyReport->submittedBy->email }}</small>
+                            <span class="badge" style="background: #f8f9fa; color: #DC143C; border: 1px solid #DC143C; font-size: 0.7rem;">
                                 {{ $dailyReport->submittedBy->roles->first()->name ?? 'User' }}
                             </span>
                         </div>
@@ -640,20 +608,20 @@
             @if($dailyReport->isReviewed() && $dailyReport->reviewedBy)
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-semibold" style="color: #1f2937;">
-                        <i class="fas fa-user-check me-2"></i>Reviewed By
+                    <h6 class="mb-0 fw-semibold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-user-check me-1"></i>Reviewed By
                     </h6>
                 </div>
                 <div class="dr-card-body">
-                    <div class="d-flex align-items-center gap-3">
-                        <div class="dr-user-avatar" style="width: 48px; height: 48px; font-size: 1.125rem;">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="dr-user-avatar">
                             {{ strtoupper(substr($dailyReport->reviewedBy->name, 0, 1)) }}
                         </div>
                         <div>
-                            <div class="fw-semibold text-dark">{{ $dailyReport->reviewedBy->name }}</div>
-                            <small class="text-muted d-block">{{ $dailyReport->reviewedBy->email }}</small>
-                            <small class="text-muted d-block mt-1">
-                                <i class="fas fa-clock me-1"></i>{{ $dailyReport->reviewed_at->diffForHumans() }}
+                            <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->reviewedBy->name }}</div>
+                            <small class="text-muted d-block" style="font-size: 0.75rem;">{{ $dailyReport->reviewedBy->email }}</small>
+                            <small class="text-muted d-block" style="font-size: 0.7rem;">
+                                {{ $dailyReport->reviewed_at->format('M d, Y') }}
                             </small>
                         </div>
                     </div>
@@ -664,8 +632,8 @@
             <!-- Timeline Card -->
             <div class="dr-card">
                 <div class="dr-card-header">
-                    <h6 class="mb-0 fw-semibold" style="color: #1f2937;">
-                        <i class="fas fa-history me-2"></i>Timeline
+                    <h6 class="mb-0 fw-semibold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-history me-1"></i>Timeline
                     </h6>
                 </div>
                 <div class="dr-card-body">
@@ -676,7 +644,6 @@
                         <div>
                             <small class="text-muted d-block">Created</small>
                             <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->created_at->format('M d, Y h:i A') }}</div>
-                            <small class="text-muted">{{ $dailyReport->created_at->diffForHumans() }}</small>
                         </div>
                     </div>
 
@@ -688,7 +655,6 @@
                         <div>
                             <small class="text-muted d-block">Last Updated</small>
                             <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->updated_at->format('M d, Y h:i A') }}</div>
-                            <small class="text-muted">{{ $dailyReport->updated_at->diffForHumans() }}</small>
                         </div>
                     </div>
                     @endif
@@ -701,7 +667,6 @@
                         <div>
                             <small class="text-muted d-block">Reviewed</small>
                             <div class="fw-semibold" style="font-size: 0.875rem;">{{ $dailyReport->reviewed_at->format('M d, Y h:i A') }}</div>
-                            <small class="text-muted">{{ $dailyReport->reviewed_at->diffForHumans() }}</small>
                         </div>
                     </div>
                     @endif
