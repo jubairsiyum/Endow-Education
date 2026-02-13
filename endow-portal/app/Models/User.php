@@ -178,4 +178,20 @@ class User extends Authenticatable
     {
         return $this->hasRole('Student');
     }
+
+    /**
+     * Get all work assignments assigned to this user.
+     */
+    public function assignedWorkAssignments()
+    {
+        return $this->hasMany(WorkAssignment::class, 'assigned_to');
+    }
+
+    /**
+     * Get all work assignments created by this user.
+     */
+    public function createdWorkAssignments()
+    {
+        return $this->hasMany(WorkAssignment::class, 'assigned_by');
+    }
 }

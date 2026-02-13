@@ -76,7 +76,21 @@ class DailyReportController extends Controller
             abort(403, 'Unauthorized to create daily reports');
         }
 
-        return view('office.daily-reports.create');
+        // Get pending work assignments for the report
+        // Include all pending and in-progress assignments not yet in a report
+        $workAssignments = \App\Models\WorkAssignment::with(['assignedBy', 'department'])
+            ->where('assigned_to', auth()->id())
+            ->whereIn('status', ['pending', 'in_progress'])
+            ->where(function ($query) {
+                $query->where('included_in_report', false)
+                      ->orWhereNull('included_in_report');
+            })
+            ->orderBy('priority', 'desc')
+            ->orderBy('due_date', 'asc')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('office.daily-reports.create', compact('workAssignments'));
     }
 
     /**
@@ -99,6 +113,9 @@ class DailyReportController extends Controller
             'tags' => 'nullable|string|max:500',
             'attachments' => 'nullable|array',
             'attachments.*' => 'file|max:10240|mimes:pdf,doc,docx,xls,xlsx,jpg,jpeg,png,txt',
+            'work_assignments' => 'nullable|array',
+            'work_assignments.*' => 'exists:work_assignments,id',
+            'task_completed' => 'nullable|array',
         ]);
 
         try {
@@ -121,18 +138,54 @@ class DailyReportController extends Controller
                 }
             }
 
+            // Link selected work assignments to this report and update completion status
+            if ($request->has('work_assignments') && is_array($request->work_assignments)) {
+                $taskCompletionStatus = $request->input('task_completed', []);
+                
+                foreach ($request->work_assignments as $assignmentId) {
+                    $assignment = \App\Models\WorkAssignment::where('id', $assignmentId)
+                        ->where('assigned_to', auth()->id())
+                        ->first();
+                    
+                    if ($assignment) {
+                        // Update the assignment with report linkage
+                        $updateData = [
+                            'daily_report_id' => $report->id,
+                            'included_in_report' => true,
+                        ];
+                        
+                        // Only allow completion marking if task is already completed
+                        // Tasks must be marked complete in Work Assignments module first
+                        if ($assignment->status === 'completed') {
+                            $updateData['status'] = 'completed';
+                            $updateData['completed_at'] = $assignment->completed_at ?? now();
+                            if (!$assignment->completion_notes) {
+                                $updateData['completion_notes'] = 'Included in daily report submitted on ' . now()->format('Y-m-d H:i:s');
+                            }
+                        } elseif ($assignment->status === 'pending') {
+                            // If task is not completed but was pending, mark as in_progress
+                            $updateData['status'] = 'in_progress';
+                        }
+                        // For in_progress tasks, keep their current status
+                        
+                        $assignment->update($updateData);
+                    }
+                }
+            }
+
             return redirect()
                 ->route('office.daily-reports.index')
-                ->with('success', 'Daily report submitted successfully!');
-        } catch (Exception $e) {
-            return back()
+                ->with('success', 'Daily report submitted successfully! Task completion status has been updated.');
+        } catch (\Exception $e) {
+            return redirect()
+                ->back()
                 ->withInput()
-                ->with('error', 'Failed to create report: ' . $e->getMessage());
+                ->withErrors(['error' => 'Failed to create daily report: ' . $e->getMessage()]);
         }
     }
 
     /**
-     * Display the specified report
+     * Display the specified daily report
      */
     public function show(DailyReport $dailyReport)
     {
@@ -141,7 +194,18 @@ class DailyReportController extends Controller
             abort(403, 'Unauthorized to view this report');
         }
 
-        $dailyReport->load(['submittedBy', 'reviewedBy', 'reviews.reviewer']);
+        // Load relationships for comprehensive view
+        $dailyReport->load([
+            'submittedBy',
+            'department',
+            'reviewedBy',
+            'approvedBy',
+            'attachments',
+            'comments.user',
+            'reviews.reviewer',
+            'workAssignments.assignedBy',
+            'activityLogs.user'
+        ]);
 
         return view('office.daily-reports.show', compact('dailyReport'));
     }

@@ -324,6 +324,126 @@
                             </div>
                         </div>
 
+                        <!-- Work Assignments Section -->
+                        <div class="mb-4">
+                            <label class="dr-label">
+                                <span class="dr-icon-badge"><i class="fas fa-tasks"></i></span>
+                                My Assigned Tasks & Completion Status
+                                @if(isset($workAssignments) && $workAssignments->count() > 0)
+                                <span class="badge" style="background-color: #dc3545; color: white; font-size: 0.7rem; padding: 0.35rem 0.65rem; border-radius: 12px; margin-left: 0.5rem;">
+                                    {{ $workAssignments->count() }} {{ $workAssignments->count() === 1 ? 'Task' : 'Tasks' }} Available
+                                </span>
+                                @endif
+                            </label>
+                            <div class="dr-hint mb-3">
+                                <i class="fas fa-info-circle"></i> Completed tasks are automatically included and marked. Tasks must be completed in Work Assignments before marking as done here.
+                            </div>
+                            
+                            @if(isset($workAssignments) && $workAssignments->count() > 0)
+                            
+                            <div class="work-assignments-list" style="max-height: 480px; overflow-y: auto; border: 2px solid #e5e7eb; border-radius: 8px; padding: 1.25rem; background-color: #f9fafb;">
+                                <div class="alert alert-primary mb-3" style="background-color: #e3f2fd; border-color: #90caf9; border-radius: 6px; padding: 0.75rem 1rem;">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Found {{ $workAssignments->count() }} task(s)</strong> - Check tasks to include them in your report
+                                </div>
+                                
+                                @foreach($workAssignments as $assignment)
+                                <div class="work-assignment-item mb-3 p-3" style="background-color: #ffffff; border-radius: 6px; border-left: 4px solid {{ $assignment->isOverdue() ? '#dc3545' : ($assignment->priority === 'urgent' ? '#dc3545' : ($assignment->priority === 'high' ? '#fd7e14' : '#0d6efd')) }}; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="flex-grow-1">
+                                            <div class="form-check d-inline-block">
+                                                <input class="form-check-input" type="checkbox" name="work_assignments[]" value="{{ $assignment->id }}" id="wa_{{ $assignment->id }}" {{ $assignment->status === 'completed' ? 'checked' : '' }}>
+                                                <label class="form-check-label fw-bold text-dark" for="wa_{{ $assignment->id }}" style="font-size: 0.95rem;">
+                                                    {{ $assignment->title }}
+                                                </label>
+                                            </div>
+                                            <div class="ms-4 mt-1">
+                                                <small class="text-muted d-block mb-2">{{ Str::limit($assignment->description, 100) }}</small>
+                                                
+                                                <!-- Completion Status Checkbox -->
+                                                <div class="form-check form-check-inline mb-2">
+                                                    <input class="form-check-input" type="checkbox" name="task_completed[{{ $assignment->id }}]" value="1" id="completed_{{ $assignment->id }}" 
+                                                        {{ $assignment->status === 'completed' ? 'checked disabled' : 'disabled' }}
+                                                        style="{{ $assignment->status === 'completed' ? '' : 'cursor: not-allowed; opacity: 0.5;' }}">
+                                                    <label class="form-check-label" for="completed_{{ $assignment->id }}" style="font-size: 0.875rem; {{ $assignment->status === 'completed' ? '' : 'color: #6c757d;' }}">
+                                                        <i class="fas fa-{{ $assignment->status === 'completed' ? 'check-circle' : 'info-circle' }} me-1" style="color: {{ $assignment->status === 'completed' ? '#198754' : '#6c757d' }};"></i>
+                                                        <strong>{{ $assignment->status === 'completed' ? 'Already Completed' : 'Mark as Completed' }}</strong>
+                                                        @if($assignment->status !== 'completed')
+                                                        <small class="d-block text-muted" style="font-weight: normal; font-size: 0.75rem; margin-top: 0.25rem;">
+                                                            Tasks must be completed in Work Assignments module first
+                                                        </small>
+                                                        @endif
+                                                    </label>
+                                                </div>
+                                                
+                                                <!-- Task Details -->
+                                                <div class="d-flex flex-wrap gap-2 align-items-center">
+                                                    <span class="badge badge-sm" style="background-color: {{ $assignment->priority === 'urgent' ? '#dc3545' : ($assignment->priority === 'high' ? '#fd7e14' : ($assignment->priority === 'normal' ? '#0d6efd' : '#6c757d')) }}; color: #FFFFFF; font-size: 0.7rem;">
+                                                        <i class="fas fa-flag"></i> {{ strtoupper($assignment->priority) }}
+                                                    </span>
+                                                    <span class="badge badge-sm" style="background-color: {{ $assignment->status === 'completed' ? '#198754' : ($assignment->status === 'in_progress' ? '#0dcaf0' : '#ffc107') }}; color: {{ $assignment->status === 'completed' ? '#FFFFFF' : '#000000' }}; font-size: 0.7rem;">
+                                                        <i class="fas fa-{{ $assignment->status === 'completed' ? 'check-circle' : ($assignment->status === 'in_progress' ? 'spinner' : 'clock') }}"></i> {{ strtoupper(str_replace('_', ' ', $assignment->status)) }}
+                                                    </span>
+                                                    @if($assignment->due_date)
+                                                        @if($assignment->isOverdue())
+                                                        <span class="badge badge-sm" style="background-color: #dc3545; color: #FFFFFF; font-size: 0.7rem;">
+                                                            <i class="fas fa-exclamation-triangle"></i> OVERDUE
+                                                        </span>
+                                                        @elseif($assignment->isDueSoon())
+                                                        <span class="badge badge-sm" style="background-color: #ffc107; color: #000000; font-size: 0.7rem;">
+                                                            <i class="fas fa-clock"></i> DUE SOON
+                                                        </span>
+                                                        @endif
+                                                    @endif
+                                                    
+                                                    @if($assignment->assignedBy)
+                                                    <small class="text-muted">
+                                                        <i class="fas fa-user-tie"></i> From: {{ $assignment->assignedBy->name }}
+                                                    </small>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @if($assignment->due_date)
+                                        <div class="text-end ms-2" style="min-width: 70px;">
+                                            <small class="text-muted fw-semibold d-block">Due Date</small>
+                                            <small class="text-dark fw-bold">{{ $assignment->due_date->format('M d, Y') }}</small>
+                                        </div>
+                                        @endif
+                                    </div>
+                                </div>
+                                @endforeach
+                            </div>
+                            
+                            <div class="alert alert-info mt-3 mb-0" style="background-color: #e7f3ff; border-color: #b6d9f7; border-radius: 6px;">
+                                <i class="fas fa-lightbulb me-2"></i>
+                                <strong>Tip:</strong> Completed tasks are automatically included. To mark a task as completed, update it in the Work Assignments module first, then include it here.
+                            </div>
+                            
+                            @else
+                            <!-- No assignments available message -->
+                            <div class="alert alert-warning" style="background-color: #fff8e1; border-color: #ffd54f; border-radius: 8px; border-left: 4px solid #ffa726;">
+                                <div class="d-flex align-items-start">
+                                    <i class="fas fa-info-circle me-3" style="color: #f57c00; font-size: 1.5rem; margin-top: 0.25rem;"></i>
+                                    <div>
+                                        <h6 class="mb-2 fw-bold" style="color: #e65100;">
+                                            <i class="fas fa-clipboard-check me-2"></i>No Pending Work Assignments
+                                        </h6>
+                                        <p class="mb-2" style="color: #6d4c41; font-size: 0.9rem;">
+                                            You don't have any pending or in-progress work assignments to include in this report.
+                                        </p>
+                                        <p class="mb-0" style="color: #6d4c41; font-size: 0.875rem;">
+                                            <strong>This could mean:</strong><br>
+                                            • All your assigned tasks have been completed ✅<br>
+                                            • Tasks are already included in previous reports 📋<br>
+                                            • No new tasks have been assigned to you yet 📌
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+
                         <div class="dr-divider"></div>
 
                         <!-- Hidden Status Field - Always Submit for Review -->

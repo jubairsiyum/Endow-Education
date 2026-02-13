@@ -144,6 +144,14 @@ class DailyReport extends Model
     }
 
     /**
+     * Get work assignments linked to this report
+     */
+    public function workAssignments()
+    {
+        return $this->hasMany(WorkAssignment::class, 'daily_report_id');
+    }
+
+    /**
      * Get activity logs (audit trail)
      */
     public function activityLogs()

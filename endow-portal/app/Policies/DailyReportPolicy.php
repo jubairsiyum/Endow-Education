@@ -44,7 +44,17 @@ class DailyReportPolicy
         }
 
         // Users can view their own reports
-        return $report->submitted_by === $user->id;
+        if ($report->submitted_by === $user->id) {
+            return true;
+        }
+
+        // Department managers can view reports from their department
+        if ($user->hasRole('department_manager') || $user->isManagerOfAnyDepartment()) {
+            $managedDeptIds = $user->managedDepartments->pluck('id')->toArray();
+            return in_array($report->department_id, $managedDeptIds);
+        }
+
+        return false;
     }
 
     /**

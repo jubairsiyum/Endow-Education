@@ -22,6 +22,7 @@ use App\Http\Controllers\AdminProfileController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\Office\DailyReportController;
 use App\Http\Controllers\Office\DepartmentController;
+use App\Http\Controllers\Office\WorkAssignmentController;
 use App\Http\Controllers\Admin\RoleManagementController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\AccountCategoryController;
@@ -337,6 +338,23 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
         Route::post('/{department}/assign-user', [DepartmentController::class, 'assignUser'])->name('assign-user');
         Route::delete('/{department}/remove-user', [DepartmentController::class, 'removeUser'])->name('remove-user');
         Route::put('/{department}/update-manager', [DepartmentController::class, 'updateManager'])->name('update-manager');
+    });
+
+    // Work Assignment Module
+    Route::prefix('work-assignments')->name('work-assignments.')->group(function () {
+        Route::get('/', [WorkAssignmentController::class, 'index'])->name('index');
+        Route::get('/my-assignments', [WorkAssignmentController::class, 'myAssignments'])->name('my-assignments');
+        Route::get('/create', [WorkAssignmentController::class, 'create'])->name('create');
+        Route::post('/', [WorkAssignmentController::class, 'store'])->name('store');
+        Route::get('/{workAssignment}', [WorkAssignmentController::class, 'show'])->name('show');
+        Route::get('/{workAssignment}/edit', [WorkAssignmentController::class, 'edit'])->name('edit');
+        Route::put('/{workAssignment}', [WorkAssignmentController::class, 'update'])->name('update');
+        Route::delete('/{workAssignment}', [WorkAssignmentController::class, 'destroy'])->name('destroy');
+        
+        // Status and notes management
+        Route::post('/{workAssignment}/update-status', [WorkAssignmentController::class, 'updateStatus'])->name('update-status');
+        Route::post('/{workAssignment}/add-notes', [WorkAssignmentController::class, 'addNotes'])->name('add-notes');
+        Route::post('/{workAssignment}/add-feedback', [WorkAssignmentController::class, 'addFeedback'])->name('add-feedback');
     });
 
     // Accounting Module (Accountant Role Only)

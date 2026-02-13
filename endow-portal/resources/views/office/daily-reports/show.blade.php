@@ -324,6 +324,76 @@
                 </div>
             </div>
 
+            <!-- Work Assignments Section -->
+            @if($dailyReport->workAssignments && $dailyReport->workAssignments->count() > 0)
+            <div class="dr-card">
+                <div class="dr-card-header">
+                    <h6 class="mb-0 fw-bold" style="color: #1f2937; font-size: 0.875rem;">
+                        <i class="fas fa-tasks me-1" style="color: #DC143C;"></i>
+                        Linked Work Assignments
+                    </h6>
+                    <span class="dr-badge" style="background: #DC143C; color: white;">{{ $dailyReport->workAssignments->count() }}</span>
+                </div>
+                <div class="dr-card-body">
+                    <div class="work-assignments-list">
+                        @foreach($dailyReport->workAssignments as $assignment)
+                        <div class="work-assignment-item mb-3 p-3" style="background-color: #f9fafb; border-radius: 6px; border-left: 4px solid {{ $assignment->status === 'completed' ? '#198754' : ($assignment->priority === 'urgent' ? '#dc3545' : ($assignment->priority === 'high' ? '#fd7e14' : '#0d6efd')) }}; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-2 fw-bold text-dark" style="font-size: 0.95rem;">
+                                        <i class="fas fa-{{ $assignment->status === 'completed' ? 'check-circle text-success' : 'spinner text-info' }} me-2"></i>
+                                        {{ $assignment->title }}
+                                    </h6>
+                                    <p class="text-muted mb-2" style="font-size: 0.875rem;">{{ Str::limit($assignment->description, 150) }}</p>
+                                    
+                                    <!-- Task Details -->
+                                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                                        <span class="badge badge-sm" style="background-color: {{ $assignment->priority === 'urgent' ? '#dc3545' : ($assignment->priority === 'high' ? '#fd7e14' : ($assignment->priority === 'normal' ? '#0d6efd' : '#6c757d')) }}; color: #FFFFFF; font-size: 0.7rem;">
+                                            <i class="fas fa-flag"></i> {{ strtoupper($assignment->priority) }}
+                                        </span>
+                                        <span class="badge badge-sm" style="background-color: {{ $assignment->status === 'completed' ? '#198754' : ($assignment->status === 'in_progress' ? '#0dcaf0' : '#ffc107') }}; color: {{ $assignment->status === 'completed' ? '#FFFFFF' : '#000000' }}; font-size: 0.7rem;">
+                                            <i class="fas fa-{{ $assignment->status === 'completed' ? 'check-circle' : ($assignment->status === 'in_progress' ? 'spinner' : 'clock') }}"></i> {{ strtoupper(str_replace('_', ' ', $assignment->status)) }}
+                                        </span>
+                                        @if($assignment->assignedBy)
+                                        <small class="text-muted">
+                                            <i class="fas fa-user-tie"></i> Assigned by: <strong>{{ $assignment->assignedBy->name }}</strong>
+                                        </small>
+                                        @endif
+                                    </div>
+                                    
+                                    @if($assignment->completed_at)
+                                    <div class="mt-2">
+                                        <small class="text-success">
+                                            <i class="fas fa-check-circle me-1"></i><strong>Completed on:</strong> {{ $assignment->completed_at->format('M d, Y h:i A') }}
+                                        </small>
+                                    </div>
+                                    @endif
+                                </div>
+                                
+                                @if($assignment->due_date)
+                                <div class="text-end ms-3" style="min-width: 90px;">
+                                    <small class="text-muted fw-semibold d-block" style="font-size: 0.7rem;">Due Date</small>
+                                    <small class="text-dark fw-bold d-block">{{ $assignment->due_date->format('M d, Y') }}</small>
+                                    @if($assignment->isOverdue() && $assignment->status !== 'completed')
+                                    <span class="badge" style="background-color: #dc3545; color: #FFFFFF; font-size: 0.65rem; margin-top: 0.25rem;">
+                                        <i class="fas fa-exclamation-triangle"></i> OVERDUE
+                                    </span>
+                                    @endif
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                        @endforeach
+                    </div>
+                    
+                    <div class="alert alert-info mt-3 mb-0" style="background-color: #e7f3ff; border-color: #b6d9f7; border-radius: 6px; padding: 0.75rem;">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <small><strong>Note:</strong> These work assignments were included when this daily report was submitted.</small>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Manager Review Section -->
             @if($dailyReport->status === 'pending_review' || $dailyReport->status === 'submitted')
                 @can('approve', $dailyReport)

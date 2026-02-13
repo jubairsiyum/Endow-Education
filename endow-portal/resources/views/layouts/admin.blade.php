@@ -1060,6 +1060,19 @@
                     @endif
                 </a>
 
+                <a href="{{ route('office.work-assignments.index') }}" class="menu-item {{ request()->routeIs('office.work-assignments.*') ? 'active' : '' }}">
+                    <i class="fas fa-tasks"></i>
+                    <span>Work Assignments</span>
+                    @php
+                        $myPendingAssignments = \App\Models\WorkAssignment::where('assigned_to', Auth::id())
+                            ->whereIn('status', ['pending', 'in_progress'])
+                            ->count();
+                    @endphp
+                    @if($myPendingAssignments > 0)
+                        <span class="menu-badge">{{ $myPendingAssignments }}</span>
+                    @endif
+                </a>
+
                 @if(Auth::user()->hasRole('Super Admin'))
                 <a href="{{ route('office.departments.index') }}" class="menu-item {{ request()->routeIs('office.departments.*') ? 'active' : '' }}">
                     <i class="fas fa-building"></i>
