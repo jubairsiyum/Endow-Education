@@ -121,8 +121,9 @@
     @else
     <div class="alert alert-light mb-4" style="border-radius: 12px; border-left: 4px solid #3b82f6;">
         <i class="fas fa-info-circle me-2"></i>
-        <strong>Note:</strong> Financial totals include only income and expense transactions. 
-        Non-financial transactions are excluded from these calculations.
+        <strong>Dashboard Metrics:</strong> 
+        Income, Expense, and Profit/Loss show data for the selected period. 
+        Cash on Hand, Bank Deposits, and Liquid Assets show cumulative balances as of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}.
     </div>
     @endif
 
@@ -209,7 +210,7 @@
         </div>
     </div>
 
-    <!-- Row 2: Cash Management -->
+    <!-- Row 2: Cash Management (Cumulative Balances) -->
     <div class="row g-3 mb-4">
         <div class="col-xl-4 col-md-6">
             <div class="stat-card cash">
@@ -218,15 +219,15 @@
                         <div class="flex-grow-1">
                             <div class="stat-label"><i class="fas fa-money-bill-wave me-1"></i> Cash on Hand</div>
                             <h2 class="stat-value mt-2" style="color: #8b5cf6">{{ $currencySymbol }}{{ number_format($totalCash, 2) }}</h2>
-                            <small class="text-muted">Available for operations</small>
+                            <small class="text-muted">Current balance (as of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }})</small>
                         </div>
                         <div class="stat-icon" style="color: #8b5cf6"><i class="fas fa-wallet"></i></div>
                     </div>
                     @if(isset($cashIncome) && isset($cashExpense))
                     <div class="stat-meta">
                         <div class="d-flex justify-content-between mb-2">
-                            <small>In: {{ $currencySymbol }}{{ number_format($cashIncome, 2) }}</small>
-                            <small>Out: {{ $currencySymbol }}{{ number_format($cashExpense, 2) }}</small>
+                            <small><i class="fas fa-arrow-down text-success" style="font-size:10px"></i> Total In: {{ $currencySymbol }}{{ number_format($cashIncome, 2) }}</small>
+                            <small><i class="fas fa-arrow-up text-danger" style="font-size:10px"></i> Total Out: {{ $currencySymbol }}{{ number_format($cashExpense, 2) }}</small>
                         </div>
                         <div class="progress progress-modern">
                             <div class="progress-bar-profit" style="width: {{ $cashIncome > 0 ? (($cashIncome / ($cashIncome + $cashExpense)) * 100) : 0 }}%"></div>
@@ -245,7 +246,7 @@
                         <div class="flex-grow-1">
                             <div class="stat-label"><i class="fas fa-university me-1"></i> Bank Deposits</div>
                             <h2 class="stat-value mt-2" style="color: #06b6d4">{{ $currencySymbol }}{{ number_format($totalDepositedToBank, 2) }}</h2>
-                            <small class="text-muted">Secured in bank</small>
+                            <small class="text-muted">Total deposited (as of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }})</small>
                         </div>
                         <div class="stat-icon" style="color: #06b6d4"><i class="fas fa-landmark"></i></div>
                     </div>
@@ -265,7 +266,7 @@
                         <div class="flex-grow-1">
                             <div class="stat-label"><i class="fas fa-piggy-bank me-1"></i> Liquid Assets</div>
                             <h2 class="stat-value mt-2" style="color: #6b7280">{{ $currencySymbol }}{{ number_format($totalCash + $totalDepositedToBank, 2) }}</h2>
-                            <small class="text-muted">Total available</small>
+                            <small class="text-muted">Total available funds</small>
                         </div>
                         <div class="stat-icon" style="color: #6b7280"><i class="fas fa-coins"></i></div>
                     </div>

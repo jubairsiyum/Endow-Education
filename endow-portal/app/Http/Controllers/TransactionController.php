@@ -438,17 +438,33 @@ class TransactionController extends Controller
             $totalIncomeCount = (clone $query)->income()->count();
             $totalExpenseCount = (clone $query)->expense()->count();
 
-            // Calculate Cash Income and Cash Expense (payment_method = 'cash')
-            $cashIncome = (clone $query)->income()->where('payment_method', 'cash')->sum($amountField) ?? 0;
-            $cashExpense = (clone $query)->expense()->where('payment_method', 'cash')->sum($amountField) ?? 0;
+            // Calculate Cash on Hand - CUMULATIVE up to end date (not just period range)
+            // Cash on Hand is a balance, not a period metric
+            $cashQuery = Transaction::approved()->financial();
+            if ($selectedCurrency) {
+                $cashQuery->where('currency', $selectedCurrency);
+            }
+            
+            // All cash transactions UP TO the end date
+            $cashIncome = (clone $cashQuery)
+                ->income()
+                ->where('payment_method', 'cash')
+                ->where('entry_date', '<=', $endDate)
+                ->sum($amountField) ?? 0;
+                
+            $cashExpense = (clone $cashQuery)
+                ->expense()
+                ->where('payment_method', 'cash')
+                ->where('entry_date', '<=', $endDate)
+                ->sum($amountField) ?? 0;
 
-            // Get total deposited to bank (this reduces cash on hand)
-            // Check if bank_deposits table exists before querying
+            // Get total deposited to bank - CUMULATIVE up to end date
+            // Bank deposits reduce cash on hand, should be cumulative balance
             $totalDepositedToBank = 0;
             if (Schema::hasTable('bank_deposits')) {
                 try {
                     $bankDepositsQuery = BankDeposit::approved()
-                        ->whereBetween('deposit_date', [$startDate, $endDate]);
+                        ->where('deposit_date', '<=', $endDate);
                     
                     // Filter by currency if specified
                     if ($selectedCurrency) {
@@ -462,7 +478,8 @@ class TransactionController extends Controller
                 }
             }
             
-            // Cash on Hand = Cash Income - Cash Expense - Bank Deposits (in same currency)
+            // Cash on Hand = Total Cash Income - Total Cash Expense - Total Bank Deposits
+            // This is a cumulative balance, not period-specific
             $totalCash = $cashIncome - $cashExpense - $totalDepositedToBank;
 
 

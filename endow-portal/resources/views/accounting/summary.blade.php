@@ -41,8 +41,9 @@
                 <div class="card-body">
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
-                            <h6 class="card-subtitle mb-2 text-white-50">Cash (On Hand)</h6>
+                            <h6 class="card-subtitle mb-2 text-white-50">Cash (Current Balance)</h6>
                             <h3 class="card-title mb-0">{{ $currencySymbol ?? '৳' }}{{ number_format($totalCash, 2) }}</h3>
+                            <small class="text-white-50" style="font-size: 0.75rem;">As of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}</small>
                         </div>
                         <div>
                             <i class="fas fa-money-bill-wave fa-3x opacity-50"></i>
@@ -61,12 +62,25 @@
                             <h3 class="card-title mb-0">
                                 {{ $currencySymbol ?? '৳' }}{{ number_format($totalDepositedToBank, 2) }}
                             </h3>
+                            <small class="text-white-50" style="font-size: 0.75rem;">As of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}</small>
                         </div>
                         <div>
                             <i class="fas fa-university fa-3x opacity-50"></i>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Alert -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong>Dashboard Metrics:</strong> 
+                Income and Expense cards show totals for the selected period. 
+                Cash Balance and Bank Deposits show cumulative balances as of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}.
             </div>
         </div>
     </div>
