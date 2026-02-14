@@ -67,11 +67,10 @@ class TransactionRequest extends FormRequest
      */
     protected function prepareForValidation(): void
     {
-        // If type is expense, clear student_name and payment_method
+        // If type is expense, only clear student_name (keep payment_method for cash tracking)
         if ($this->type === 'expense') {
             $this->merge([
                 'student_name' => null,
-                'payment_method' => null,
             ]);
         }
     }

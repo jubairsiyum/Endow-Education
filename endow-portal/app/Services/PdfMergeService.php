@@ -21,11 +21,17 @@ class PdfMergeService
     public function mergeAllApprovedDocuments(Student $student): array
     {
         try {
-            // Get all approved documents for the student
-            $documents = StudentDocument::where('student_id', $student->id)
-                ->where('status', 'approved')
+            // Get all approved documents for the student, ordered by checklist item sequence
+            // Join with checklist_items to sort by the proper order field
+            // Only include documents that are linked to checklist items for proper ordering
+            $documents = StudentDocument::where('student_documents.student_id', $student->id)
+                ->where('student_documents.status', 'approved')
+                ->whereNotNull('student_documents.checklist_item_id')
+                ->join('checklist_items', 'student_documents.checklist_item_id', '=', 'checklist_items.id')
+                ->select('student_documents.*')
+                ->orderBy('checklist_items.order', 'asc')
+                ->orderBy('student_documents.created_at', 'asc')
                 ->with('checklistItem')
-                ->orderBy('created_at', 'asc')
                 ->get();
 
             if ($documents->isEmpty()) {
@@ -148,10 +154,10 @@ class PdfMergeService
                         // Pass the template size to ensure proper rendering
                         $pdf->useTemplate($templateId, 0, 0, $size['width'], $size['height']);
 
-                        // Add footer with document info on first page of each document
-                        if ($pageNo === 1) {
-                            $this->addDocumentHeader($pdf, $document, $index + 1, $documents->count());
-                        }
+                        // Document header removed as per requirement - no page numbers or sequence info
+                        // if ($pageNo === 1) {
+                        //     $this->addDocumentHeader($pdf, $document, $index + 1, $documents->count());
+                        // }
                     }
                 } catch (\Exception $e) {
                     Log::error('Error processing document during merge: ' . $e->getMessage(), [

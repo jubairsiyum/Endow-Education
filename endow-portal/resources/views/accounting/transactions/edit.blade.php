@@ -324,7 +324,7 @@
                 incomeCategories.style.display = 'none';
                 expenseCategories.style.display = 'block';
                 paymentMethodInput.required = false;
-                paymentMethodInput.value = '';
+                // Keep payment method value to track cash expenses
                 studentNameSelect.val(null).trigger('change'); // Clear student name
             } else {
                 incomeFields.style.display = 'none';

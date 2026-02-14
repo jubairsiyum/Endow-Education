@@ -355,8 +355,14 @@ class DocumentController extends Controller
             'document_ids.*' => 'exists:student_documents,id'
         ]);
 
-        $documents = StudentDocument::whereIn('id', $request->document_ids)
-            ->where('student_id', $student->id)
+        // Get documents ordered by checklist item sequence for proper ordering
+        $documents = StudentDocument::whereIn('student_documents.id', $request->document_ids)
+            ->where('student_documents.student_id', $student->id)
+            ->whereNotNull('student_documents.checklist_item_id')
+            ->join('checklist_items', 'student_documents.checklist_item_id', '=', 'checklist_items.id')
+            ->select('student_documents.*')
+            ->orderBy('checklist_items.order', 'asc')
+            ->orderBy('student_documents.created_at', 'asc')
             ->get();
 
         if ($documents->count() < 2) {
