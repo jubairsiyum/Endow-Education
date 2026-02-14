@@ -498,6 +498,128 @@ class DocumentController extends Controller
     }
 
     /**
+     * Download all student documents as ZIP file
+     * Includes all documents except rejected ones
+     * Files maintain their original format (images stay as images)
+     * Ordered by checklist item sequence
+     *
+     * @param Student $student
+     * @return \Illuminate\Http\Response|\Illuminate\Http\RedirectResponse
+     */
+    public function downloadAllAsZip(Student $student)
+    {
+        // Authorization check
+        $this->authorize('view', $student);
+
+        try {
+            // Get all documents except rejected ones, ordered by checklist item sequence
+            $documents = StudentDocument::where('student_documents.student_id', $student->id)
+                ->whereIn('student_documents.status', ['pending', 'submitted', 'approved'])
+                ->whereNotNull('student_documents.checklist_item_id')
+                ->join('checklist_items', 'student_documents.checklist_item_id', '=', 'checklist_items.id')
+                ->select('student_documents.*')
+                ->orderBy('checklist_items.order', 'asc')
+                ->orderBy('student_documents.created_at', 'asc')
+                ->with('checklistItem')
+                ->get();
+
+            if ($documents->isEmpty()) {
+                return back()->with('error', 'No documents found to download.');
+            }
+
+            // Create temporary file for ZIP
+            $zipFileName = 'temp_' . uniqid() . '.zip';
+            $zipFilePath = storage_path('app/temp/' . $zipFileName);
+            
+            // Ensure temp directory exists
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            // Create ZIP archive
+            $zip = new \ZipArchive();
+            if ($zip->open($zipFilePath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+                return back()->with('error', 'Failed to create ZIP file.');
+            }
+
+            $fileCounter = [];
+            
+            foreach ($documents as $document) {
+                // Get document content
+                if ($document->file_data) {
+                    $fileContent = base64_decode($document->file_data);
+                } elseif ($document->file_path && Storage::disk('public')->exists($document->file_path)) {
+                    $fileContent = Storage::disk('public')->get($document->file_path);
+                } else {
+                    Log::warning('Document file not found during ZIP creation', [
+                        'document_id' => $document->id,
+                        'student_id' => $document->student_id
+                    ]);
+                    continue;
+                }
+
+                // Generate filename based on checklist item name
+                $checklistName = $document->checklistItem ? $document->checklistItem->title : 'Document';
+                $checklistName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $checklistName);
+                
+                // Get original file extension
+                $extension = pathinfo($document->filename, PATHINFO_EXTENSION);
+                if (empty($extension)) {
+                    // Fallback to mime type
+                    $extension = match($document->mime_type) {
+                        'application/pdf' => 'pdf',
+                        'image/jpeg', 'image/jpg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/gif' => 'gif',
+                        default => 'pdf'
+                    };
+                }
+
+                // Handle duplicate filenames by adding counter
+                $baseFilename = $checklistName . '.' . $extension;
+                if (isset($fileCounter[$baseFilename])) {
+                    $fileCounter[$baseFilename]++;
+                    $filename = $checklistName . '_' . $fileCounter[$baseFilename] . '.' . $extension;
+                } else {
+                    $fileCounter[$baseFilename] = 1;
+                    $filename = $baseFilename;
+                }
+
+                // Add file to ZIP
+                $zip->addFromString($filename, $fileContent);
+            }
+
+            $zip->close();
+
+            // Log the activity
+            Log::info('All documents downloaded as ZIP', [
+                'student_id' => $student->id,
+                'student_name' => $student->name,
+                'document_count' => $documents->count(),
+                'downloaded_by' => Auth::id(),
+                'downloaded_by_name' => Auth::user()->name,
+                'timestamp' => now()
+            ]);
+
+            // Generate download filename
+            $studentName = preg_replace('/[^A-Za-z0-9_\-]/', '_', $student->name);
+            $downloadFilename = $studentName . '_All_Documents_' . now()->format('Y-m-d') . '.zip';
+
+            // Return ZIP file as download and delete after sending
+            return response()->download($zipFilePath, $downloadFilename)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            Log::error('Error creating ZIP file', [
+                'student_id' => $student->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Failed to create ZIP file. Please try again or contact support.');
+        }
+    }
+
+    /**
      * Delete a document
      */
     public function destroy(Student $student = null, StudentDocument $document)

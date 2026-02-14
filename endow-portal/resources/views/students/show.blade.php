@@ -587,30 +587,65 @@
                             $totalDocs = $student->documents()->whereNotNull('student_checklist_id')->count();
                             $approvedDocs = $student->documents()->whereNotNull('student_checklist_id')->where('status', 'approved')->count();
                             $allDocsApproved = $totalDocs > 0 && $totalDocs === $approvedDocs;
+                            // Count non-rejected documents for ZIP download
+                            $downloadableDocs = $student->documents()
+                                ->whereNotNull('student_checklist_id')
+                                ->whereIn('status', ['pending', 'submitted', 'approved'])
+                                ->count();
                         @endphp
 
                         @if($allDocsApproved)
-                        <div>
-                            <a href="{{ route('students.documents.mergeAll', $student) }}"
-                               class="btn btn-success btn-sm"
-                               title="Download all approved documents as single PDF">
-                                <i class="fas fa-file-pdf me-2"></i>
-                                Download All Documents (Merged PDF)
-                            </a>
-                            <small class="text-muted d-block mt-1">
-                                <i class="fas fa-check-circle text-success me-1"></i>
-                                All {{ $approvedDocs }} documents approved
-                            </small>
+                        <div class="d-flex gap-2 align-items-start">
+                            <div>
+                                <a href="{{ route('students.documents.mergeAll', $student) }}"
+                                   class="btn btn-success btn-sm"
+                                   title="Download all approved documents as single PDF">
+                                    <i class="fas fa-file-pdf me-2"></i>
+                                    Download Merged PDF
+                                </a>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    All {{ $approvedDocs }} documents approved
+                                </small>
+                            </div>
+                            @if($downloadableDocs > 0)
+                            <div>
+                                <a href="{{ route('students.documents.downloadZip', $student) }}"
+                                   class="btn btn-primary btn-sm"
+                                   title="Download all documents as individual files in ZIP">
+                                    <i class="fas fa-file-archive me-2"></i>
+                                    Download ZIP
+                                </a>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {{ $downloadableDocs }} files (original format)
+                                </small>
+                            </div>
+                            @endif
                         </div>
-                        @elseif($totalDocs > 0)
-                        <div class="text-end">
-                            <small class="text-muted d-block">
-                                <i class="fas fa-info-circle me-1"></i>
-                                {{ $approvedDocs }}/{{ $totalDocs }} documents approved
-                            </small>
-                            <small class="text-muted d-block mt-1">
-                                Merge feature available when all documents are approved
-                            </small>
+                        @elseif($downloadableDocs > 0)
+                        <div class="d-flex gap-2 align-items-start">
+                            <div>
+                                <a href="{{ route('students.documents.downloadZip', $student) }}"
+                                   class="btn btn-primary btn-sm"
+                                   title="Download all documents as individual files in ZIP">
+                                    <i class="fas fa-file-archive me-2"></i>
+                                    Download ZIP
+                                </a>
+                                <small class="text-muted d-block mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {{ $downloadableDocs }} files available
+                                </small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-muted d-block">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    {{ $approvedDocs }}/{{ $totalDocs }} documents approved
+                                </small>
+                                <small class="text-muted d-block mt-1">
+                                    Merged PDF available when all approved
+                                </small>
+                            </div>
                         </div>
                         @endif
                     </div>
