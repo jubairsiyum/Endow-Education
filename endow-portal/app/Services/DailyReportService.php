@@ -503,7 +503,7 @@ class DailyReportService
      */
     public function getReportsForExport(array $filters = [])
     {
-        $query = DailyReport::with(['submittedBy', 'reviewedBy', 'department', 'approvedBy'])
+        $query = DailyReport::with(['submittedBy', 'reviewedBy', 'department', 'approvedBy', 'workAssignments', 'workAssignments.assignedBy'])
             ->latest('report_date')
             ->latest('created_at');
 

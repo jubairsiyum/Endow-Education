@@ -336,7 +336,7 @@
                                 @endif
                             </label>
                             <div class="dr-hint mb-3">
-                                <i class="fas fa-info-circle"></i> Completed tasks are automatically included and marked. Tasks must be completed in Work Assignments before marking as done here.
+                                <i class="fas fa-info-circle"></i> Select the work assignments you want to include in this report. Completed tasks will be automatically marked. All pending, in-progress, and completed tasks (not yet reported) are shown here.
                             </div>
                             
                             @if(isset($workAssignments) && $workAssignments->count() > 0)
@@ -427,16 +427,16 @@
                                     <i class="fas fa-info-circle me-3" style="color: #f57c00; font-size: 1.5rem; margin-top: 0.25rem;"></i>
                                     <div>
                                         <h6 class="mb-2 fw-bold" style="color: #e65100;">
-                                            <i class="fas fa-clipboard-check me-2"></i>No Pending Work Assignments
+                                            <i class="fas fa-clipboard-check me-2"></i>No Work Assignments Available
                                         </h6>
                                         <p class="mb-2" style="color: #6d4c41; font-size: 0.9rem;">
-                                            You don't have any pending or in-progress work assignments to include in this report.
+                                            You don't have any work assignments (pending, in-progress, or completed) available to include in this report.
                                         </p>
                                         <p class="mb-0" style="color: #6d4c41; font-size: 0.875rem;">
                                             <strong>This could mean:</strong><br>
-                                            • All your assigned tasks have been completed ✅<br>
-                                            • Tasks are already included in previous reports 📋<br>
-                                            • No new tasks have been assigned to you yet 📌
+                                            • All your work assignments are already included in previous reports 📋<br>
+                                            • No tasks have been assigned to you recently 📌<br>
+                                            • All completed tasks have been reported ✅
                                         </p>
                                     </div>
                                 </div>

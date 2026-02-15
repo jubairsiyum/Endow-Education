@@ -343,6 +343,38 @@
                 {!! strip_tags($report->description, '<p><br><b><strong><i><em><ul><ol><li>') !!}
             </div>
 
+            <!-- Work Assignments Section -->
+            @if($report->workAssignments && $report->workAssignments->count() > 0)
+            <div class="section-title">✓ Linked Work Assignments ({{ $report->workAssignments->count() }}):</div>
+            <div style="margin: 5px 0; padding: 5px; background: #f9f9f9; border: 1px solid #ddd;">
+                @foreach($report->workAssignments as $idx => $assignment)
+                <div style="margin: 4px 0; padding: 4px; border-left: 3px solid {{ $assignment->status === 'completed' ? '#198754' : '#0d6efd' }}; background: #fff; font-size: 8pt;">
+                    <div style="font-weight: bold; margin-bottom: 2px;">
+                        {{ $idx + 1 }}. {{ $assignment->title }}
+                        <span style="padding: 1px 4px; border: 1px solid #000; font-size: 7pt; margin-left: 5px;">
+                            {{ strtoupper($assignment->priority ?? 'NORMAL') }}
+                        </span>
+                        <span style="padding: 1px 4px; background: {{ $assignment->status === 'completed' ? '#198754' : '#0dcaf0' }}; color: #fff; font-size: 7pt; margin-left: 3px;">
+                            {{ strtoupper(str_replace('_', ' ', $assignment->status)) }}
+                        </span>
+                    </div>
+                    <div style="color: #555; font-size: 7pt; margin: 2px 0;">
+                        {{ Str::limit($assignment->description, 120) }}
+                    </div>
+                    <div style="font-size: 7pt; color: #666;">
+                        <strong>Assigned by:</strong> {{ $assignment->assignedBy->name ?? 'N/A' }}
+                        @if($assignment->due_date)
+                        | <strong>Due:</strong> {{ $assignment->due_date->format('M d, Y') }}
+                        @endif
+                        @if($assignment->completed_at)
+                        | <strong>Completed:</strong> {{ $assignment->completed_at->format('M d, Y') }}
+                        @endif
+                    </div>
+                </div>
+                @endforeach
+            </div>
+            @endif
+
             @if($report->tags)
             <div class="section-title">🏷️ Categories/Tags:</div>
             <div class="tags">

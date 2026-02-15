@@ -76,15 +76,16 @@ class DailyReportController extends Controller
             abort(403, 'Unauthorized to create daily reports');
         }
 
-        // Get pending work assignments for the report
-        // Include all pending and in-progress assignments not yet in a report
+        // Get work assignments for the report
+        // Include all pending, in-progress, AND completed assignments not yet in a report
         $workAssignments = \App\Models\WorkAssignment::with(['assignedBy', 'department'])
             ->where('assigned_to', auth()->id())
-            ->whereIn('status', ['pending', 'in_progress'])
+            ->whereIn('status', ['pending', 'in_progress', 'completed'])
             ->where(function ($query) {
                 $query->where('included_in_report', false)
                       ->orWhereNull('included_in_report');
             })
+            ->orderBy('status', 'desc') // Show completed first
             ->orderBy('priority', 'desc')
             ->orderBy('due_date', 'asc')
             ->orderBy('created_at', 'desc')
