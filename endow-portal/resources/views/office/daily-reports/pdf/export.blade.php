@@ -219,7 +219,7 @@
 <body>
     <!-- Header -->
     <div class="header">
-        <h1>📊 Employee Daily Performance Report</h1>
+        <h1>Endow Connect | Daily Reports </h1>
         <div class="subtitle">Generated on {{ $exportDate->format('F d, Y \a\t h:i A') }}</div>
     </div>
 
@@ -427,8 +427,8 @@
 
     <!-- Footer -->
     <div class="footer">
-        <div><strong>Endow Education</strong> - Employee Daily Performance Tracking System</div>
-        <div>Report Generated: {{ $exportDate->format('F d, Y \a\t h:i A') }} | Total Reports: {{ $reports->count() }} | Page: <span class="pageNumber"></span></div>
+        <div><strong>Endow Connect</strong> - Employee Daily Reports</div>
+        <div>Report Generated: {{ $exportDate->format('F d, Y \a\t h:i A') }} | Total Reports: {{ $reports->count() }} ></span></div>
     </div>
 </body>
 </html>
