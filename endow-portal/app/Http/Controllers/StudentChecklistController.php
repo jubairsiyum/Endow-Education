@@ -140,7 +140,7 @@ class StudentChecklistController extends Controller
             $student = Student::where('user_id', $user->id)->firstOrFail();
 
             $request->validate([
-                'document' => 'required|file|max:15360|mimes:pdf,jpg,jpeg,png', // Increased to 15MB
+                'document' => 'required|file|max:15360|mimes:pdf', // Only PDF files allowed, max 15MB
             ]);
 
             $file = $request->file('document');
@@ -224,12 +224,12 @@ class StudentChecklistController extends Controller
                     $fileSize = $pdfData['size'];
                     $base64Content = $pdfData['content'];
                 } catch (\Exception $e) {
-                    Log::error('Image to PDF conversion failed', [
+                    Log::error('File processing failed', [
                         'student_id' => $student->id,
                         'original_name' => $originalFileName,
                         'error' => $e->getMessage()
                     ]);
-                    return back()->with('error', 'Failed to process image file. Please ensure the image is valid and try again.');
+                    return back()->with('error', 'Failed to process the uploaded file. Please ensure it is valid and try again.');
                 }
             } else {
                 // Use original PDF file content
@@ -298,9 +298,7 @@ class StudentChecklistController extends Controller
             StudentDocument::create($documentData);
 
             // Log activity
-            $logMessage = $shouldConvert
-                ? "Uploaded image document (converted to PDF) for: {$checklistItem->title}"
-                : "Uploaded document for: {$checklistItem->title}";
+            $logMessage = "Uploaded document for: {$checklistItem->title}";
 
             $this->activityLogService->log(
                 'student',
@@ -309,9 +307,7 @@ class StudentChecklistController extends Controller
                 ['checklist_item_id' => $checklistItem->id, 'document_path' => $path, 'file_size' => $fileSize]
             );
 
-            $successMessage = $shouldConvert
-                ? 'Image uploaded and converted to PDF successfully! Your document is now under review.'
-                : 'Document uploaded successfully! Your document is now under review.';
+            $successMessage = 'Document uploaded successfully! Your document is now under review.';
 
             return back()->with('success', $successMessage);
 
@@ -667,7 +663,7 @@ class StudentChecklistController extends Controller
         }
 
         $request->validate([
-            'document' => 'required|file|max:15360|mimes:pdf,jpg,jpeg,png', // Increased to 15MB
+            'document' => 'required|file|max:15360|mimes:pdf', // Only PDF files allowed, max 15MB
         ]);
 
         // Delete old file if exists
@@ -749,9 +745,7 @@ class StudentChecklistController extends Controller
         StudentDocument::create($documentData);
 
         // Log activity
-        $logMessage = $shouldConvert
-            ? "Resubmitted image document (converted to PDF) for: {$studentChecklist->checklistItem->title}"
-            : "Resubmitted document for: {$studentChecklist->checklistItem->title}";
+        $logMessage = "Resubmitted document for: {$studentChecklist->checklistItem->title}";
 
         $this->activityLogService->log(
             'student',
@@ -760,9 +754,7 @@ class StudentChecklistController extends Controller
             ['checklist_item_id' => $studentChecklist->checklist_item_id, 'document_path' => $path]
         );
 
-        $successMessage = $shouldConvert
-            ? 'Image resubmitted and converted to PDF successfully! Your document is now under review.'
-            : 'Document resubmitted successfully! Your document is now under review.';
+        $successMessage = 'Document resubmitted successfully! Your document is now under review.';
 
         return back()->with('success', $successMessage);
     }

@@ -43,7 +43,7 @@
                     <!-- Quick Info Pills -->
                     <div class="mt-3 d-flex flex-wrap gap-2">
                         <span class="badge bg-white text-dark px-3 py-2">
-                            <i class="fas fa-file-pdf text-danger me-1"></i> PDF, JPG, PNG Accepted
+                            <i class="fas fa-file-pdf text-danger me-1"></i> PDF Files Only
                         </span>
                         <span class="badge bg-white text-dark px-3 py-2">
                             <i class="fas fa-weight text-warning me-1"></i> Max 15MB per file
@@ -197,13 +197,13 @@
                                                            name="document"
                                                            id="resubmit-input-{{ $item->id }}"
                                                            class="file-input"
-                                                           accept=".pdf,.jpg,.jpeg,.png"
+                                                           accept=".pdf"
                                                            required
                                                            onchange="handleFileSelect({{ $item->id }}, this, true)">
                                                     <label for="resubmit-input-{{ $item->id }}" class="compact-upload-label">
                                                         <i class="fas fa-paperclip me-2"></i>
                                                         <span class="label-text">Choose corrected file</span>
-                                                        <span class="label-hint">PDF, JPG, PNG</span>
+                                                        <span class="label-hint">PDF only</span>
                                                     </label>
                                                     <div class="selected-file-compact" id="resubmit-selected-{{ $item->id }}" style="display: none;">
                                                         <i class="fas fa-check-circle me-2"></i>
@@ -233,7 +233,7 @@
                                                    name="document"
                                                    id="file-input-{{ $item->id }}"
                                                    class="file-input"
-                                                   accept=".pdf,.jpg,.jpeg,.png"
+                                                   accept=".pdf"
                                                    required
                                                    onchange="handleFileSelect({{ $item->id }}, this)">
                                             <label for="file-input-{{ $item->id }}" class="upload-label">
@@ -242,7 +242,7 @@
                                                 </div>
                                                 <div class="upload-text">
                                                     <span class="upload-main">Choose File or Drag & Drop</span>
-                                                    <span class="upload-sub">PDF, JPG, PNG up to 15MB</span>
+                                                    <span class="upload-sub">PDF files only, up to 15MB</span>
                                                 </div>
                                             </label>
                                             <div class="selected-file" id="selected-file-{{ $item->id }}" style="display: none;">
@@ -1159,13 +1159,13 @@
         }
 
         // Validate file type
-        const allowedTypes = ['.pdf', '.jpg', '.jpeg', '.png'];
+        const allowedTypes = ['.pdf'];
         const fileExt = '.' + file.name.split('.').pop().toLowerCase();
         if (!allowedTypes.includes(fileExt)) {
             Swal.fire({
                 icon: 'error',
                 title: 'Invalid File Type',
-                text: 'Please upload PDF, JPG, or PNG files only.',
+                text: 'Please upload PDF files only.',
                 confirmButtonColor: '#DC143C'
             });
             input.value = '';

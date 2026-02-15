@@ -144,7 +144,7 @@
                             </h2>
                             <div id="doc1" class="accordion-collapse collapse" data-bs-parent="#documentsAccordion">
                                 <div class="accordion-body">
-                                    We accept PDF, JPG, and PNG formats. PDF is strongly recommended for text documents. Each file must be under 5MB in size. Ensure documents are clear, legible, and properly oriented before uploading.
+                                    We only accept PDF format for all document submissions. Each file must be under 15MB in size. Ensure documents are clear, legible, and properly oriented before uploading.
                                 </div>
                             </div>
                         </div>
