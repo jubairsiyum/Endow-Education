@@ -78,7 +78,7 @@
         <div class="card-body py-3">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <div class="period-selector">
-                    <button class="period-btn {{ !request()->has('period') && !request()->has('start_date') ? 'active' : '' }}" onclick="setPeriod('month')">
+                    <button class="period-btn {{ request('period') == 'month' ? 'active' : '' }}" onclick="setPeriod('month')">
                         <i class="fas fa-calendar-day"></i> This Month
                     </button>
                     <button class="period-btn {{ request('period') == 'week' ? 'active' : '' }}" onclick="setPeriod('week')">
@@ -87,8 +87,8 @@
                     <button class="period-btn {{ request('period') == 'quarter' ? 'active' : '' }}" onclick="setPeriod('quarter')">
                         <i class="fas fa-calendar-check"></i> Quarter
                     </button>
-                    <button class="period-btn {{ request('period') == 'year' ? 'active' : '' }}" onclick="setPeriod('year')">
-                        <i class="fas fa-calendar-alt"></i> Year
+                    <button class="period-btn {{ !request()->has('period') && !request()->has('start_date') ? 'active' : (request('period') == 'year' ? 'active' : '') }}" onclick="setPeriod('year')">
+                        <i class="fas fa-calendar-alt"></i> Year (Default)
                     </button>
                 </div>
                 <div class="d-flex gap-2 align-items-center">
@@ -120,10 +120,19 @@
     </div>
     @else
     <div class="alert alert-light mb-4" style="border-radius: 12px; border-left: 4px solid #3b82f6;">
-        <i class="fas fa-info-circle me-2"></i>
-        <strong>Dashboard Metrics:</strong> 
-        Income, Expense, and Profit/Loss show data for the selected period. 
-        Cash on Hand, Bank Deposits, and Liquid Assets show cumulative balances as of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}.
+        <i class="fas fa-calendar-alt me-2"></i>
+        <strong>Date Range:</strong> {{ \Carbon\Carbon::parse($startDate)->format('M d, Y') }} - {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}
+        <span class="ms-3"><i class="fas fa-chart-bar me-2"></i>Income/Expense for this period. Cash/Bank balances as of {{ \Carbon\Carbon::parse($endDate)->format('M d, Y') }}.</span>
+        @if($totalIncome == 0 && $totalExpense == 0)
+        <div class="mt-2 pt-2 border-top">
+            <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+            <strong>No transactions found.</strong> 
+            Make sure: 
+            (1) Transactions are <strong>approved</strong> (check <a href="{{ route('office.accounting.transactions.pending') }}" class="alert-link">Pending Transactions</a>)
+            (2) Transaction <strong>entry_date</strong> falls within the date range above
+            (3) Transactions are marked as <strong>income</strong> or <strong>expense</strong> type
+        </div>
+        @endif
     </div>
     @endif
 

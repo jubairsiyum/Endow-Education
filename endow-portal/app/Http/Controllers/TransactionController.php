@@ -127,7 +127,11 @@ class TransactionController extends Controller
             $currency = $request->input('currency', 'BDT');
             $amount = $request->amount;
 
-            $transaction = Transaction::create([
+            // Auto-approve for Super Admin and Admin roles
+            $user = Auth::user();
+            $shouldAutoApprove = $user->hasRole(['Super Admin', 'Admin']);
+            
+            $transactionData = [
                 'category_id' => $request->category_id,
                 'headline' => $request->headline,
                 'employee_id' => $request->employee_id,
@@ -140,18 +144,30 @@ class TransactionController extends Controller
                 'student_name' => $request->student_name,
                 'payment_method' => $request->payment_method,
                 'type' => $request->type,
-                'status' => 'pending', // Always start as pending
+                'status' => $shouldAutoApprove ? 'approved' : 'pending',
                 'created_by' => Auth::id(),
-            ]);
+            ];
+
+            // Add approval fields if auto-approving
+            if ($shouldAutoApprove) {
+                $transactionData['approved_by'] = Auth::id();
+                $transactionData['approved_at'] = now();
+            }
+
+            $transaction = Transaction::create($transactionData);
 
             DB::commit();
 
             // Clear pending transactions count cache
             Cache::forget('pending_transactions_count');
 
+            $message = $shouldAutoApprove 
+                ? 'Transaction created and automatically approved.'
+                : 'Transaction created successfully and pending approval.';
+
             return redirect()
                 ->route('office.accounting.transactions.index')
-                ->with('success', 'Transaction created successfully and pending approval.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
@@ -218,7 +234,11 @@ class TransactionController extends Controller
             $currency = $request->input('currency', 'BDT');
             $amount = $request->amount;
 
-            $transaction->update([
+            // Auto-approve for Super Admin and Admin roles
+            $user = Auth::user();
+            $shouldAutoApprove = $user->hasRole(['Super Admin', 'Admin']);
+            
+            $updateData = [
                 'category_id' => $request->category_id,
                 'headline' => $request->headline,
                 'employee_id' => $request->employee_id,
@@ -231,16 +251,29 @@ class TransactionController extends Controller
                 'student_name' => $request->student_name,
                 'payment_method' => $request->payment_method,
                 'type' => $request->type,
-            ]);
+            ];
+
+            // Add approval fields if auto-approving
+            if ($shouldAutoApprove) {
+                $updateData['status'] = 'approved';
+                $updateData['approved_by'] = Auth::id();
+                $updateData['approved_at'] = now();
+            }
+
+            $transaction->update($updateData);
 
             DB::commit();
 
             // Clear pending transactions count cache
             Cache::forget('pending_transactions_count');
 
+            $message = $shouldAutoApprove 
+                ? 'Transaction updated and automatically approved.'
+                : 'Transaction updated successfully.';
+
             return redirect()
                 ->route('office.accounting.transactions.index')
-                ->with('success', 'Transaction updated successfully.');
+                ->with('success', $message);
         } catch (\Exception $e) {
             DB::rollBack();
             return back()
@@ -364,6 +397,53 @@ class TransactionController extends Controller
     }
 
     /**
+     * Bulk approve transactions.
+     */
+    public function bulkApprove(Request $request)
+    {
+        $request->validate([
+            'transaction_ids' => ['required', 'array', 'min:1'],
+            'transaction_ids.*' => ['exists:transactions,id'],
+        ]);
+
+        DB::beginTransaction();
+
+        try {
+            $approvedCount = 0;
+            
+            foreach ($request->transaction_ids as $transactionId) {
+                $transaction = Transaction::find($transactionId);
+                
+                // Only approve if pending
+                if ($transaction && $transaction->isPending()) {
+                    $transaction->update([
+                        'status' => 'approved',
+                        'approved_by' => Auth::id(),
+                        'approved_at' => now(),
+                    ]);
+                    $approvedCount++;
+                }
+            }
+
+            DB::commit();
+
+            // Clear pending transactions count cache
+            Cache::forget('pending_transactions_count');
+
+            $message = $approvedCount > 0 
+                ? "Successfully approved {$approvedCount} transaction(s)."
+                : "No pending transactions were found to approve.";
+
+            return redirect()
+                ->route('office.accounting.transactions.pending')
+                ->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Failed to approve transactions: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Display accounting summary.
      */
     public function summary(Request $request)
@@ -374,14 +454,14 @@ class TransactionController extends Controller
                 return back()->with('error', 'Accounting tables not found. Please run migrations: php artisan migrate');
             }
 
-            // Default to current month
+            // Default to current year instead of current month for better visibility
             $startDate = $request->filled('start_date') 
                 ? $request->start_date 
-                : now()->startOfMonth()->format('Y-m-d');
+                : now()->startOfYear()->format('Y-m-d');
             
             $endDate = $request->filled('end_date') 
                 ? $request->end_date 
-                : now()->endOfMonth()->format('Y-m-d');
+                : now()->endOfYear()->format('Y-m-d');
 
             // Handle period shortcuts
             if ($request->filled('period')) {

@@ -387,6 +387,10 @@ Route::middleware(['auth'])->prefix('office')->name('office.')->group(function (
             ->name('transactions.reject')
             ->middleware('permission:approve-transaction');
         
+        Route::post('/transactions/bulk-approve', [TransactionController::class, 'bulkApprove'])
+            ->name('transactions.bulkApprove')
+            ->middleware('permission:approve-transaction');
+        
         // Transaction CRUD
         Route::resource('transactions', TransactionController::class)->except(['pending']);
         
