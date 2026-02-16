@@ -27,6 +27,36 @@
                 </div>
             </div>
 
+            <!-- Instruction Video Section -->
+            <div class="card-custom mb-4">
+                <div class="card-header-custom">
+                    <h5 class="mb-0"><i class="fas fa-video text-danger me-2"></i>How to Use Endow Connect & Submit Documents</h5>
+                </div>
+                <div class="card-body-custom">
+                    <div class="row">
+                        <div class="col-lg-10 mx-auto">
+                            <div class="ratio ratio-16x9 mb-3">
+                                <iframe src="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/preview" 
+                                        allow="autoplay" 
+                                        allowfullscreen
+                                        style="border: 1px solid #ddd; border-radius: 8px;"></iframe>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    This comprehensive video guide covers how to navigate the portal and submit your documents correctly.
+                                </p>
+                                <a href="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/view" 
+                                   target="_blank" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-external-link-alt me-1"></i> Open in New Tab
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- FAQ Categories -->
             <div class="row g-4 mb-4">
                 <div class="col-md-4">

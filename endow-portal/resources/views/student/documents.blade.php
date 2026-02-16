@@ -69,6 +69,90 @@
     </div>
     @endif
 
+    <!-- Instruction Video Section -->
+    {{-- <div class="card-custom mb-4">
+        <div class="card-header-custom bg-gradient-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-video me-2"></i>How to Submit Documents - Video Guide</h5>
+        </div>
+        <div class="card-body-custom">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="ratio ratio-16x9 mb-3">
+                        <iframe src="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/preview" 
+                                allow="autoplay" 
+                                allowfullscreen
+                                style="border: 1px solid #ddd; border-radius: 12px;"></iframe>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Watch this comprehensive guide on using Endow Connect and submitting your documents correctly.
+                        </p>
+                        <a href="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/view" 
+                           target="_blank" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Open in New Tab
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> --}}
+
+    <!-- PDF Merge Tool Section -->
+    <div class="card border-0 shadow-sm mb-4 bg-gradient-light">
+        <div class="card-body p-4">
+            <div class="row align-items-center">
+                <div class="col-lg-8">
+                    <div class="d-flex align-items-start gap-3">
+                        <div class="merge-icon-box">
+                            <i class="fas fa-file-pdf fa-2x"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h5 class="fw-bold mb-2">
+                                <i class="fas fa-layer-group text-danger me-2"></i>Need to Merge Multiple PDF Files?
+                            </h5>
+                            <p class="text-muted mb-2">
+                                <strong>Important:</strong> If you have multiple pages or documents that need to be submitted as <strong>ONE file</strong> 
+                                (e.g., all passport pages, complete transcripts, multiple certificates), please merge them into a single PDF before uploading.
+                            </p>
+                            <div class="merge-examples mt-3">
+                                <p class="small mb-2 fw-semibold text-dark">
+                                    <i class="fas fa-lightbulb text-warning me-2"></i>When to use PDF merge:
+                                </p>
+                                <ul class="small text-muted mb-0 ps-4">
+                                    <li>Passport (all pages including front, back, and visa pages)</li>
+                                    <li>Academic transcripts (multiple semesters into one file)</li>
+                                    <li>Certificates (degree, marksheets, recommendation letters)</li>
+                                    <li>Any multi-page document that should be submitted together</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mt-3 mt-lg-0">
+                    <div class="merge-cta-box">
+                        <div class="text-center p-4 bg-white rounded-3 shadow-sm border border-danger border-2">
+                            <div class="merge-tool-icon mb-3">
+                                <i class="fas fa-tools fa-3x text-danger"></i>
+                            </div>
+                            <h6 class="fw-bold mb-2">Free PDF Merge Tool</h6>
+                            <p class="small text-muted mb-3">No registration • No watermark • Secure</p>
+                            <a href="https://www.ilovepdf.com/merge_pdf" 
+                               target="_blank" 
+                               class="btn btn-danger w-100 shadow-sm">
+                                <i class="fas fa-external-link-alt me-2"></i>Open Merge Tool
+                            </a>
+                            <small class="d-block text-muted mt-2">
+                                <i class="fas fa-shield-alt me-1"></i>Safe & Easy to Use
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-lg-8">
             @if($checklistItems->isEmpty())
@@ -386,6 +470,14 @@
         background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
     }
 
+    .bg-gradient-light {
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff5f5 100%);
+    }
+
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #DC143C 0%, #ff1744 100%);
+    }
+
     .icon-box-large {
         width: 70px;
         height: 70px;
@@ -394,6 +486,97 @@
         justify-content: center;
         border-radius: 15px;
         box-shadow: 0 4px 10px rgba(220, 20, 60, 0.1);
+    }
+
+    /* Instruction Video & Merge Tool Styles */
+    .card-header-custom {
+        padding: 20px;
+        border-bottom: none;
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .card-body-custom {
+        padding: 25px;
+    }
+
+    .card-custom {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    /* Merge PDF Section Styles */
+    .merge-icon-box {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        flex-shrink: 0;
+        box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
+        transition: all 0.3s ease;
+    }
+
+    .merge-icon-box:hover {
+        transform: rotate(5deg) scale(1.05);
+    }
+
+    .merge-examples {
+        background: rgba(255, 193, 7, 0.1);
+        padding: 15px;
+        border-radius: 10px;
+        border-left: 4px solid #ffc107;
+    }
+
+    .merge-examples ul li {
+        margin-bottom: 6px;
+        line-height: 1.6;
+    }
+
+    .merge-cta-box {
+        height: 100%;
+    }
+
+    .merge-cta-box .bg-white {
+        transition: all 0.3s ease;
+    }
+
+    .merge-cta-box .bg-white:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(220, 20, 60, 0.15) !important;
+    }
+
+    .merge-tool-icon {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .merge-cta-box .btn-danger {
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        border: none;
+        font-weight: 600;
+        padding: 12px 24px;
+        transition: all 0.3s ease;
+    }
+
+    .merge-cta-box .btn-danger:hover {
+        background: linear-gradient(135deg, #ff1744, #DC143C);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(220, 20, 60, 0.4) !important;
     }
 
     /* Modern Document Card */

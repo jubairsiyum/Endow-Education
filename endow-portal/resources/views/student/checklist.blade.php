@@ -40,6 +40,66 @@
     </div>
     @endif
 
+    <!-- Instruction Video Section -->
+    <div class="card shadow-sm border-0 mb-3">
+        <div class="card-header bg-danger text-white">
+            <h6 class="mb-0"><i class="fas fa-video me-2"></i>How to Submit Documents - Instruction Video</h6>
+        </div>
+        <div class="card-body p-3">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="ratio ratio-16x9 mb-3">
+                        <iframe src="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/preview" 
+                                allow="autoplay" 
+                                allowfullscreen
+                                style="border: 1px solid #ddd; border-radius: 8px;"></iframe>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-muted small mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Watch this step-by-step guide on how to use Endow Connect and submit your documents.
+                        </p>
+                        <a href="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/view" 
+                           target="_blank" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Open in New Tab
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PDF Merge Tool Information -->
+    <div class="card shadow-sm border-0 mb-3 bg-light">
+        <div class="card-body p-3">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h6 class="fw-bold text-dark mb-2">
+                        <i class="fas fa-file-pdf text-danger me-2"></i>Need to Merge Multiple PDF Files?
+                    </h6>
+                    <p class="small text-muted mb-2">
+                        <strong>Important:</strong> If you have multiple pages or documents that need to be submitted as ONE file 
+                        (e.g., passport pages, mark sheets, certificates), please merge them into a single PDF before uploading.
+                    </p>
+                    <p class="small text-muted mb-0">
+                        <i class="fas fa-lightbulb text-warning me-1"></i>
+                        <strong>When to merge:</strong> For documents like transcripts (multiple semesters), passport (all pages), 
+                        or any multi-page certificates that should be in one file.
+                    </p>
+                </div>
+                <div class="col-md-4 text-center">
+                    <a href="https://www.ilovepdf.com/merge_pdf" 
+                       target="_blank" 
+                       class="btn btn-danger btn-sm w-100 mb-2">
+                        <i class="fas fa-external-link-alt me-1"></i> Open PDF Merge Tool
+                    </a>
+                    <small class="text-muted d-block">Free online tool - No registration required</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" role="alert">
         <i class="fas fa-check-circle me-2"></i>{{ session('success') }}
