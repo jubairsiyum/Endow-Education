@@ -322,9 +322,17 @@ class WorkAssignmentService
     public function getAvailableEmployees(User $manager): array
     {
         $query = User::where('status', 'active')
+                    ->whereDoesntHave('roles', function ($q) {
+                        $q->where('name', 'student');
+                    })
                     ->orderBy('name', 'asc');
 
-        // If manager, get employees from their departments
+        // Super Admins can assign to anyone - no filtering
+        if ($manager->hasRole('Super Admin')) {
+            return $query->get(['id', 'name', 'email'])->toArray();
+        }
+
+        // Department managers can only assign to employees in their departments
         if ($manager->hasRole('department_manager') || $manager->isManagerOfAnyDepartment()) {
             $managedDeptIds = $manager->managedDepartments->pluck('id')->toArray();
             $query->where(function ($q) use ($managedDeptIds) {
