@@ -9,6 +9,9 @@ use App\Models\StudentDocument;
 use App\Services\ActivityLogService;
 use App\Services\ImageProcessingService;
 use App\Notifications\DocumentRejectedNotification;
+use App\Notifications\StudentDocumentUploadedNotification;
+use App\Notifications\StudentChecklistCompletedNotification;
+use App\Notifications\DocumentPendingApprovalNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -306,6 +309,28 @@ class StudentChecklistController extends Controller
                 $student,
                 ['checklist_item_id' => $checklistItem->id, 'document_path' => $path, 'file_size' => $fileSize]
             );
+
+            // Send notification to assigned counselor
+            try {
+                if ($student->assignedUser) {
+                    $student->assignedUser->notify(new StudentDocumentUploadedNotification($student, $checklistItem));
+                }
+                
+                // Send notification to admins for document approval
+                $admins = \App\Models\User::role(['Super Admin', 'Admin'])->get();
+                foreach ($admins as $admin) {
+                    $admin->notify(new DocumentPendingApprovalNotification($student, $studentChecklist));
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to send document upload notification: ' . $e->getMessage());
+            }
+
+            // Check if all checklist items are completed
+            try {
+                $this->checkAndNotifyChecklistCompletion($student);
+            } catch (\Exception $e) {
+                \Log::warning('Failed to check checklist completion: ' . $e->getMessage());
+            }
 
             $successMessage = 'Document uploaded successfully! Your document is now under review.';
 
@@ -857,6 +882,42 @@ class StudentChecklistController extends Controller
 
             default:
                 return back()->with('error', 'Invalid settings section.');
+        }
+    }
+
+    /**
+     * Check if student completed all checklist items and send notification
+     */
+    protected function checkAndNotifyChecklistCompletion(Student $student)
+    {
+        if (!$student->target_program_id) {
+            return;
+        }
+
+        $checklistItems = ChecklistItem::active()
+            ->whereHas('programs', function($query) use ($student) {
+                $query->where('programs.id', $student->target_program_id);
+            })
+            ->get();
+
+        $totalCount = $checklistItems->count();
+        $approvedCount = 0;
+
+        foreach ($checklistItems as $item) {
+            $studentChecklist = StudentChecklist::where('student_id', $student->id)
+                ->where('checklist_item_id', $item->id)
+                ->first();
+
+            if ($studentChecklist && in_array($studentChecklist->status, ['completed', 'approved'])) {
+                $approvedCount++;
+            }
+        }
+
+        // If all items are complete, notify assigned counselor
+        if ($totalCount > 0 && $approvedCount === $totalCount) {
+            if ($student->assignedUser) {
+                $student->assignedUser->notify(new StudentChecklistCompletedNotification($student));
+            }
         }
     }
 }

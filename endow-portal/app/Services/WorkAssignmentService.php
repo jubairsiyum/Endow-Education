@@ -5,6 +5,8 @@ namespace App\Services;
 use App\Models\WorkAssignment;
 use App\Models\User;
 use App\Models\Department;
+use App\Notifications\WorkAssignedNotification;
+use App\Notifications\WorkFeedbackProvidedNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\Builder;
 use Exception;
@@ -166,6 +168,16 @@ class WorkAssignmentService
                 'status' => WorkAssignment::STATUS_PENDING,
             ]);
 
+            // Send notification to assigned employee
+            try {
+                $assignedUser = User::find($data['assigned_to']);
+                if ($assignedUser) {
+                    $assignedUser->notify(new WorkAssignedNotification($assignment));
+                }
+            } catch (\Exception $e) {
+                \Log::warning('Failed to send work assignment notification: ' . $e->getMessage());
+            }
+
             DB::commit();
 
             return $assignment;
@@ -247,6 +259,16 @@ class WorkAssignmentService
     public function addManagerFeedback(WorkAssignment $assignment, string $feedback): WorkAssignment
     {
         $assignment->update(['manager_feedback' => $feedback]);
+        
+        // Send notification to assigned employee
+        try {
+            if ($assignment->assignedTo) {
+                $assignment->assignedTo->notify(new WorkFeedbackProvidedNotification($assignment));
+            }
+        } catch (\Exception $e) {
+            \Log::warning('Failed to send work feedback notification: ' . $e->getMessage());
+        }
+        
         return $assignment->fresh();
     }
 

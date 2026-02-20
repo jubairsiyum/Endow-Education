@@ -6,6 +6,7 @@ use App\Http\Requests\TransactionRequest;
 use App\Models\AccountCategory;
 use App\Models\BankDeposit;
 use App\Models\Transaction;
+use App\Notifications\TransactionPendingApprovalNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -155,6 +156,19 @@ class TransactionController extends Controller
             }
 
             $transaction = Transaction::create($transactionData);
+
+            // Send notification if transaction requires approval
+            if (!$shouldAutoApprove) {
+                try {
+                    // Notify users who can approve transactions
+                    $approvers = \App\Models\User::permission('approve-transaction')->get();
+                    foreach ($approvers as $approver) {
+                        $approver->notify(new TransactionPendingApprovalNotification($transaction));
+                    }
+                } catch (\Exception $e) {
+                    \Log::warning('Failed to send transaction approval notification: ' . $e->getMessage());
+                }
+            }
 
             DB::commit();
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\DailyReport;
 use App\Models\User;
+use App\Notifications\DailyReportStatusNotification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -298,6 +299,15 @@ class DailyReportService
             // Log activity
             $this->activityLogger->logApproved($report, $approver->id, $comment);
 
+            // Send notification to report submitter
+            try {
+                if ($report->submittedBy) {
+                    $report->submittedBy->notify(new DailyReportStatusNotification($report, 'approved', $comment));
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send report approval notification: ' . $e->getMessage());
+            }
+
             DB::commit();
 
             return $report->fresh();
@@ -329,6 +339,15 @@ class DailyReportService
 
             // Log activity
             $this->activityLogger->logRejected($report, $rejector->id, $reason);
+
+            // Send notification to report submitter
+            try {
+                if ($report->submittedBy) {
+                    $report->submittedBy->notify(new DailyReportStatusNotification($report, 'rejected', $reason));
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send report rejection notification: ' . $e->getMessage());
+            }
 
             DB::commit();
 

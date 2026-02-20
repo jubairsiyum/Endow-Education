@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="{{ asset('css/endow-theme.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/notifications.css') }}" rel="stylesheet">
 
     <style>
         :root {
@@ -1273,10 +1274,36 @@
                     </div>
                 </div>
                 <div class="topbar-right">
-                    <button class="icon-btn">
-                        <i class="fas fa-bell"></i>
-                        <span class="badge">3</span>
-                    </button>
+                    <div class="notification-wrapper">
+                        <button class="icon-btn notification-bell">
+                            <i class="fas fa-bell"></i>
+                            <span class="badge" id="notification-badge" style="display: none;"></span>
+                        </button>
+                        
+                        <div class="notification-dropdown">
+                            <div class="notification-header">
+                                <h6>Notifications</h6>
+                                <div class="notification-actions">
+                                    <button id="mark-all-read-btn" title="Mark all as read">
+                                        <i class="fas fa-check-double"></i>
+                                    </button>
+                                    <button id="refresh-notifications-btn" title="Refresh">
+                                        <i class="fas fa-sync-alt"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div id="notification-list">
+                                <!-- Notifications will be loaded here -->
+                            </div>
+                            
+                            <div class="notification-footer">
+                                <a href="{{ route('notifications.index') }}" class="view-all-link">
+                                    <i class="fas fa-bell"></i> View All Notifications
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
                     <div class="dropdown">
                         <div class="user-menu" data-bs-toggle="dropdown" aria-expanded="false">
@@ -1463,6 +1490,15 @@
                     }
                 }, 250);
             });
+        });
+    </script>
+
+    <!-- Notification System -->
+    <script src="{{ asset('js/notifications.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize notification manager
+            window.notificationManager = new NotificationManager();
         });
     </script>
 

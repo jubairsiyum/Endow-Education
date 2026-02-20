@@ -95,6 +95,27 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
+// Notification API Routes (for in-app notifications)
+Route::middleware(['auth'])->prefix('api/notifications')->name('api.notifications.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\Api\NotificationController::class, 'index'])->name('index');
+    Route::get('/unread', [\App\Http\Controllers\Api\NotificationController::class, 'unread'])->name('unread');
+    Route::get('/unread-count', [\App\Http\Controllers\Api\NotificationController::class, 'unreadCount'])->name('unread-count');
+    Route::post('/{id}/mark-read', [\App\Http\Controllers\Api\NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/mark-all-read', [\App\Http\Controllers\Api\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    Route::delete('/{id}', [\App\Http\Controllers\Api\NotificationController::class, 'destroy'])->name('destroy');
+    Route::post('/clear-read', [\App\Http\Controllers\Api\NotificationController::class, 'clearRead'])->name('clear-read');
+});
+
+// Notification Page Routes
+Route::middleware(['auth'])->prefix('notifications')->name('notifications.')->group(function () {
+    Route::get('/', [\App\Http\Controllers\NotificationController::class, 'index'])->name('index');
+    Route::get('/{id}/redirect', [\App\Http\Controllers\NotificationController::class, 'markAsReadAndRedirect'])->name('redirect');
+    Route::post('/{id}/mark-read', [\App\Http\Controllers\NotificationController::class, 'markAsRead'])->name('mark-read');
+    Route::post('/mark-all-read', [\App\Http\Controllers\NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+    Route::delete('/{id}', [\App\Http\Controllers\NotificationController::class, 'destroy'])->name('destroy');
+    Route::post('/clear-read', [\App\Http\Controllers\NotificationController::class, 'clearRead'])->name('clear-read');
+});
+
 // Admin/Employee Profile Routes
 Route::middleware(['auth'])->prefix('admin')->group(function () {
     Route::get('/profile', [AdminProfileController::class, 'show'])->name('admin.profile.show');

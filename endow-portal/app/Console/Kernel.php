@@ -12,7 +12,10 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        // Send deadline reminders daily at 9 AM
+        $schedule->command('notifications:deadline-reminders')
+                 ->dailyAt('09:00')
+                 ->timezone('Asia/Dhaka');
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\AdminNewStudentRegisteredNotification;
+use App\Notifications\StudentPendingApprovalNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
@@ -97,6 +98,10 @@ class StudentRegisterController extends Controller
             foreach ($administrators as $admin) {
                 try {
                     $admin->notify(new AdminNewStudentRegisteredNotification($student, $admin));
+                    // Also send in-app notification for pending approval
+                    if ($admin->hasRole(['Super Admin', 'Admin'])) {
+                        $admin->notify(new StudentPendingApprovalNotification($student));
+                    }
                 } catch (\Exception $e) {
                     Log::warning('Failed to send new student registration notification to ' . $admin->email . ': ' . $e->getMessage());
                 }

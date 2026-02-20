@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\ConsultantEvaluation;
 use App\Models\EvaluationQuestion;
 use App\Models\Student;
+use App\Notifications\ConsultantEvaluationSubmittedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -131,6 +132,25 @@ class ConsultantEvaluationController extends Controller
                 'questions_evaluated' => count($validated['evaluations']),
                 'user_id' => $user->id,
             ]);
+
+            // Send notification to admins and the consultant
+            try {
+                $consultant = $student->assignedUser;
+                
+                // Only send notifications if consultant is assigned
+                if ($consultant) {
+                    $admins = \App\Models\User::role(['Super Admin', 'Admin'])->get();
+                    
+                    foreach ($admins as $admin) {
+                        $admin->notify(new ConsultantEvaluationSubmittedNotification($student, $consultant));
+                    }
+                    
+                    // Notify the consultant too
+                    $consultant->notify(new ConsultantEvaluationSubmittedNotification($student, $consultant));
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send consultant evaluation notification: ' . $e->getMessage());
+            }
 
             DB::commit();
 
