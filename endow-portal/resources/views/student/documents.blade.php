@@ -69,6 +69,94 @@
     </div>
     @endif
 
+    <!-- Instruction Video Section -->
+    {{-- <div class="card-custom mb-4">
+        <div class="card-header-custom bg-gradient-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-video me-2"></i>How to Submit Documents - Video Guide</h5>
+        </div>
+        <div class="card-body-custom">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="ratio ratio-16x9 mb-3">
+                        <iframe src="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/preview" 
+                                allow="autoplay" 
+                                allowfullscreen
+                                style="border: 1px solid #ddd; border-radius: 12px;"></iframe>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-muted mb-2">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Watch this comprehensive guide on using Endow Connect and submitting your documents correctly.
+                        </p>
+                        <a href="https://drive.google.com/file/d/1W6F18SYbYppzUcmJ6ImKimkfvAWVs31f/view" 
+                           target="_blank" 
+                           class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-external-link-alt me-1"></i> Open in New Tab
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> --}}
+
+    <!-- PDF Merge Tool Section -->
+    <div class="pdf-merge-card mb-4">
+        <div class="pdf-merge-header">
+            <div class="merge-icon-wrapper">
+                <i class="fas fa-layer-group"></i>
+            </div>
+            <h6 class="merge-title">Need to Merge Multiple PDF Files?</h6>
+        </div>
+        
+        <div class="pdf-merge-body">
+            <div class="row align-items-center">
+                <div class="col-lg-8 merge-info-col">
+                    <p class="merge-description">
+                        <strong>Important:</strong> If you have multiple pages or documents that need to be submitted as <strong>ONE file</strong> 
+                        (e.g., SSC & HSC e-Apostille certificates and transcripts, or multiple pages of a single document), please merge them into a single PDF before uploading.
+                    </p>
+                    
+                    <div class="merge-examples-compact">
+                        <div class="examples-label">
+                            <i class="fas fa-lightbulb"></i>
+                            <span>When to use PDF merge:</span>
+                        </div>
+                        <ul class="examples-list">
+                            <li>Academic transcripts (combine all semesters into one file)
+                            </li>
+                            <li>Certificates & transcripts (all certificates and transcripts in one file)
+                            </li>                            
+                            <li>Any multi-page document that should be submitted together</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="col-lg-4 merge-cta-col">
+                    <div class="merge-cta-section">
+                        <div class="cta-info">
+                            <div class="cta-icon">
+                                <i class="fas fa-tools"></i>
+                            </div>
+                            <div class="cta-text">
+                                <div class="cta-title">Free PDF Merge Tool</div>
+                                <div class="cta-subtitle">No registration • No watermark • Secure</div>
+                            </div>
+                        </div>
+                        <a href="https://www.ilovepdf.com/merge_pdf" 
+                           target="_blank" 
+                           class="btn-merge-tool">
+                            <i class="fas fa-external-link-alt"></i>
+                            <span>Open Merge Tool</span>
+                        </a>
+                        <div class="cta-badge">
+                            <i class="fas fa-shield-alt"></i> Safe & Easy to Use
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="row">
         <div class="col-lg-8">
             @if($checklistItems->isEmpty())
@@ -386,6 +474,14 @@
         background: linear-gradient(135deg, #fff5f5 0%, #ffe5e5 100%);
     }
 
+    .bg-gradient-light {
+        background: linear-gradient(135deg, #f8f9fa 0%, #fff5f5 100%);
+    }
+
+    .bg-gradient-danger {
+        background: linear-gradient(135deg, #DC143C 0%, #ff1744 100%);
+    }
+
     .icon-box-large {
         width: 70px;
         height: 70px;
@@ -394,6 +490,241 @@
         justify-content: center;
         border-radius: 15px;
         box-shadow: 0 4px 10px rgba(220, 20, 60, 0.1);
+    }
+
+    /* Instruction Video & Merge Tool Styles */
+    .card-header-custom {
+        padding: 20px;
+        border-bottom: none;
+        border-radius: 15px 15px 0 0 !important;
+    }
+
+    .card-body-custom {
+        padding: 25px;
+    }
+
+    .card-custom {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .card-custom:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+    }
+
+    /* PDF Merge Tool - Professional Responsive Design */
+    .pdf-merge-card {
+        background: #ffffff;
+        border-radius: 12px;
+        border: 2px solid #f0f0f0;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .pdf-merge-card:hover {
+        border-color: #DC143C;
+        box-shadow: 0 4px 20px rgba(220, 20, 60, 0.08);
+    }
+
+    .pdf-merge-header {
+        background: linear-gradient(135deg, #DC143C 0%, #ff1744 100%);
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .merge-icon-wrapper {
+        width: 36px;
+        height: 36px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+        flex-shrink: 0;
+    }
+
+    .merge-title {
+        margin: 0;
+        color: white;
+        font-size: 16px;
+        font-weight: 700;
+        line-height: 1.3;
+    }
+
+    .pdf-merge-body {
+        padding: 20px;
+    }
+
+    .merge-info-col {
+        /* Desktop: left column with info */
+    }
+
+    .merge-cta-col {
+        /* Desktop: right column with CTA */
+    }
+
+    .merge-description {
+        color: #495057;
+        font-size: 14px;
+        line-height: 1.6;
+        margin-bottom: 16px;
+    }
+
+    .merge-description strong {
+        color: #212529;
+    }
+
+    .merge-examples-compact {
+        background: #fffbf0;
+        border-left: 4px solid #ffc107;
+        border-radius: 8px;
+        padding: 14px 16px;
+        margin-bottom: 0;
+    }
+
+    .examples-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        color: #856404;
+        margin-bottom: 10px;
+    }
+
+    .examples-label i {
+        color: #ffc107;
+        font-size: 16px;
+    }
+
+    .examples-list {
+        margin: 0;
+        padding-left: 20px;
+        list-style: none;
+    }
+
+    .examples-list li {
+        position: relative;
+        padding-left: 0;
+        font-size: 13px;
+        color: #6c757d;
+        line-height: 1.7;
+        margin-bottom: 6px;
+    }
+
+    .examples-list li:before {
+        content: "•";
+        color: #ffc107;
+        font-weight: bold;
+        display: inline-block;
+        width: 1em;
+        margin-left: -1em;
+    }
+
+    .examples-list li:last-child {
+        margin-bottom: 0;
+    }
+
+    .merge-cta-section {
+        background: #f8f9fa;
+        border: 2px solid #DC143C;
+        border-radius: 10px;
+        padding: 16px;
+        text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .cta-info {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 14px;
+    }
+
+    .cta-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 22px;
+        flex-shrink: 0;
+    }
+
+    .cta-text {
+        text-align: left;
+    }
+
+    .cta-title {
+        font-weight: 700;
+        font-size: 16px;
+        color: #212529;
+        line-height: 1.2;
+        margin-bottom: 3px;
+    }
+
+    .cta-subtitle {
+        font-size: 12px;
+        color: #6c757d;
+        line-height: 1.2;
+    }
+
+    .btn-merge-tool {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: linear-gradient(135deg, #DC143C, #ff1744);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 13px 28px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(220, 20, 60, 0.3);
+    }
+
+    .btn-merge-tool:hover {
+        background: linear-gradient(135deg, #ff1744, #DC143C);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(220, 20, 60, 0.4);
+        color: white;
+    }
+
+    .btn-merge-tool i {
+        font-size: 13px;
+    }
+
+    .cta-badge {
+        margin-top: 10px;
+        font-size: 12px;
+        color: #6c757d;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .cta-badge i {
+        color: #28a745;
     }
 
     /* Modern Document Card */
@@ -981,7 +1312,101 @@
     }
 
     /* Responsive */
+    @media (max-width: 991px) {
+        /* Tablet - adjust CTA section */
+        .merge-cta-section {
+            margin-top: 20px;
+        }
+    }
+
     @media (max-width: 768px) {
+        /* PDF Merge Tool Mobile Optimization */
+        .pdf-merge-header {
+            padding: 14px 16px;
+            flex-wrap: wrap;
+        }
+
+        .merge-icon-wrapper {
+            width: 32px;
+            height: 32px;
+            font-size: 16px;
+        }
+
+        .merge-title {
+            font-size: 14px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .pdf-merge-body {
+            padding: 16px;
+        }
+
+        .merge-description {
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        .merge-examples-compact {
+            padding: 12px 14px;
+            margin-bottom: 16px;
+        }
+
+        .examples-label {
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        .examples-label i {
+            font-size: 14px;
+        }
+
+        .examples-list {
+            padding-left: 18px;
+        }
+
+        .examples-list li {
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 5px;
+        }
+
+        .merge-cta-section {
+            padding: 14px;
+            margin-top: 0;
+        }
+
+        .cta-info {
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .cta-icon {
+            width: 38px;
+            height: 38px;
+            font-size: 18px;
+        }
+
+        .cta-title {
+            font-size: 14px;
+        }
+
+        .cta-subtitle {
+            font-size: 11px;
+        }
+
+        .btn-merge-tool {
+            padding: 11px 24px;
+            font-size: 13px;
+            max-width: 100%;
+        }
+
+        .cta-badge {
+            font-size: 11px;
+            margin-top: 8px;
+        }
+
+        /* Document Cards Mobile */
         .doc-card-inner {
             flex-direction: column;
         }
@@ -1050,6 +1475,63 @@
         .file-actions .btn {
             padding: 5px 8px;
             font-size: 12px;
+        }
+    }
+
+    /* Extra small devices (phones in portrait, less than 576px) */
+    @media (max-width: 576px) {
+        .pdf-merge-card {
+            border-radius: 10px;
+        }
+
+        .pdf-merge-header {
+            padding: 12px 14px;
+        }
+
+        .merge-icon-wrapper {
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+        }
+
+        .merge-title {
+            font-size: 13px;
+        }
+
+        .pdf-merge-body {
+            padding: 14px;
+        }
+
+        .merge-description {
+            font-size: 12px;
+        }
+
+        .merge-examples-compact {
+            padding: 10px 12px;
+        }
+
+        .examples-list li {
+            font-size: 11px;
+        }
+
+        .merge-cta-section {
+            padding: 12px;
+        }
+
+        .cta-icon {
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+        }
+
+        .cta-title {
+            font-size: 13px;
+        }
+
+        .btn-merge-tool {
+            padding: 10px 20px;
+            font-size: 12px;
+            gap: 6px;
         }
     }
 
